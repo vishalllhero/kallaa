@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
+  "buildCommand": "cd client && npm run build",
+  "outputDirectory": "client/dist",
+  "framework": null,
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -34,10 +34,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "src/pages/api/**/*.js": {
-      "runtime": "@vercel/node"
-    }
-  }
+  ]
 }
