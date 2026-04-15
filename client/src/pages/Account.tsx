@@ -1,13 +1,29 @@
 import { LogOut, User, Package, Heart, Settings } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 
 export default function Account() {
   const { user, logout } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("profile");
+  const [orders, setOrders] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/orders")
+      .then(res => res.json())
+      .then(data => setOrders(data || []))
+      .catch(err => console.error("Failed to fetch orders:", err));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/wishlist")
+      .then(res => res.json())
+      .then(data => setWishlist(data || []))
+      .catch(err => console.error("Failed to fetch wishlist:", err));
+  }, []);
 
   // 🔐 NOT LOGGED IN
   if (!user) {
@@ -26,7 +42,6 @@ export default function Account() {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6">
-
       {/* HEADER */}
       <div className="mb-10">
         <h1 className="text-3xl font-bold">My Account</h1>
@@ -34,47 +49,49 @@ export default function Account() {
       </div>
 
       <div className="grid lg:grid-cols-4 gap-8">
-
         {/* SIDEBAR */}
         <div className="bg-card p-6 rounded-lg border border-white/10">
           <div className="space-y-3">
-
             <button
               onClick={() => setActiveTab("profile")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "profile"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
+                activeTab === "profile"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-                }`}
+              }`}
             >
               <User size={18} /> Profile
             </button>
 
             <button
               onClick={() => setActiveTab("orders")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "orders"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
+                activeTab === "orders"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-                }`}
+              }`}
             >
               <Package size={18} /> Orders
             </button>
 
             <button
               onClick={() => setActiveTab("wishlist")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "wishlist"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
+                activeTab === "wishlist"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-                }`}
+              }`}
             >
               <Heart size={18} /> Wishlist
             </button>
 
             <button
               onClick={() => setActiveTab("settings")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "settings"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
+                activeTab === "settings"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-                }`}
+              }`}
             >
               <Settings size={18} /> Settings
             </button>
@@ -85,13 +102,11 @@ export default function Account() {
             >
               <LogOut size={18} /> Logout
             </button>
-
           </div>
         </div>
 
         {/* CONTENT */}
         <div className="lg:col-span-3">
-
           {activeTab === "profile" && (
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Profile</h2>
@@ -103,14 +118,41 @@ export default function Account() {
           {activeTab === "orders" && (
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Orders</h2>
-              <p>No orders yet</p>
+              {console.log("Orders:", orders)}
+              {!orders || !Array.isArray(orders) || orders.length === 0 ? (
+                <p>No orders available</p>
+              ) : (
+                (Array.isArray(orders) ? orders : []).map(order => (
+                  <div
+                    key={order.id || order._id}
+                    className="border-b border-white/10 py-2"
+                  >
+                    <p>Order ID: {order.id || order._id}</p>
+                    <p>Total: {order.total || "N/A"}</p>
+                  </div>
+                ))
+              )}
             </div>
           )}
 
           {activeTab === "wishlist" && (
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Wishlist</h2>
-              <p>No wishlist items</p>
+              {console.log("Wishlist:", wishlist)}
+              {!wishlist ||
+              !Array.isArray(wishlist) ||
+              wishlist.length === 0 ? (
+                <p>No wishlist items</p>
+              ) : (
+                (Array.isArray(wishlist) ? wishlist : []).map(item => (
+                  <div
+                    key={item.id || item._id}
+                    className="border-b border-white/10 py-2"
+                  >
+                    <p>Product: {item.name || "Unknown"}</p>
+                  </div>
+                ))
+              )}
             </div>
           )}
 
@@ -120,9 +162,7 @@ export default function Account() {
               <p>Coming soon...</p>
             </div>
           )}
-
         </div>
-
       </div>
     </div>
   );
