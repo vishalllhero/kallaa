@@ -28,8 +28,8 @@ export default function Products() {
 
         // Debug image URLs in development
         if (import.meta.env.DEV) {
-          console.log("[Products] Loaded products:", data.length);
-          data.slice(0, 3).forEach((product: any, i: number) => {
+          console.log("[Products] Loaded products:", productsArray.length);
+          productsArray.slice(0, 3).forEach((product: any, i: number) => {
             debugImageInfo(product.images, `Product ${i + 1}: ${product.name}`);
           });
         }
