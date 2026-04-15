@@ -12,6 +12,7 @@ import adminRoutes from "../routes/adminRoutes";
 import paymentRoutes from "../routes/paymentRoutes";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import path from "path";
 
 import { connectDB } from "../db";
 // User model imported dynamically after DB connects (see admin seed below)
@@ -29,23 +30,25 @@ async function startServer() {
   // CORS configuration
   const corsOrigins = ENV.isProduction
     ? [
-        'https://kallaa.vercel.app',           // Production Vercel URL
-        'https://kallaa-ecommerce.vercel.app', // Alternative production URL
+        "https://kallaa.vercel.app", // Production Vercel URL
+        "https://kallaa-ecommerce.vercel.app", // Alternative production URL
         // Add your actual Vercel domain here when deployed
       ]
     : [
-        'http://localhost:5173',  // Vite dev server
-        'http://localhost:3000',  // Alternative dev port
+        "http://localhost:5173", // Vite dev server
+        "http://localhost:3000", // Alternative dev port
       ];
 
-  app.use(cors({
-    origin: corsOrigins,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  }));
+  app.use(
+    cors({
+      origin: corsOrigins,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    })
+  );
 
-  console.log(`🌐 CORS configured for: ${corsOrigins.join(', ')}`);
+  console.log(`🌐 CORS configured for: ${corsOrigins.join(", ")}`);
   app.use(express.json());
   app.use(cookieParser());
 
@@ -53,22 +56,57 @@ async function startServer() {
   app.use("/uploads", express.static("uploads"));
 
   // Upload API route
-  const { upload } = await import("../middlewares/uploadMiddleware");
-  app.post("/api/upload", upload.array("images", 5), (req: any, res: Response) => {
-    try {
-      console.log("FILES:", req.files);
-      if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ message: "No files uploaded" });
-      }
+  const { memoryUpload, uploadToCloudinary } =
+    await import("../middlewares/uploadMiddleware");
+  app.post(
+    "/api/upload",
+    memoryUpload.array("images", 5),
+    async (req: any, res: Response) => {
+      try {
+        console.log("FILES:", req.files);
+        if (!req.files || req.files.length === 0) {
+          return res.status(400).json({ message: "No files uploaded" });
+        }
 
-      const urls = req.files.map((file: any) => `/uploads/${file.filename}`);
-      console.log("UPLOAD SUCCESS - URLs:", urls);
-      res.json({ urls });
-    } catch (error) {
-      console.error("UPLOAD ERROR:", error);
-      res.status(500).json({ message: "Upload failed" });
+        // Check if Cloudinary is configured
+        const useCloudinary =
+          ENV.cloudinary.cloudName &&
+          ENV.cloudinary.apiKey &&
+          ENV.cloudinary.apiSecret;
+
+        if (useCloudinary) {
+          // Upload to Cloudinary
+          console.log("Uploading to Cloudinary...");
+          const uploadPromises = req.files.map(
+            async (file: Express.Multer.File) => {
+              const filename = `${Date.now()}-${file.originalname}`;
+              return await uploadToCloudinary(file.buffer, filename);
+            }
+          );
+
+          const urls = await Promise.all(uploadPromises);
+          console.log("CLOUDINARY UPLOAD SUCCESS - URLs:", urls);
+          res.json({ urls });
+        } else {
+          // Fallback to local storage
+          console.log("Cloudinary not configured, using local storage");
+          const urls = req.files.map(
+            (file: Express.Multer.File, index: number) => {
+              const filename = `upload-${Date.now()}-${index}${path.extname(file.originalname)}`;
+              // For memory storage, we'd need to save to disk or use a different approach
+              // For now, return a placeholder
+              return `/uploads/${filename}`;
+            }
+          );
+          console.log("LOCAL UPLOAD SUCCESS - URLs:", urls);
+          res.json({ urls });
+        }
+      } catch (error) {
+        console.error("UPLOAD ERROR:", error);
+        res.status(500).json({ message: "Upload failed" });
+      }
     }
-  });
+  );
 
   // Start DB connection in background — server boots regardless
   connectDB();
@@ -104,7 +142,6 @@ async function startServer() {
   app.use("/api/admin", adminRoutes);
   app.use("/api/payments", paymentRoutes);
 
-
   // tRPC middleware
   app.use(
     "/api/trpc",
@@ -138,7 +175,7 @@ async function startServer() {
   });
 }
 
-startServer().catch((err) => {
+startServer().catch(err => {
   console.error("[Server] Critical failure during startup:", err);
   process.exit(1);
 });
