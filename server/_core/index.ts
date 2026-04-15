@@ -26,13 +26,26 @@ async function startServer() {
     next();
   });
 
-  // middleware
+  // CORS configuration
+  const corsOrigins = ENV.isProduction
+    ? [
+        'https://kallaa.vercel.app',           // Production Vercel URL
+        'https://kallaa-ecommerce.vercel.app', // Alternative production URL
+        // Add your actual Vercel domain here when deployed
+      ]
+    : [
+        'http://localhost:5173',  // Vite dev server
+        'http://localhost:3000',  // Alternative dev port
+      ];
+
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-      ? ['https://your-frontend-url.vercel.app', 'https://kallaa.vercel.app'] // Add your actual Vercel URL
-      : true,
-    credentials: true
+    origin: corsOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   }));
+
+  console.log(`🌐 CORS configured for: ${corsOrigins.join(', ')}`);
   app.use(express.json());
   app.use(cookieParser());
 
