@@ -13,8 +13,10 @@ export const IMAGE_CONFIG = {
   // Fallback image for when no image is available
   fallback: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=400",
 
-  // Backend base URL from environment
-  backendUrl: import.meta.env.VITE_API_URL || "http://localhost:5000",
+  // Backend base URL from environment (production-safe)
+  backendUrl: import.meta.env.VITE_API_URL || import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "", // No fallback in production to prevent broken links
 
   // Supported image extensions for validation
   supportedExtensions: [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"] as const,
@@ -82,6 +84,14 @@ export function getImageUrl(imagePath: string | undefined): string {
       console.log("[ImageUtils] Absolute URL detected:", imagePath);
     }
     return imagePath;
+  }
+
+  // Check if backend URL is configured
+  if (!IMAGE_CONFIG.backendUrl) {
+    if (import.meta.env.DEV) {
+      console.warn("[ImageUtils] No backend URL configured, using fallback for:", imagePath);
+    }
+    return IMAGE_CONFIG.fallback;
   }
 
   // For local uploads, construct full URL
