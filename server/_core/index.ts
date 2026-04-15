@@ -1,0 +1,131 @@
+import express from "express";
+import { createServer } from "http";
+import * as trpcExpress from "@trpc/server/adapters/express";
+import { appRouter } from "./routers/index";
+import { createContext } from "./context";
+import { setupVite, serveStatic } from "./vite";
+import { ENV } from "./env";
+import productRoutes from "../routes/productRoutes";
+import orderRoutes from "../routes/orderRoutes";
+import authRoutes from "../routes/authRoutes";
+import adminRoutes from "../routes/adminRoutes";
+import paymentRoutes from "../routes/paymentRoutes";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+
+import { connectDB } from "../db";
+// User model imported dynamically after DB connects (see admin seed below)
+
+async function startServer() {
+  const app = express();
+  const server = createServer(app);
+
+  // Task 6: Request Logging
+  app.use((req, res, next) => {
+    console.log(`[DEBUG] ${req.method} ${req.url}`);
+    next();
+  });
+
+  // middleware
+  app.use(cors({
+    origin: process.env.NODE_ENV === 'production'
+      ? ['https://your-frontend-url.vercel.app', 'https://kallaa.vercel.app'] // Add your actual Vercel URL
+      : true,
+    credentials: true
+  }));
+  app.use(express.json());
+  app.use(cookieParser());
+
+  // Static file serving for uploads
+  app.use("/uploads", express.static("uploads"));
+
+  // Upload API route
+  const { upload } = await import("../middlewares/uploadMiddleware");
+  app.post("/api/upload", upload.array("images", 5), (req: any, res: Response) => {
+    try {
+      console.log("FILES:", req.files);
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+
+      const urls = req.files.map((file: any) => `/uploads/${file.filename}`);
+      console.log("UPLOAD SUCCESS - URLs:", urls);
+      res.json({ urls });
+    } catch (error) {
+      console.error("UPLOAD ERROR:", error);
+      res.status(500).json({ message: "Upload failed" });
+    }
+  });
+
+  // Start DB connection in background — server boots regardless
+  connectDB();
+
+  // Seed admin user only after DB is actually connected
+  import("mongoose").then(({ default: mongoose }) => {
+    mongoose.connection.once("connected", async () => {
+      try {
+        const { User } = await import("../models/User");
+        const adminExists = await User.findOne({ email: "admin@kallaa.com" });
+        if (!adminExists) {
+          const admin = new User({
+            name: "Admin User",
+            email: "admin@kallaa.com",
+            password: "123456",
+            role: "admin",
+          });
+          await admin.save();
+          console.log("✅ Admin user created: admin@kallaa.com / 123456");
+        } else {
+          console.log("ℹ️ Admin user already exists");
+        }
+      } catch (error) {
+        console.error("❌ Failed to create/verify admin user:", error);
+      }
+    });
+  });
+
+  // REST API Routes
+  app.use("/api/auth", authRoutes);
+  app.use("/api/products", productRoutes);
+  app.use("/api/orders", orderRoutes);
+  app.use("/api/admin", adminRoutes);
+  app.use("/api/payments", paymentRoutes);
+
+
+  // tRPC middleware
+  app.use(
+    "/api/trpc",
+    trpcExpress.createExpressMiddleware({
+      router: appRouter,
+      createContext,
+    })
+  );
+
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Server] Starting in development mode with Vite...");
+    await setupVite(app, server);
+  } else {
+    console.log("[Server] Starting in production mode...");
+    serveStatic(app);
+  }
+
+  const PORT = ENV.port || 3000;
+
+  server.once("error", (err: any) => {
+    if (err.code === "EADDRINUSE") {
+      console.log(`⚠️ Port ${PORT} busy, switching to 3001...`);
+      server.listen(3001, () => {
+        console.log(`✅ Server running on http://localhost:3001`);
+      });
+    }
+  });
+
+  server.listen(PORT, () => {
+    console.log(`✅ Server running on http://localhost:${PORT}`);
+  });
+}
+
+startServer().catch((err) => {
+  console.error("[Server] Critical failure during startup:", err);
+  process.exit(1);
+});

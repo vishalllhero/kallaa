@@ -1,0 +1,14 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `products` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`title` varchar(255) NOT NULL,\n\t`description` text,\n\t`price` decimal(10,2) NOT NULL,\n\t`artist` varchar(255) NOT NULL,\n\t`category` varchar(100) NOT NULL,\n\t`images` json DEFAULT ('[]'),\n\t`featured` int DEFAULT 0,\n\t`stock` int DEFAULT 0,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `products_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3imb9aeVMMVWosf.5885cde16ef7 --database bRt2xvDkKUg9PZxA3VyyTa --execute CREATE TABLE IF NOT EXISTS `products` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`title` varchar(255) NOT NULL,\n\t`description` text,\n\t`price` decimal(10,2) NOT NULL,\n\t`artist` varchar(255) NOT NULL,\n\t`category` varchar(100) NOT NULL,\n\t`images` json DEFAULT ('[]'),\n\t`featured` int DEFAULT 0,\n\t`stock` int DEFAULT 0,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `products_id` PRIMARY KEY(`id`)\n);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 8 column 29 near \"'[]'),",
+    "\t`featured` int DEFAULT 0,",
+    "\t`stock` int DEFAULT 0,",
+    "\t`createdAt` timestamp NOT NULL DEFAULT (now()),",
+    "\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,",
+    "\tCONSTRAINT `products_id` PRIMARY KEY(`id`)",
+    ")\""
+  ]
+}
