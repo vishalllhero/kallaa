@@ -3,6 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
+import { safeMap } from "@/utils/safeMap";
 
 export default function Account() {
   const { user, logout } = useAuth();
@@ -14,15 +15,21 @@ export default function Account() {
   useEffect(() => {
     fetch("/api/orders")
       .then(res => res.json())
-      .then(data => setOrders(data || []))
-      .catch(err => console.error("Failed to fetch orders:", err));
+      .then(data => {
+        const orders = data?.data || data;
+        setOrders(Array.isArray(orders) ? orders : []);
+      })
+      .catch(() => setOrders([]));
   }, []);
 
   useEffect(() => {
     fetch("/api/wishlist")
       .then(res => res.json())
-      .then(data => setWishlist(data || []))
-      .catch(err => console.error("Failed to fetch wishlist:", err));
+      .then(data => {
+        const wishlist = data?.data || data;
+        setWishlist(Array.isArray(wishlist) ? wishlist : []);
+      })
+      .catch(() => setWishlist([]));
   }, []);
 
   // 🔐 NOT LOGGED IN
@@ -118,11 +125,10 @@ export default function Account() {
           {activeTab === "orders" && (
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Orders</h2>
-              {console.log("Orders:", orders)}
               {!orders || !Array.isArray(orders) || orders.length === 0 ? (
                 <p>No orders available</p>
               ) : (
-                (Array.isArray(orders) ? orders : []).map(order => (
+                safeMap(orders, order => (
                   <div
                     key={order.id || order._id}
                     className="border-b border-white/10 py-2"
@@ -138,13 +144,12 @@ export default function Account() {
           {activeTab === "wishlist" && (
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Wishlist</h2>
-              {console.log("Wishlist:", wishlist)}
               {!wishlist ||
               !Array.isArray(wishlist) ||
               wishlist.length === 0 ? (
                 <p>No wishlist items</p>
               ) : (
-                (Array.isArray(wishlist) ? wishlist : []).map(item => (
+                safeMap(wishlist, item => (
                   <div
                     key={item.id || item._id}
                     className="border-b border-white/10 py-2"

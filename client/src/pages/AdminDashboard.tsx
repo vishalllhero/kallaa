@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import { getProductImage, getImageUrl } from "@/utils/image";
+import { safeMap } from "@/utils/safeMap";
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<any[]>([]);
@@ -47,8 +48,8 @@ export default function AdminDashboard() {
         adminApi.getProducts(),
         adminApi.getOrders(),
       ]);
-      setProducts(Array.isArray(pData) ? pData : []);
-      setOrders(Array.isArray(oData) ? oData : []);
+      setProducts(Array.isArray(pData) ? pData : pData?.data || []);
+      setOrders(Array.isArray(oData) ? oData : oData?.data || []);
     } catch (err) {
       toast.error("Access denied or server error");
       setProducts([]);
@@ -341,10 +342,7 @@ export default function AdminDashboard() {
                       {/* Uploaded Images */}
                       {formData.images.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {(Array.isArray(formData.images)
-                            ? formData.images
-                            : []
-                          ).map((url, index) => (
+                          {safeMap(formData.images, (url, index) => (
                             <div
                               key={index}
                               className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
@@ -361,10 +359,7 @@ export default function AdminDashboard() {
                       {/* Selected Files Preview */}
                       {selectedFiles.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {(Array.isArray(selectedFiles)
-                            ? selectedFiles
-                            : []
-                          ).map((file, index) => (
+                          {safeMap(selectedFiles, (file, index) => (
                             <div
                               key={index}
                               className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
@@ -468,7 +463,7 @@ export default function AdminDashboard() {
             {/* List Section */}
             <div className="lg:col-span-2">
               <div className="space-y-4">
-                {(Array.isArray(products) ? products : []).map(product => (
+                {safeMap(products, product => (
                   <div
                     key={product.id}
                     className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
@@ -511,7 +506,7 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <div className="space-y-6">
-            {(Array.isArray(orders) ? orders : []).map(order => (
+            {safeMap(orders, order => (
               <div
                 key={order.id}
                 className="bg-zinc-900/30 p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-8"
@@ -590,7 +585,7 @@ export default function AdminDashboard() {
               <div className="font-bold">Form Data Images:</div>
               <div className="ml-2">
                 {formData.images.length > 0 ? (
-                  formData.images.map((img, i) => (
+                  safeMap(formData.images, (img, i) => (
                     <div key={i} className="truncate">
                       [{i}]: {img}
                     </div>

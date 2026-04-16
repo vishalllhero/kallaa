@@ -8,7 +8,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(config => {
   const token = localStorage.getItem("token");
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -17,8 +17,8 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     // Let the calling function (like AuthContext) handle 401 unauthorized errors
     // so we don't trigger hard page reloads and duplicate state logic.
     return Promise.reject(error);
@@ -78,13 +78,13 @@ export const authApi = {
     } catch {
       return false;
     }
-  }
+  },
 };
 
 export const productApi = {
   getAll: async () => {
     const { data } = await api.get("/products");
-    return data;
+    return data?.data || data;
   },
   getById: async (id: string) => {
     const { data } = await api.get(`/products/${id}`);
@@ -92,14 +92,14 @@ export const productApi = {
   },
   getStories: async () => {
     const { data } = await api.get("/products/stories");
-    return data;
+    return data?.data || data;
   },
 };
 
 export const adminApi = {
   getProducts: async () => {
     const { data } = await api.get("/products");
-    return data;
+    return data?.data || data;
   },
   createProduct: async (product: any) => {
     const { data } = await api.post("/products", product);
@@ -114,7 +114,7 @@ export const adminApi = {
   },
   getOrders: async () => {
     const { data } = await api.get("/orders");
-    return data;
+    return data?.data || data;
   },
   updateOrderStatus: async (id: string, status: string) => {
     const { data } = await api.put(`/orders/${id}/status`, { status });

@@ -1,7 +1,8 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import ImageWithFallback from './ImageWithFallback';
-import { getProductImages } from '@/utils/image';
+import React from "react";
+import { motion } from "framer-motion";
+import ImageWithFallback from "./ImageWithFallback";
+import { getProductImages } from "@/utils/image";
+import { safeMap } from "@/utils/safeMap";
 
 interface ThumbnailListProps {
   images: string | string[] | undefined;
@@ -9,21 +10,25 @@ interface ThumbnailListProps {
   onSelectImage: (index: number) => void;
 }
 
-export default function ThumbnailList({ images, selectedIndex, onSelectImage }: ThumbnailListProps) {
+export default function ThumbnailList({
+  images,
+  selectedIndex,
+  onSelectImage,
+}: ThumbnailListProps) {
   const allImages = getProductImages(images);
 
   if (allImages.length <= 1) return null;
 
   return (
     <div className="flex xl:flex-col gap-4">
-      {allImages.map((image, index) => (
+      {safeMap(allImages, (image, index) => (
         <motion.button
           key={`thumb-${index}`}
           onClick={() => onSelectImage(index)}
           className={`relative w-20 h-28 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
             selectedIndex === index
-              ? 'border-yellow-400 shadow-lg shadow-yellow-400/20 ring-2 ring-yellow-400/30'
-              : 'border-white/10 hover:border-white/30 hover:shadow-md'
+              ? "border-yellow-400 shadow-lg shadow-yellow-400/20 ring-2 ring-yellow-400/30"
+              : "border-white/10 hover:border-white/30 hover:shadow-md"
           }`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

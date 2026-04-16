@@ -5,6 +5,7 @@ import { productApi } from "@/api";
 import { motion, useScroll, useTransform } from "framer-motion";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import { getProductImage, debugImageInfo } from "@/utils/image";
+import { safeMap } from "@/utils/safeMap";
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = React.useState<any[]>([]);
@@ -14,7 +15,6 @@ export default function Home() {
     const fetchFeatured = async () => {
       try {
         const data = await productApi.getAll();
-        console.log("Home API Response:", data); // Debug log
         const productsArray = Array.isArray(data)
           ? data
           : data?.products || data?.data || [];
@@ -164,7 +164,7 @@ export default function Home() {
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {[1, 2, 3, 4].map(i => (
+              {safeMap([1, 2, 3, 4], i => (
                 <div
                   key={i}
                   className="aspect-[3/4] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden"
@@ -175,9 +175,7 @@ export default function Home() {
             </div>
           ) : Array.isArray(featuredProducts) && featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {console.log("Mapping featuredProducts:", featuredProducts)}{" "}
-              {/* Debug log */}
-              {featuredProducts.map((p, idx) => (
+              {safeMap(featuredProducts, (p, idx) => (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}

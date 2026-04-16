@@ -1,12 +1,16 @@
-import { useState } from 'react';
-import { getImageUrl, isValidImagePath } from '@/utils/image';
+import { useState } from "react";
+import { getImageUrl, isValidImagePath } from "@/utils/image";
+import { safeMap } from "@/utils/safeMap";
 
 interface DebugImageProps {
   images: string[] | undefined;
   title?: string;
 }
 
-export default function DebugImage({ images, title = "Debug Images" }: DebugImageProps) {
+export default function DebugImage({
+  images,
+  title = "Debug Images",
+}: DebugImageProps) {
   const [showDebug, setShowDebug] = useState(false);
 
   if (!import.meta.env.DEV) return null;
@@ -17,7 +21,7 @@ export default function DebugImage({ images, title = "Debug Images" }: DebugImag
         onClick={() => setShowDebug(!showDebug)}
         className="text-yellow-400 text-sm mb-2 hover:text-yellow-300"
       >
-        {showDebug ? 'Hide' : 'Show'} {title}
+        {showDebug ? "Hide" : "Show"} {title}
       </button>
 
       {showDebug && (
@@ -32,11 +36,11 @@ export default function DebugImage({ images, title = "Debug Images" }: DebugImag
           <div>
             <strong>Processed URLs:</strong>
             <div className="space-y-1">
-              {images?.map((img, i) => (
+              {safeMap(images, (img, i) => (
                 <div key={i} className="bg-zinc-800 p-2 rounded">
                   <div>Original: {img}</div>
                   <div>Processed: {getImageUrl(img)}</div>
-                  <div>Valid: {isValidImagePath(img) ? '✅' : '❌'}</div>
+                  <div>Valid: {isValidImagePath(img) ? "✅" : "❌"}</div>
                 </div>
               )) || <div>No images</div>}
             </div>
@@ -44,7 +48,7 @@ export default function DebugImage({ images, title = "Debug Images" }: DebugImag
 
           <div>
             <strong>Environment:</strong>
-            <div>DEV: {import.meta.env.DEV ? 'true' : 'false'}</div>
+            <div>DEV: {import.meta.env.DEV ? "true" : "false"}</div>
             <div>Backend URL: http://localhost:5000</div>
           </div>
         </div>
