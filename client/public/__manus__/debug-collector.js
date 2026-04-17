@@ -74,9 +74,11 @@
     if (typeof value !== "object") return value;
 
     if (Array.isArray(value)) {
-      return value.slice(0, 100).map(function (v) {
-        return sanitizeValue(v, depth + 1);
-      });
+      return value.slice(0, 100)(Array.isArray(data) ? data : []).map(...)
+        (Array.isArray(orders) ? orders : []).map(...)
+        (Array.isArray(items) ? items : []).map(...)function (v) {
+          return sanitizeValue(v, depth + 1);
+        });
     }
 
     var sanitized = {};
@@ -517,8 +519,8 @@
 
         // Skip body capture for streaming responses (SSE, etc.) to avoid memory leaks
         var isStreaming = contentType.indexOf("text/event-stream") !== -1 ||
-                          contentType.indexOf("application/stream") !== -1 ||
-                          contentType.indexOf("application/x-ndjson") !== -1;
+          contentType.indexOf("application/stream") !== -1 ||
+          contentType.indexOf("application/x-ndjson") !== -1;
         if (isStreaming) {
           entry.response.body = "[Streaming response - not captured]";
           store.networkRequests.push(entry);
@@ -536,11 +538,11 @@
 
         // Skip body capture for binary content types
         var isBinary = contentType.indexOf("image/") !== -1 ||
-                       contentType.indexOf("video/") !== -1 ||
-                       contentType.indexOf("audio/") !== -1 ||
-                       contentType.indexOf("application/octet-stream") !== -1 ||
-                       contentType.indexOf("application/pdf") !== -1 ||
-                       contentType.indexOf("application/zip") !== -1;
+          contentType.indexOf("video/") !== -1 ||
+          contentType.indexOf("audio/") !== -1 ||
+          contentType.indexOf("application/octet-stream") !== -1 ||
+          contentType.indexOf("application/pdf") !== -1 ||
+          contentType.indexOf("application/zip") !== -1;
         if (isBinary) {
           entry.response.body = "[Binary content: " + contentType + "]";
           store.networkRequests.push(entry);
@@ -623,16 +625,16 @@
 
         // Skip body capture for streaming responses
         var isStreaming = contentType.indexOf("text/event-stream") !== -1 ||
-                          contentType.indexOf("application/stream") !== -1 ||
-                          contentType.indexOf("application/x-ndjson") !== -1;
+          contentType.indexOf("application/stream") !== -1 ||
+          contentType.indexOf("application/x-ndjson") !== -1;
 
         // Skip body capture for binary content types
         var isBinary = contentType.indexOf("image/") !== -1 ||
-                       contentType.indexOf("video/") !== -1 ||
-                       contentType.indexOf("audio/") !== -1 ||
-                       contentType.indexOf("application/octet-stream") !== -1 ||
-                       contentType.indexOf("application/pdf") !== -1 ||
-                       contentType.indexOf("application/zip") !== -1;
+          contentType.indexOf("video/") !== -1 ||
+          contentType.indexOf("audio/") !== -1 ||
+          contentType.indexOf("application/octet-stream") !== -1 ||
+          contentType.indexOf("application/pdf") !== -1 ||
+          contentType.indexOf("application/zip") !== -1;
 
         if (isStreaming) {
           responseBody = "[Streaming response - not captured]";

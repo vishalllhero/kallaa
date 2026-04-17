@@ -162,58 +162,62 @@ export default function Home() {
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {safeMap([1, 2, 3, 4]).map(i => (
-                <div
-                  key={i}
-                  className="aspect-[3/4] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
-                </div>
+              {safeMap([1, 2, 3, 4])(Array.isArray(data) ? data : []).map(...)
+                (Array.isArray(orders) ? orders : []).map(...)
+                (Array.isArray(items) ? items : []).map(...)i => (
+              <div
+                key={i}
+                className="aspect-[3/4] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+              </div>
               ))}
             </div>
           ) : !Array.isArray(featuredProducts) ? (
             <div>No Data Found</div>
           ) : featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {safeMap(featuredProducts).map((p, idx) => (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                  key={p.id}
-                >
-                  <Link href={`/product/${p.id}`} className="group block">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-2xl mb-6 bg-zinc-900 border border-white/5">
-                      <ImageWithFallback
-                        src={
-                          p.images?.[0] ||
-                          "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600"
-                        }
-                        alt={p.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      {p.isSold === 1 && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                          <span className="px-4 py-2 border border-white/40 rounded-full text-[10px] uppercase tracking-widest">
-                            Collected
-                          </span>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-6 flex flex-col justify-end">
-                        <span className="text-white font-serif text-xl">
-                          ${parseFloat(p.price).toLocaleString()}
+              {safeMap(featuredProducts)(Array.isArray(data) ? data : []).map(...)
+                (Array.isArray(orders) ? orders : []).map(...)
+                (Array.isArray(items) ? items : []).map(...)(p, idx) => (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                key={p.id}
+              >
+                <Link href={`/product/${p.id}`} className="group block">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl mb-6 bg-zinc-900 border border-white/5">
+                    <ImageWithFallback
+                      src={
+                        p.images?.[0] ||
+                        "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600"
+                      }
+                      alt={p.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    {p.isSold === 1 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                        <span className="px-4 py-2 border border-white/40 rounded-full text-[10px] uppercase tracking-widest">
+                          Collected
                         </span>
                       </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-6 flex flex-col justify-end">
+                      <span className="text-white font-serif text-xl">
+                        ${parseFloat(p.price).toLocaleString()}
+                      </span>
                     </div>
-                    <h3 className="text-zinc-400 text-lg font-medium group-hover:text-white transition-colors">
-                      {p.name}
-                    </h3>
-                    <p className="text-zinc-600 font-serif text-sm mt-1">
-                      {p.isSold ? "Private Collection" : "Ready to Collect"}
-                    </p>
-                  </Link>
-                </motion.div>
+                  </div>
+                  <h3 className="text-zinc-400 text-lg font-medium group-hover:text-white transition-colors">
+                    {p.name}
+                  </h3>
+                  <p className="text-zinc-600 font-serif text-sm mt-1">
+                    {p.isSold ? "Private Collection" : "Ready to Collect"}
+                  </p>
+                </Link>
+              </motion.div>
               ))}
             </div>
           ) : (

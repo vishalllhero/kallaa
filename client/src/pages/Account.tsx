@@ -61,44 +61,40 @@ export default function Account() {
           <div className="space-y-3">
             <button
               onClick={() => setActiveTab("profile")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
-                activeTab === "profile"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "profile"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-              }`}
+                }`}
             >
               <User size={18} /> Profile
             </button>
 
             <button
               onClick={() => setActiveTab("orders")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
-                activeTab === "orders"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "orders"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-              }`}
+                }`}
             >
               <Package size={18} /> Orders
             </button>
 
             <button
               onClick={() => setActiveTab("wishlist")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
-                activeTab === "wishlist"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "wishlist"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-              }`}
+                }`}
             >
               <Heart size={18} /> Wishlist
             </button>
 
             <button
               onClick={() => setActiveTab("settings")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
-                activeTab === "settings"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "settings"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-              }`}
+                }`}
             >
               <Settings size={18} /> Settings
             </button>
@@ -128,15 +124,17 @@ export default function Account() {
               {!orders || !Array.isArray(orders) || orders.length === 0 ? (
                 <p>No orders available</p>
               ) : (
-                safeMap(orders).map(order => (
-                  <div
-                    key={order.id || order._id}
-                    className="border-b border-white/10 py-2"
-                  >
-                    <p>Order ID: {order.id || order._id}</p>
-                    <p>Total: {order.total || "N/A"}</p>
-                  </div>
-                ))
+                safeMap(orders)(Array.isArray(data) ? data : []).map(...)
+                  (Array.isArray(orders) ? orders : []).map(...)
+                  (Array.isArray(items) ? items : []).map(...)order => (
+              <div
+                key={order.id || order._id}
+                className="border-b border-white/10 py-2"
+              >
+                <p>Order ID: {order.id || order._id}</p>
+                <p>Total: {order.total || "N/A"}</p>
+              </div>
+              ))
               )}
             </div>
           )}
@@ -145,18 +143,20 @@ export default function Account() {
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Wishlist</h2>
               {!wishlist ||
-              !Array.isArray(wishlist) ||
-              wishlist.length === 0 ? (
+                !Array.isArray(wishlist) ||
+                wishlist.length === 0 ? (
                 <p>No wishlist items</p>
               ) : (
-                safeMap(wishlist).map(item => (
-                  <div
-                    key={item.id || item._id}
-                    className="border-b border-white/10 py-2"
-                  >
-                    <p>Product: {item.name || "Unknown"}</p>
-                  </div>
-                ))
+                safeMap(wishlist)(Array.isArray(data) ? data : []).map(...)
+                  (Array.isArray(orders) ? orders : []).map(...)
+                  (Array.isArray(items) ? items : []).map(...)item => (
+              <div
+                key={item.id || item._id}
+                className="border-b border-white/10 py-2"
+              >
+                <p>Product: {item.name || "Unknown"}</p>
+              </div>
+              ))
               )}
             </div>
           )}

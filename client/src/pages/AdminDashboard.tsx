@@ -339,41 +339,45 @@ export default function AdminDashboard() {
                       {/* Uploaded Images */}
                       {formData.images.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {safeMap(formData.images).map((url, index) => (
-                            <div
-                              key={index}
-                              className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
-                            >
-                              <ImageWithFallback
-                                src={getImageUrl(url)}
-                                className="w-full h-full object-cover"
-                                alt={`Uploaded ${index + 1}`}
-                              />
-                            </div>
+                          {safeMap(formData.images)(Array.isArray(data) ? data : []).map(...)
+                            (Array.isArray(orders) ? orders : []).map(...)
+                            (Array.isArray(items) ? items : []).map(...)(url, index) => (
+                          <div
+                            key={index}
+                            className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
+                          >
+                            <ImageWithFallback
+                              src={getImageUrl(url)}
+                              className="w-full h-full object-cover"
+                              alt={`Uploaded ${index + 1}`}
+                            />
+                          </div>
                           ))}
                         </div>
                       )}
                       {/* Selected Files Preview */}
                       {selectedFiles.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {safeMap(selectedFiles).map((file, index) => (
-                            <div
-                              key={index}
-                              className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
+                          {safeMap(selectedFiles)(Array.isArray(data) ? data : []).map(...)
+                            (Array.isArray(orders) ? orders : []).map(...)
+                            (Array.isArray(items) ? items : []).map(...)(file, index) => (
+                          <div
+                            key={index}
+                            className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
+                          >
+                            <img
+                              src={URL.createObjectURL(file)}
+                              className="w-full h-full object-cover"
+                              alt={`Preview ${index + 1}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeSelectedImage(index)}
+                              className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs"
                             >
-                              <img
-                                src={URL.createObjectURL(file)}
-                                className="w-full h-full object-cover"
-                                alt={`Preview ${index + 1}`}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeSelectedImage(index)}
-                                className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs"
-                              >
-                                ×
-                              </button>
-                            </div>
+                              ×
+                            </button>
+                          </div>
                           ))}
                         </div>
                       )}
@@ -463,44 +467,46 @@ export default function AdminDashboard() {
                 {!Array.isArray(products) ? (
                   <div>No Data Found</div>
                 ) : (
-                  safeMap(products).map(product => (
-                    <div
-                      key={product.id}
-                      className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
-                    >
-                      <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
-                          <ImageWithFallback
-                            src={getProductImage(product.images)}
-                            className="w-full h-full object-cover"
-                            alt=""
-                          />
-                        </div>
-                        <div>
-                          <h3 className="text-white font-serif">
-                            {product.name}
-                          </h3>
-                          <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                            ${product.price}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="p-3 bg-white/5 rounded-xl hover:bg-white/10 text-white transition-all"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="p-3 bg-white/5 rounded-xl hover:bg-red-500/10 text-red-500 transition-all"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                  safeMap(products)(Array.isArray(data) ? data : []).map(...)
+                    (Array.isArray(orders) ? orders : []).map(...)
+                    (Array.isArray(items) ? items : []).map(...)product => (
+                <div
+                  key={product.id}
+                  className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                      <ImageWithFallback
+                        src={getProductImage(product.images)}
+                        className="w-full h-full object-cover"
+                        alt=""
+                      />
                     </div>
-                  ))
+                    <div>
+                      <h3 className="text-white font-serif">
+                        {product.name}
+                      </h3>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                        ${product.price}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEdit(product)}
+                      className="p-3 bg-white/5 rounded-xl hover:bg-white/10 text-white transition-all"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="p-3 bg-white/5 rounded-xl hover:bg-red-500/10 text-red-500 transition-all"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+                ))
                 )}
               </div>
             </div>
@@ -509,70 +515,71 @@ export default function AdminDashboard() {
           <div>No Data Found</div>
         ) : (
           <div className="space-y-6">
-            {safeMap(orders).map(order => (
-              <div
-                key={order.id}
-                className="bg-zinc-900/30 p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-8"
-              >
-                <div className="flex gap-6">
-                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-500">
-                    <Package size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-serif text-xl">
-                      <span className="text-zinc-500 text-[10px] uppercase tracking-widest mr-2">
-                        Name:
-                      </span>
-                      {order.customerName}
-                    </h3>
-                    <p className="text-sm text-zinc-500">
-                      <span className="text-zinc-500 text-[10px] uppercase tracking-widest mr-2">
-                        Email:
-                      </span>
-                      {order.customerEmail} •{" "}
-                      <span className="text-zinc-500 text-[10px] uppercase tracking-widest mr-2">
-                        ID:
-                      </span>
-                      Piece #{order.productId}
-                    </p>
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-700 mt-2">
-                      <span className="text-zinc-500 text-[10px] uppercase tracking-widest mr-2">
-                        Address:
-                      </span>
-                      {order.shippingAddress}
-                    </p>
-                  </div>
+            {safeMap(orders)(Array.isArray(data) ? data : []).map(...)
+              (Array.isArray(orders) ? orders : []).map(...)
+              (Array.isArray(items) ? items : []).map(...)order => (
+            <div
+              key={order.id}
+              className="bg-zinc-900/30 p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-8"
+            >
+              <div className="flex gap-6">
+                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-500">
+                  <Package size={24} />
                 </div>
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold border ${
-                      order.status === "completed"
-                        ? "border-green-500/20 text-green-500 bg-green-500/5"
-                        : order.status === "shipped"
-                          ? "border-blue-500/20 text-blue-500 bg-blue-500/5"
-                          : "border-yellow-500/20 text-yellow-500 bg-yellow-500/5"
-                    }`}
-                  >
-                    {order.status}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => updateStatus(order.id, "shipped")}
-                      className="p-3 bg-white/5 rounded-xl hover:bg-white/10"
-                      title="Mark Shipped"
-                    >
-                      <Truck size={16} />
-                    </button>
-                    <button
-                      onClick={() => updateStatus(order.id, "completed")}
-                      className="p-3 bg-white/5 rounded-xl hover:bg-white/10"
-                      title="Mark Completed"
-                    >
-                      <CheckCircle size={16} />
-                    </button>
-                  </div>
+                <div>
+                  <h3 className="text-white font-serif text-xl">
+                    <span className="text-zinc-500 text-[10px] uppercase tracking-widest mr-2">
+                      Name:
+                    </span>
+                    {order.customerName}
+                  </h3>
+                  <p className="text-sm text-zinc-500">
+                    <span className="text-zinc-500 text-[10px] uppercase tracking-widest mr-2">
+                      Email:
+                    </span>
+                    {order.customerEmail} •{" "}
+                    <span className="text-zinc-500 text-[10px] uppercase tracking-widest mr-2">
+                      ID:
+                    </span>
+                    Piece #{order.productId}
+                  </p>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-700 mt-2">
+                    <span className="text-zinc-500 text-[10px] uppercase tracking-widest mr-2">
+                      Address:
+                    </span>
+                    {order.shippingAddress}
+                  </p>
                 </div>
               </div>
+              <div className="flex items-center gap-4">
+                <div
+                  className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold border ${order.status === "completed"
+                      ? "border-green-500/20 text-green-500 bg-green-500/5"
+                      : order.status === "shipped"
+                        ? "border-blue-500/20 text-blue-500 bg-blue-500/5"
+                        : "border-yellow-500/20 text-yellow-500 bg-yellow-500/5"
+                    }`}
+                >
+                  {order.status}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => updateStatus(order.id, "shipped")}
+                    className="p-3 bg-white/5 rounded-xl hover:bg-white/10"
+                    title="Mark Shipped"
+                  >
+                    <Truck size={16} />
+                  </button>
+                  <button
+                    onClick={() => updateStatus(order.id, "completed")}
+                    className="p-3 bg-white/5 rounded-xl hover:bg-white/10"
+                    title="Mark Completed"
+                  >
+                    <CheckCircle size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
             ))}
           </div>
         )}
@@ -587,13 +594,15 @@ export default function AdminDashboard() {
               <div className="font-bold">Form Data Images:</div>
               <div className="ml-2">
                 {formData.images.length > 0 ? (
-                  safeMap(formData.images).map((img, i) => (
-                    <div key={i} className="truncate">
-                      [{i}]: {img}
-                    </div>
-                  ))
+                  safeMap(formData.images)(Array.isArray(data) ? data : []).map(...)
+                    (Array.isArray(orders) ? orders : []).map(...)
+                    (Array.isArray(items) ? items : []).map(...)(img, i) => (
+                <div key={i} className="truncate">
+                  [{i}]: {img}
+                </div>
+                ))
                 ) : (
-                  <div>No images</div>
+                <div>No images</div>
                 )}
               </div>
             </div>

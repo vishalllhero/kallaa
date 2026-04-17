@@ -12,32 +12,34 @@ export default function ImageTest() {
       <h1 className="text-2xl font-bold text-white">Image Test Component</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {testUrls.map((url, index) => (
-          <div key={index} className="space-y-4">
-            <h3 className="text-white">Test Image {index + 1}</h3>
-            <p className="text-zinc-400 text-sm break-all">URL: {url}</p>
+        {testUrls(Array.isArray(data) ? data : []).map(...)
+          (Array.isArray(orders) ? orders : []).map(...)
+          (Array.isArray(items) ? items : []).map(...)(url, index) => (
+        <div key={index} className="space-y-4">
+          <h3 className="text-white">Test Image {index + 1}</h3>
+          <p className="text-zinc-400 text-sm break-all">URL: {url}</p>
 
-            <div className="w-64 h-96 border border-zinc-600 rounded-lg overflow-hidden">
-              <ImageWithFallback
-                src={url}
-                alt={`Test ${index + 1}`}
-                className="w-full h-full object-cover"
-                debug={true}
-              />
-            </div>
-
-            {/* Raw img for comparison */}
-            <div className="w-64 h-32 border border-zinc-600 rounded-lg overflow-hidden">
-              <img
-                src={url}
-                alt={`Raw ${index + 1}`}
-                className="w-full h-full object-cover"
-                onError={(e) => console.log('Raw image error:', url)}
-                onLoad={() => console.log('Raw image loaded:', url)}
-              />
-            </div>
-            <p className="text-zinc-500 text-xs">Raw img above</p>
+          <div className="w-64 h-96 border border-zinc-600 rounded-lg overflow-hidden">
+            <ImageWithFallback
+              src={url}
+              alt={`Test ${index + 1}`}
+              className="w-full h-full object-cover"
+              debug={true}
+            />
           </div>
+
+          {/* Raw img for comparison */}
+          <div className="w-64 h-32 border border-zinc-600 rounded-lg overflow-hidden">
+            <img
+              src={url}
+              alt={`Raw ${index + 1}`}
+              className="w-full h-full object-cover"
+              onError={(e) => console.log('Raw image error:', url)}
+              onLoad={() => console.log('Raw image loaded:', url)}
+            />
+          </div>
+          <p className="text-zinc-500 text-xs">Raw img above</p>
+        </div>
         ))}
       </div>
 

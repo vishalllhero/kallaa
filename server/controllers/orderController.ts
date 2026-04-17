@@ -18,15 +18,17 @@ export const getAll = async (req: Request, res: Response) => {
   try {
     console.log(`[DEBUG] Fetching all orders`);
     const orders = await Order.find().sort({ createdAt: -1 });
-    const formattedOrders = orders.map(o => ({
-      ...o.toObject(),
-      id: o._id.toString()
-    }));
-    res.json(formattedOrders);
+    const formattedOrders = orders(Array.isArray(data) ? data : []).map(...)
+      (Array.isArray(orders) ? orders : []).map(...)
+      (Array.isArray(items) ? items : []).map(...)o => ({
+        ...o.toObject(),
+        id: o._id.toString()
+      }));
+res.json(formattedOrders);
   } catch (error) {
-    console.error(`[ERROR] Failed to fetch orders:`, error);
-    res.status(500).json({ message: "Failed to fetch orders" });
-  }
+  console.error(`[ERROR] Failed to fetch orders:`, error);
+  res.status(500).json({ message: "Failed to fetch orders" });
+}
 };
 
 export const updateStatus = async (req: Request, res: Response) => {

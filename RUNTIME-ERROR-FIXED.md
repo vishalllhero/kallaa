@@ -2,7 +2,9 @@
 
 ## 🔧 Root Cause Analysis
 
-The error occurred because React components were calling `.map()` on variables that weren't arrays:
+The error occurred because React components were calling `(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...))` on variables that weren't arrays:
 
 - API responses returning `null`, `undefined`, or objects instead of arrays
 - State initialization issues
@@ -35,14 +37,18 @@ setProducts(productsArray);
 **Before (Unsafe):**
 
 ```typescript
-{filteredProducts.map((product, idx) => (
+{filteredProducts(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)(product, idx) => (
 ```
 
 **After (Safe):**
 
 ```typescript
 {console.log("Mapping filteredProducts:", filteredProducts)} {/* Debug log */}
-{(Array.isArray(filteredProducts) ? filteredProducts : []).map((product, idx) => (
+{(Array.isArray(filteredProducts) ? filteredProducts : [])(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)(product, idx) => (
 ```
 
 ### 3. **AdminDashboard.tsx - Multiple Safety Checks**
@@ -50,25 +56,33 @@ setProducts(productsArray);
 **Form Images Mapping:**
 
 ```typescript
-{(Array.isArray(formData.images) ? formData.images : []).map((url, index) => (
+{(Array.isArray(formData.images) ? formData.images : [])(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)(url, index) => (
 ```
 
 **Selected Files Mapping:**
 
 ```typescript
-{(Array.isArray(selectedFiles) ? selectedFiles : []).map((file, index) => (
+{(Array.isArray(selectedFiles) ? selectedFiles : [])(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)(file, index) => (
 ```
 
 **Products List Mapping:**
 
 ```typescript
-{(Array.isArray(products) ? products : []).map(product => (
+{(Array.isArray(products) ? products : [])(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)product => (
 ```
 
 **Orders List Mapping:**
 
 ```typescript
-{(Array.isArray(orders) ? orders : []).map(order => (
+{(Array.isArray(orders) ? orders : [])(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)order => (
 ```
 
 ### 4. **Home.tsx - Featured Products Safety**
@@ -88,7 +102,9 @@ setFeaturedProducts(productsArray.slice(0, 4));
 
 ```typescript
 {console.log("Mapping featuredProducts:", featuredProducts)} {/* Debug log */}
-{(Array.isArray(featuredProducts) ? featuredProducts : []).map((p, idx) => (
+{(Array.isArray(featuredProducts) ? featuredProducts : [])(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)(p, idx) => (
 ```
 
 **Empty State Handling:**

@@ -81,16 +81,20 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     <style
       dangerouslySetInnerHTML={{
         __html: safeMap(Object.entries(THEMES))
-          .map(
-            ([theme, prefix]) => `
+          (Array.isArray(data) ? data : []).map(...)
+          (Array.isArray(orders) ? orders : []).map(...)
+          (Array.isArray(items) ? items : []).map(...)
+          ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${safeMap(colorConfig)
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
+              (Array.isArray(data) ? data : []).map(...)
+              (Array.isArray(orders) ? orders : []).map(...)
+              (Array.isArray(items) ? items : []).map(...)([key, itemConfig]) => {
+  const color =
+    itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+    itemConfig.color;
+  return color ? `  --color-${key}: ${color};` : null;
+})
   .join("\n")}
 }
 `
@@ -133,7 +137,7 @@ function ChartTooltipContent({
     }
 
     const [item] = payload;
-    const key = `${labelKey || item?.dataKey || item?.name || "value"}`;
+    const key = `${ labelKey || item?.dataKey || item?.name || "value" } `;
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
       !labelKey && typeof label === "string"
@@ -178,9 +182,11 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {safeMap(payload?.filter(item => item.type !== "none")).map(
+        {safeMap(payload?.filter(item => item.type !== "none"))(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)
           (item, index) => {
-            const key = `${nameKey || item.name || item.dataKey || "value"}`;
+            const key = `${ nameKey || item.name || item.dataKey || "value" } `;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor = color || item.payload.fill || item.color;
 
@@ -276,8 +282,10 @@ function ChartLegendContent({
         className
       )}
     >
-      {safeMap(payload?.filter(item => item.type !== "none")).map(item => {
-        const key = `${nameKey || item.dataKey || "value"}`;
+      {safeMap(payload?.filter(item => item.type !== "none"))(Array.isArray(data) ? data : []).map(...)
+(Array.isArray(orders) ? orders : []).map(...)
+(Array.isArray(items) ? items : []).map(...)item => {
+        const key = `${ nameKey || item.dataKey || "value" } `;
         const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
         return (

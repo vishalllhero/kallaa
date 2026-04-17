@@ -131,25 +131,27 @@ export function MapView({
       console.error("Map container not found");
       return;
     }
-    map.current = new window.google.maps.Map(mapContainer.current, {
-      zoom: initialZoom,
-      center: initialCenter,
-      mapTypeControl: true,
-      fullscreenControl: true,
-      zoomControl: true,
-      streetViewControl: true,
-      mapId: "DEMO_MAP_ID",
-    });
-    if (onMapReady) {
-      onMapReady(map.current);
-    }
-  });
+    map.current = new window.google.maps(Array.isArray(data) ? data : []).map(...)
+      (Array.isArray(orders) ? orders : []).map(...)
+      (Array.isArray(items) ? items : []).map(...)mapContainer.current, {
+        zoom: initialZoom,
+        center: initialCenter,
+        mapTypeControl: true,
+        fullscreenControl: true,
+        zoomControl: true,
+        streetViewControl: true,
+        mapId: "DEMO_MAP_ID",
+      });
+  if (onMapReady) {
+    onMapReady(map.current);
+  }
+});
 
-  useEffect(() => {
-    init();
-  }, [init]);
+useEffect(() => {
+  init();
+}, [init]);
 
-  return (
-    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
-  );
+return (
+  <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
+);
 }

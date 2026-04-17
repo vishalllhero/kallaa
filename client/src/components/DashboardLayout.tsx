@@ -180,23 +180,25 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
+              {menuItems(Array.isArray(data) ? data : []).map(...)
+                (Array.isArray(orders) ? orders : []).map(...)
+                (Array.isArray(items) ? items : []).map(...)item => {
                 const isActive = location === item.path;
-                return (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      onClick={() => setLocation(item.path)}
-                      tooltip={item.label}
-                      className={`h-10 transition-all font-normal`}
-                    >
-                      <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                      />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
+              return (
+              <SidebarMenuItem key={item.path}>
+                <SidebarMenuButton
+                  isActive={isActive}
+                  onClick={() => setLocation(item.path)}
+                  tooltip={item.label}
+                  className={`h-10 transition-all font-normal`}
+                >
+                  <item.icon
+                    className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                  />
+                  <span>{item.label}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              );
               })}
             </SidebarMenu>
           </SidebarContent>

@@ -5,15 +5,17 @@ export const getAllProducts = async (req: Request, res: Response) => {
   try {
     console.log(`[DEBUG] Fetching all products`);
     const products = await Product.find().sort({ createdAt: -1 });
-    const formattedProducts = products.map(p => ({
-      ...p.toObject(),
-      id: p._id.toString()
-    }));
-    res.json(formattedProducts);
+    const formattedProducts = products(Array.isArray(data) ? data : []).map(...)
+      (Array.isArray(orders) ? orders : []).map(...)
+      (Array.isArray(items) ? items : []).map(...)p => ({
+        ...p.toObject(),
+        id: p._id.toString()
+      }));
+res.json(formattedProducts);
   } catch (error) {
-    console.error(`[ERROR] Error fetching products:`, error);
-    res.status(500).json({ message: "Error fetching products", error });
-  }
+  console.error(`[ERROR] Error fetching products:`, error);
+  res.status(500).json({ message: "Error fetching products", error });
+}
 };
 
 export const getProductById = async (req: Request, res: Response) => {
