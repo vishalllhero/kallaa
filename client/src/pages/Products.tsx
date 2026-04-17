@@ -79,16 +79,14 @@ export default function Products() {
 
             {/* Filters */}
             <div className="flex gap-4 p-1 bg-zinc-900 border border-white/5 rounded-full">
-              {(["all", "available", "collected"] as const)(Array.isArray(data) ? data : []).map(...)
-                (Array.isArray(orders) ? orders : []).map(...)
-                (Array.isArray(items) ? items : []).map(...)f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-8 py-2 rounded-full text-[10px] uppercase tracking-[0.2em] font-bold transition-all ${filter === f ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]" : "text-zinc-500 hover:text-white"}`}
-              >
-                {f}
-              </button>
+              {safeMap(["all", "available", "collected"] as const, (f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-8 py-2 rounded-full text-[10px] uppercase tracking-[0.2em] font-bold transition-all ${filter === f ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]" : "text-zinc-500 hover:text-white"}`}
+                >
+                  {f}
+                </button>
               ))}
             </div>
           </motion.div>
@@ -97,16 +95,14 @@ export default function Products() {
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {[1, 2, 3, 4, 5, 6](Array.isArray(data) ? data : []).map(...)
-              (Array.isArray(orders) ? orders : []).map(...)
-              (Array.isArray(items) ? items : []).map(...)i => (
-            <div key={i} className="space-y-4">
-              <div className="aspect-[4/5] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+            {safeMap([1, 2, 3, 4, 5, 6], (i) => (
+              <div key={i} className="space-y-4">
+                <div className="aspect-[4/5] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+                </div>
+                <div className="h-6 w-2/3 bg-zinc-900 animate-pulse rounded" />
+                <div className="h-4 w-1/3 bg-zinc-900 animate-pulse rounded" />
               </div>
-              <div className="h-6 w-2/3 bg-zinc-900 animate-pulse rounded" />
-              <div className="h-4 w-1/3 bg-zinc-900 animate-pulse rounded" />
-            </div>
             ))}
           </div>
         ) : filteredProducts.length === 0 ? (

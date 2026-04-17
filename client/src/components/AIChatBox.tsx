@@ -210,17 +210,15 @@ export function AIChatBox({
 
               {suggestedPrompts && suggestedPrompts.length > 0 && (
                 <div className="flex max-w-2xl flex-wrap justify-center gap-2">
-                  {safeMap(suggestedPrompts)(Array.isArray(data) ? data : []).map(...)
-                    (Array.isArray(orders) ? orders : []).map(...)
-                    (Array.isArray(items) ? items : []).map(...)(prompt, index) => (
-                  <button
-                    key={index}
-                    onClick={() => onSendMessage(prompt)}
-                    disabled={isLoading}
-                    className="rounded-lg border border-border bg-card px-4 py-2 text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {prompt}
-                  </button>
+                  {safeMap(suggestedPrompts, (prompt, index) => (
+                    <button
+                      key={index}
+                      onClick={() => onSendMessage(prompt)}
+                      disabled={isLoading}
+                      className="rounded-lg border border-border bg-card px-4 py-2 text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {prompt}
+                    </button>
                   ))}
                 </div>
               )}
@@ -229,61 +227,59 @@ export function AIChatBox({
         ) : (
           <ScrollArea className="h-full">
             <div className="flex flex-col space-y-4 p-4">
-              {displayMessages(Array.isArray(data) ? data : []).map(...)
-                (Array.isArray(orders) ? orders : []).map(...)
-                (Array.isArray(items) ? items : []).map(...)(message, index) => {
+              {safeMap(displayMessages, (message, index) => {
                 // Apply min-height to last message only if NOT loading (when loading, the loading indicator gets it)
                 const isLastMessage = index === displayMessages.length - 1;
-              const shouldApplyMinHeight =
+                const shouldApplyMinHeight =
                   isLastMessage && !isLoading && minHeightForLastMessage > 0;
 
-              return (
-              <div
-                key={index}
-                className={cn(
-                  "flex gap-3",
-                  message.role === "user"
-                    ? "justify-end items-start"
-                    : "justify-start items-start"
-                )}
-                style={
-                  shouldApplyMinHeight
-                    ? { minHeight: `${minHeightForLastMessage}px` }
-                    : undefined
-                }
-              >
-                {message.role === "assistant" && (
-                  <div className="size-8 shrink-0 mt-1 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="size-4 text-primary" />
-                  </div>
-                )}
+                return (
+                  <div
+                    key={index}
+                    className={cn(
+                      "flex gap-3",
+                      message.role === "user"
+                        ? "justify-end items-start"
+                        : "justify-start items-start"
+                    )}
+                    style={
+                      shouldApplyMinHeight
+                        ? { minHeight: `${minHeightForLastMessage}px` }
+                        : undefined
+                    }
+                  >
+                    {message.role === "assistant" && (
+                      <div className="size-8 shrink-0 mt-1 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Sparkles className="size-4 text-primary" />
+                      </div>
+                    )}
 
-                <div
-                  className={cn(
-                    "max-w-[80%] rounded-lg px-4 py-2.5",
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
-                  )}
-                >
-                  {message.role === "assistant" ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <Streamdown>{message.content}</Streamdown>
+                    <div
+                      className={cn(
+                        "max-w-[80%] rounded-lg px-4 py-2.5",
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-foreground"
+                      )}
+                    >
+                      {message.role === "assistant" ? (
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <Streamdown>{message.content}</Streamdown>
+                        </div>
+                      ) : (
+                        <p className="whitespace-pre-wrap text-sm">
+                          {message.content}
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <p className="whitespace-pre-wrap text-sm">
-                      {message.content}
-                    </p>
-                  )}
-                </div>
 
-                {message.role === "user" && (
-                  <div className="size-8 shrink-0 mt-1 rounded-full bg-secondary flex items-center justify-center">
-                    <User className="size-4 text-secondary-foreground" />
+                    {message.role === "user" && (
+                      <div className="size-8 shrink-0 mt-1 rounded-full bg-secondary flex items-center justify-center">
+                        <User className="size-4 text-secondary-foreground" />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              );
+                );
               })}
 
               {isLoading && (

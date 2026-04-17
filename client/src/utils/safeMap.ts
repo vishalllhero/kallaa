@@ -1,7 +1,7 @@
-export const safeArray = (d: unknown) => {
-  if (!Array.isArray(d)) {
-    console.error("Invalid map data:", d);
-    return [];
-  }
-  return d;
+export const safeMap = <T, R>(
+  value: any,
+  callback: (item: T, index: number) => R
+): R[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map(callback);
 };
