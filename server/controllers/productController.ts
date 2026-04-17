@@ -5,17 +5,17 @@ export const getAllProducts = async (req: Request, res: Response) => {
   try {
     console.log(`[DEBUG] Fetching all products`);
     const products = await Product.find().sort({ createdAt: -1 });
-    const formattedProducts = products(Array.isArray(data) ? data : []).map(...)
-      (Array.isArray(orders) ? orders : []).map(...)
-      (Array.isArray(items) ? items : []).map(...)p => ({
-        ...p.toObject(),
-        id: p._id.toString()
-      }));
-res.json(formattedProducts);
+    const formattedProducts = Array.isArray(products)
+      ? products.map(p => ({
+          ...p.toObject(),
+          id: p._id.toString(),
+        }))
+      : [];
+    res.json(formattedProducts);
   } catch (error) {
-  console.error(`[ERROR] Error fetching products:`, error);
-  res.status(500).json({ message: "Error fetching products", error });
-}
+    console.error(`[ERROR] Error fetching products:`, error);
+    res.status(500).json({ message: "Error fetching products", error });
+  }
 };
 
 export const getProductById = async (req: Request, res: Response) => {
@@ -24,7 +24,7 @@ export const getProductById = async (req: Request, res: Response) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json({
       ...product.toObject(),
-      id: product._id.toString()
+      id: product._id.toString(),
     });
   } catch (error) {
     res.status(500).json({ message: "Error fetching product", error });
@@ -39,7 +39,8 @@ export const createProduct = async (req: Request, res: Response) => {
 
     // Task 3 compatibility: map title to name, image to images
     if (data.title && !data.name) data.name = data.title;
-    if (data.image && (!data.images || data.images.length === 0)) data.images = [data.image];
+    if (data.image && (!data.images || data.images.length === 0))
+      data.images = [data.image];
 
     console.log(`[DEBUG] Final product data before save:`, data);
 
@@ -60,7 +61,9 @@ export const updateProduct = async (req: Request, res: Response) => {
     console.log(`[DEBUG] Update data:`, req.body);
     console.log(`[DEBUG] Images in update:`, req.body.images);
 
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     if (!product) return res.status(404).json({ message: "Product not found" });
 
     console.log(`[DEBUG] Product updated successfully:`, product._id);
@@ -82,8 +85,16 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
 export const getCollectedStories = async (req: Request, res: Response) => {
   try {
-    const stories = await Product.find({ isSold: true }).sort({ updatedAt: -1 });
-    res.json(stories);
+    const stories = await Product.find({ isSold: true }).sort({
+      updatedAt: -1,
+    });
+    const formattedStories = Array.isArray(stories)
+      ? stories.map(s => ({
+          ...s.toObject(),
+          id: s._id.toString(),
+        }))
+      : [];
+    res.json(formattedStories);
   } catch (error) {
     res.status(500).json({ message: "Error fetching stories", error });
   }
