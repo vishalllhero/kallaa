@@ -54,7 +54,7 @@ export default function Stories() {
           <div>No Data Found</div>
         ) : (
           <div className="space-y-32">
-            {safeMap(collectedPieces, (piece, index) => (
+            {safeMap(collectedPieces).map((piece, index) => (
               <div
                 key={piece.id}
                 className={`flex flex-col ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} gap-16 lg:gap-32 items-center`}

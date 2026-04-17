@@ -128,7 +128,7 @@ export default function Account() {
               {!orders || !Array.isArray(orders) || orders.length === 0 ? (
                 <p>No orders available</p>
               ) : (
-                safeMap(orders, order => (
+                safeMap(orders).map(order => (
                   <div
                     key={order.id || order._id}
                     className="border-b border-white/10 py-2"
@@ -149,7 +149,7 @@ export default function Account() {
               wishlist.length === 0 ? (
                 <p>No wishlist items</p>
               ) : (
-                safeMap(wishlist, item => (
+                safeMap(wishlist).map(item => (
                   <div
                     key={item.id || item._id}
                     className="border-b border-white/10 py-2"

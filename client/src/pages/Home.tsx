@@ -162,7 +162,7 @@ export default function Home() {
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {safeMap([1, 2, 3, 4], i => (
+              {safeMap([1, 2, 3, 4]).map(i => (
                 <div
                   key={i}
                   className="aspect-[3/4] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden"
@@ -175,7 +175,7 @@ export default function Home() {
             <div>No Data Found</div>
           ) : featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {safeMap(featuredProducts, (p, idx) => (
+              {safeMap(featuredProducts).map((p, idx) => (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}

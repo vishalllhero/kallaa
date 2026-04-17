@@ -36,7 +36,7 @@ export default function DebugImage({
           <div>
             <strong>Processed URLs:</strong>
             <div className="space-y-1">
-              {safeMap(images, (img, i) => (
+              {safeMap(images).map((img, i) => (
                 <div key={i} className="bg-zinc-800 p-2 rounded">
                   <div>Original: {img}</div>
                   <div>Processed: {getImageUrl(img)}</div>

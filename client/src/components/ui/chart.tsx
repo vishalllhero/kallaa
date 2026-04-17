@@ -80,19 +80,22 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: safeMap(
-          Object.entries(THEMES),
-          ([theme, prefix]) => `
+        __html: safeMap(Object.entries(THEMES))
+          .map(
+            ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
-${safeMap(colorConfig, ([key, itemConfig]) => {
-  const color =
-    itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-    itemConfig.color;
-  return color ? `  --color-${key}: ${color};` : null;
-}).join("\n")}
+${safeMap(colorConfig)
+  .map(([key, itemConfig]) => {
+    const color =
+      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+      itemConfig.color;
+    return color ? `  --color-${key}: ${color};` : null;
+  })
+  .join("\n")}
 }
 `
-        ).join("\n"),
+          )
+          .join("\n"),
       }}
     />
   );
@@ -175,8 +178,7 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {safeMap(
-          payload?.filter(item => item.type !== "none"),
+        {safeMap(payload?.filter(item => item.type !== "none")).map(
           (item, index) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
@@ -274,34 +276,31 @@ function ChartLegendContent({
         className
       )}
     >
-      {safeMap(
-        payload?.filter(item => item.type !== "none"),
-        item => {
-          const key = `${nameKey || item.dataKey || "value"}`;
-          const itemConfig = getPayloadConfigFromPayload(config, item, key);
+      {safeMap(payload?.filter(item => item.type !== "none")).map(item => {
+        const key = `${nameKey || item.dataKey || "value"}`;
+        const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
-          return (
-            <div
-              key={item.value}
-              className={cn(
-                "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3"
-              )}
-            >
-              {itemConfig?.icon && !hideIcon ? (
-                <itemConfig.icon />
-              ) : (
-                <div
-                  className="h-2 w-2 shrink-0 rounded-[2px]"
-                  style={{
-                    backgroundColor: item.color,
-                  }}
-                />
-              )}
-              {itemConfig?.label}
-            </div>
-          );
-        }
-      )}
+        return (
+          <div
+            key={item.value}
+            className={cn(
+              "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3"
+            )}
+          >
+            {itemConfig?.icon && !hideIcon ? (
+              <itemConfig.icon />
+            ) : (
+              <div
+                className="h-2 w-2 shrink-0 rounded-[2px]"
+                style={{
+                  backgroundColor: item.color,
+                }}
+              />
+            )}
+            {itemConfig?.label}
+          </div>
+        );
+      })}
     </div>
   );
 }

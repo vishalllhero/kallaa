@@ -122,7 +122,7 @@ export default function Products() {
             layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
           >
-            {safeMap(filteredProducts, (product, idx) => (
+            {safeMap(filteredProducts).map((product, idx) => (
               <motion.div
                 layout
                 initial={{ opacity: 0, y: 30 }}
@@ -183,9 +183,9 @@ export default function Products() {
 
         {/* Debug component for development */}
         <DebugImage
-          images={safeMap(products.slice(0, 3), p => p.images?.[0]).filter(
-            Boolean
-          )}
+          images={safeMap(products.slice(0, 3))
+            .map(p => p.images?.[0])
+            .filter(Boolean)}
         />
       </div>
     </div>

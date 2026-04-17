@@ -339,7 +339,7 @@ export default function AdminDashboard() {
                       {/* Uploaded Images */}
                       {formData.images.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {safeMap(formData.images, (url, index) => (
+                          {safeMap(formData.images).map((url, index) => (
                             <div
                               key={index}
                               className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
@@ -356,7 +356,7 @@ export default function AdminDashboard() {
                       {/* Selected Files Preview */}
                       {selectedFiles.length > 0 && (
                         <div className="flex flex-wrap gap-2">
-                          {safeMap(selectedFiles, (file, index) => (
+                          {safeMap(selectedFiles).map((file, index) => (
                             <div
                               key={index}
                               className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
@@ -463,7 +463,7 @@ export default function AdminDashboard() {
                 {!Array.isArray(products) ? (
                   <div>No Data Found</div>
                 ) : (
-                  safeMap(products, product => (
+                  safeMap(products).map(product => (
                     <div
                       key={product.id}
                       className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
@@ -509,7 +509,7 @@ export default function AdminDashboard() {
           <div>No Data Found</div>
         ) : (
           <div className="space-y-6">
-            {safeMap(orders, order => (
+            {safeMap(orders).map(order => (
               <div
                 key={order.id}
                 className="bg-zinc-900/30 p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-8"
@@ -587,7 +587,7 @@ export default function AdminDashboard() {
               <div className="font-bold">Form Data Images:</div>
               <div className="ml-2">
                 {formData.images.length > 0 ? (
-                  safeMap(formData.images, (img, i) => (
+                  safeMap(formData.images).map((img, i) => (
                     <div key={i} className="truncate">
                       [{i}]: {img}
                     </div>

@@ -21,7 +21,7 @@ export default function ThumbnailList({
 
   return (
     <div className="flex xl:flex-col gap-4">
-      {safeMap(allImages, (image, index) => (
+      {safeMap(allImages).map((image, index) => (
         <motion.button
           key={`thumb-${index}`}
           onClick={() => onSelectImage(index)}

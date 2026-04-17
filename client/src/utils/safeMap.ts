@@ -1,9 +1,6 @@
-export function safeMap<T, U>(
-  data: unknown,
-  mapper: (item: T, index: number, array: T[]) => U
-): U[] {
-  if (!Array.isArray(data)) {
-    return [];
-  }
-  return data.map(mapper);
+export function safeMap(data: unknown): any[] {
+  console.log("MAP DATA:", data);
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
 }
