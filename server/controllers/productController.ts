@@ -3,18 +3,23 @@ import { Product } from "../models/Product";
 
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    console.log(`[DEBUG] Fetching all products`);
     const products = await Product.find().sort({ createdAt: -1 });
-    const formattedProducts = Array.isArray(products)
+
+    const safeProducts = Array.isArray(products)
       ? products.map(p => ({
           ...p.toObject(),
           id: p._id.toString(),
         }))
       : [];
-    res.json(formattedProducts);
+
+    res.json(safeProducts);
   } catch (error) {
-    console.error(`[ERROR] Error fetching products:`, error);
-    res.status(500).json({ message: "Error fetching products", error });
+    console.error("ERROR FETCHING PRODUCTS:", error);
+    res.status(500).json({
+      success: false,
+      products: [],
+      message: "Failed to fetch products",
+    });
   }
 };
 
