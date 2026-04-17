@@ -15,7 +15,7 @@ export default function Stories() {
       try {
         setLoading(true);
         const data = await productApi.getStories();
-        setCollectedPieces(Array.isArray(data) ? data : data?.data || []);
+        setCollectedPieces(Array.isArray(data?.data) ? data.data : []);
       } catch (err) {
         toast.error("Failed to load archive");
       } finally {
@@ -50,6 +50,8 @@ export default function Stories() {
               />
             ))}
           </div>
+        ) : !Array.isArray(collectedPieces) ? (
+          <div>No Data Found</div>
         ) : (
           <div className="space-y-32">
             {safeMap(collectedPieces, (piece, index) => (

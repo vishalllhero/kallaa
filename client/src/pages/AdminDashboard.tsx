@@ -48,8 +48,8 @@ export default function AdminDashboard() {
         adminApi.getProducts(),
         adminApi.getOrders(),
       ]);
-      setProducts(Array.isArray(pData) ? pData : pData?.data || []);
-      setOrders(Array.isArray(oData) ? oData : oData?.data || []);
+      setProducts(Array.isArray(pData?.data) ? pData.data : []);
+      setOrders(Array.isArray(oData?.data) ? oData.data : []);
     } catch (err) {
       toast.error("Access denied or server error");
       setProducts([]);
@@ -226,7 +226,6 @@ export default function AdminDashboard() {
             </button>
           </div>
         </header>
-
         {/* Task 2: Detailed Navigation */}
         <div className="flex gap-8 mb-12 overflow-x-auto pb-4 border-b border-white/5 no-scrollbar">
           <button
@@ -266,7 +265,6 @@ export default function AdminDashboard() {
             Recent Orders
           </button>
         </div>
-
         {/* Task 2: Dashboard Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <div className="bg-zinc-900/50 p-6 rounded-2xl border border-white/5 flex items-center gap-4">
@@ -296,7 +294,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-
         {activeTab === "products" ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Form Section */}
@@ -463,47 +460,53 @@ export default function AdminDashboard() {
             {/* List Section */}
             <div className="lg:col-span-2">
               <div className="space-y-4">
-                {safeMap(products, product => (
-                  <div
-                    key={product.id}
-                    className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
-                  >
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
-                        <ImageWithFallback
-                          src={getProductImage(product.images)}
-                          className="w-full h-full object-cover"
-                          alt=""
-                        />
+                {!Array.isArray(products) ? (
+                  <div>No Data Found</div>
+                ) : (
+                  safeMap(products, product => (
+                    <div
+                      key={product.id}
+                      className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                          <ImageWithFallback
+                            src={getProductImage(product.images)}
+                            className="w-full h-full object-cover"
+                            alt=""
+                          />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-serif">
+                            {product.name}
+                          </h3>
+                          <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                            ${product.price}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-white font-serif">
-                          {product.name}
-                        </h3>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                          ${product.price}
-                        </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(product)}
+                          className="p-3 bg-white/5 rounded-xl hover:bg-white/10 text-white transition-all"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="p-3 bg-white/5 rounded-xl hover:bg-red-500/10 text-red-500 transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(product)}
-                        className="p-3 bg-white/5 rounded-xl hover:bg-white/10 text-white transition-all"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="p-3 bg-white/5 rounded-xl hover:bg-red-500/10 text-red-500 transition-all"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
+        ) : !Array.isArray(orders) ? (
+          <div>No Data Found</div>
         ) : (
           <div className="space-y-6">
             {safeMap(orders, order => (
@@ -573,8 +576,7 @@ export default function AdminDashboard() {
             ))}
           </div>
         )}
-
-        {/* Debug Panel (Development Only) */}
+        ){/* Debug Panel (Development Only) */}
         {import.meta.env.DEV && (
           <div className="fixed bottom-4 left-4 bg-black/90 text-white p-4 rounded-lg max-w-md z-50 text-xs max-h-96 overflow-y-auto">
             <div className="mb-2 font-bold">AdminDashboard Debug</div>

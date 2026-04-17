@@ -84,7 +84,7 @@ export const authApi = {
 export const productApi = {
   getAll: async () => {
     const { data } = await api.get("/products");
-    return data?.data || data;
+    return data;
   },
   getById: async (id: string) => {
     const { data } = await api.get(`/products/${id}`);
@@ -92,14 +92,14 @@ export const productApi = {
   },
   getStories: async () => {
     const { data } = await api.get("/products/stories");
-    return data?.data || data;
+    return data;
   },
 };
 
 export const adminApi = {
   getProducts: async () => {
     const { data } = await api.get("/products");
-    return data?.data || data;
+    return data;
   },
   createProduct: async (product: any) => {
     const { data } = await api.post("/products", product);
@@ -114,7 +114,7 @@ export const adminApi = {
   },
   getOrders: async () => {
     const { data } = await api.get("/orders");
-    return data?.data || data;
+    return data;
   },
   updateOrderStatus: async (id: string, status: string) => {
     const { data } = await api.put(`/orders/${id}/status`, { status });

@@ -15,10 +15,8 @@ export default function Home() {
     const fetchFeatured = async () => {
       try {
         const data = await productApi.getAll();
-        const productsArray = Array.isArray(data)
-          ? data
-          : data?.products || data?.data || [];
-        setFeaturedProducts(productsArray.slice(0, 4));
+        const products = Array.isArray(data?.data) ? data.data : [];
+        setFeaturedProducts(products.slice(0, 4));
       } catch (err) {
         console.error("Failed to load featured products:", err);
         setFeaturedProducts([]);
@@ -173,7 +171,9 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          ) : Array.isArray(featuredProducts) && featuredProducts.length > 0 ? (
+          ) : !Array.isArray(featuredProducts) ? (
+            <div>No Data Found</div>
+          ) : featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               {safeMap(featuredProducts, (p, idx) => (
                 <motion.div

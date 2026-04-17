@@ -21,17 +21,22 @@ export default function Products() {
       try {
         setLoading(true);
         const data = await productApi.getAll();
-        const productsArray = Array.isArray(data)
-          ? data
-          : data?.products || data?.data || [];
-        setProducts(productsArray);
+        setProducts(Array.isArray(data?.data) ? data.data : []);
 
         // Debug image URLs in development
         if (import.meta.env.DEV) {
-          console.log("[Products] Loaded products:", productsArray.length);
-          productsArray.slice(0, 3).forEach((product: any, i: number) => {
-            debugImageInfo(product.images, `Product ${i + 1}: ${product.name}`);
-          });
+          console.log(
+            "[Products] Loaded products:",
+            (Array.isArray(data?.data) ? data.data : []).length
+          );
+          (Array.isArray(data?.data) ? data.data : [])
+            .slice(0, 3)
+            .forEach((product: any, i: number) => {
+              debugImageInfo(
+                product.images,
+                `Product ${i + 1}: ${product.name}`
+              );
+            });
         }
       } catch (err) {
         toast.error("Failed to load pieces");
@@ -110,6 +115,8 @@ export default function Products() {
               New pieces will be added soon. Check back later.
             </p>
           </div>
+        ) : !Array.isArray(filteredProducts) ? (
+          <div>No Data Found</div>
         ) : (
           <motion.div
             layout
