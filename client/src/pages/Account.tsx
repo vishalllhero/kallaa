@@ -13,7 +13,7 @@ export default function Account() {
   const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
-    const API_BASE = import.meta.env.VITE_API_URL || "https://kallaa-backend-production.up.railway.app";
+    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
     
     fetch(`${API_BASE}/api/orders`)
       .then(res => res.json())
@@ -156,7 +156,7 @@ export default function Account() {
               {!wishlist || !Array.isArray(wishlist) || wishlist.length === 0 ? (
                 <p className="text-gray-500 italic">No wishlist items</p>
               ) : (
-                wishlist.map(item => (
+                (Array.isArray(wishlist) ? wishlist : []).map(item => (
                   <div
                     key={item.id || item._id}
                     className="border-b border-white/10 py-2 last:border-0"

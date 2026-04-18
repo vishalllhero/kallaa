@@ -49,7 +49,7 @@ export default function Stories() {
 
         {loading ? (
           <div className="space-y-32">
-            {[1, 2].map(i => (
+            {(Array.isArray([1, 2]) ? [1, 2] : []).map(i => (
               <div
                 key={i}
                 className="h-96 bg-zinc-900 animate-pulse rounded-3xl"

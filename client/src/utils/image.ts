@@ -17,9 +17,7 @@ export const IMAGE_CONFIG = {
 
   // Backend base URL from environment (production-safe)
   backendUrl:
-    import.meta.env.VITE_API_URL || import.meta.env.DEV
-      ? "http://localhost:5000"
-      : "", // No fallback in production to prevent broken links
+    import.meta.env.VITE_API_URL || "http://localhost:5000",
 
   // Supported image extensions for validation
   supportedExtensions: [

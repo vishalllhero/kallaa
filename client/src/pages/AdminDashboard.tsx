@@ -113,7 +113,7 @@ export default function AdminDashboard() {
         const formDataUpload = new FormData();
         selectedFiles.forEach(file => formDataUpload.append("images", file));
 
-        const API_BASE = import.meta.env.VITE_API_URL || "https://kallaa-backend-production.up.railway.app";
+        const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
         const uploadRes = await fetch(`${API_BASE}/api/admin/upload`, {
           method: "POST",
           body: formDataUpload,

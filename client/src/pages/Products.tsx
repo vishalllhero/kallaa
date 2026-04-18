@@ -81,7 +81,7 @@ export default function Products() {
 
             {/* Filters */}
             <div className="flex gap-4 p-1 bg-zinc-900 border border-white/5 rounded-full">
-              {(["all", "available", "collected"] as const).map(f => (
+              {(Array.isArray(["all", "available", "collected"] as const) ? (["all", "available", "collected"] as const) : []).map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -97,7 +97,7 @@ export default function Products() {
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {[1, 2, 3, 4, 5, 6].map(i => (
+            {(Array.isArray([1, 2, 3, 4, 5, 6]) ? [1, 2, 3, 4, 5, 6] : []).map(i => (
               <div key={i} className="space-y-4">
                 <div className="aspect-[4/5] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
