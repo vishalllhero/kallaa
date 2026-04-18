@@ -1,9 +1,10 @@
 import bcrypt from "bcrypt";
 import { SignJWT, jwtVerify } from "jose";
-import { ENV } from "./_core/env";
 
 const SALT_ROUNDS = 10;
-const JWT_SECRET = new TextEncoder().encode(ENV.cookieSecret || "your-secret-key");
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.COOKIE_SECRET || "your-secret-key"
+);
 
 /**
  * Hash a password using bcrypt
@@ -15,7 +16,10 @@ export async function hashPassword(password: string): Promise<string> {
 /**
  * Compare a plain password with a hashed password
  */
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
 

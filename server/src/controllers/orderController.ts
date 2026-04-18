@@ -17,7 +17,7 @@ export const create = async (req: Request, res: Response) => {
 export const getAll = async (req: Request, res: Response) => {
   try {
     console.log(`[DEBUG] Fetching all orders`);
-    const orders = await Order.find().sort({ createdAt: -1 });
+    const orders = await (Order as any).find().sort({ createdAt: -1 });
     const formattedOrders = Array.isArray(orders)
       ? orders.map(o => ({
           ...o.toObject(),
@@ -36,7 +36,7 @@ export const updateStatus = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { status } = req.body;
     console.log(`[DEBUG] Updating order ${id} status to ${status}`);
-    const order = await Order.findByIdAndUpdate(id, { status }, { new: true });
+    const order = await (Order as any).findByIdAndUpdate(id, { status }, { new: true });
     res.json(order);
   } catch (error) {
     console.error(`[ERROR] Failed to update order status:`, error);

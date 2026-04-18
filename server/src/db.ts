@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
-import { ENV } from "./_core/env";
 import { User } from "./models/User";
 
-const MONGO_URI = ENV.mongoUri;
+const MONGO_URI = process.env.MONGO_URI!;
 
 // Background retry loop — keeps trying every 5s without blocking startup
 async function connectWithRetry() {
@@ -34,7 +33,7 @@ export const connectDB = () => {
 export async function upsertUser(userData: any): Promise<any> {
   try {
     const { email, ...rest } = userData;
-    const user = await User.findOneAndUpdate(
+    const user = await (User as any).findOneAndUpdate(
       { email },
       { ...rest, email },
       { upsert: true, new: true }
@@ -47,17 +46,16 @@ export async function upsertUser(userData: any): Promise<any> {
 }
 
 export async function getUserByOpenId(id: string) {
-  // Mapping openId to mongoose _id for compatibility
   try {
     if (mongoose.Types.ObjectId.isValid(id)) {
-      return await User.findById(id);
+      return await (User as any).findById(id);
     }
-    return await User.findOne({ email: id }); // Fallback to email
+    return await (User as any).findOne({ email: id });
   } catch {
     return null;
   }
 }
 
 export async function getUserByEmail(email: string) {
-  return await User.findOne({ email });
+  return await (User as any).findOne({ email });
 }

@@ -1,7 +1,11 @@
 /**
- * Unified type exports
- * Import shared types from this single entry point.
+ * Shared types for the backend
  */
 
-export type * from "../drizzle/schema";
-export * from "./_core/errors";
+export interface ApiResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+}
+
+export type UserRole = "user" | "admin" | "seller";

@@ -8,16 +8,22 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Name, email, and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Name, email, and password are required" });
     }
-    const existingUser = await User.findOne({ email });
+    const existingUser = await (User as any).findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use" });
     }
     const user = new User({ name, email, password });
     await user.save();
-    
-    const token = await createToken((user._id as any).toString(), user.email!, user.role as any);
+
+    const token = await createToken(
+      (user._id as any).toString(),
+      user.email!,
+      user.role as any
+    );
 
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
@@ -28,8 +34,13 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "Registered successfully",
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
-      token
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      token,
     });
   } catch (error) {
     console.error(`[ERROR] Register error:`, error);
@@ -43,10 +54,12 @@ export const login = async (req: Request, res: Response) => {
     console.log(`[DEBUG] Incoming login request for: ${email}`);
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await (User as any).findOne({ email });
     if (!user) {
       console.warn(`[WARN] Login failed: User not found for ${email}`);
       return res.status(401).json({ message: "Invalid email or password" });
@@ -58,7 +71,11 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = await createToken((user._id as any).toString(), user.email!, user.role as any);
+    const token = await createToken(
+      (user._id as any).toString(),
+      user.email!,
+      user.role as any
+    );
 
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
@@ -74,9 +91,9 @@ export const login = async (req: Request, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
       },
-      token // Sending token for frontend storage if not using cookies
+      token, // Sending token for frontend storage if not using cookies
     });
   } catch (error) {
     console.error(`[ERROR] Login error:`, error);
@@ -96,6 +113,6 @@ export const me = async (req: Request, res: Response) => {
     id: user._id,
     name: user.name,
     email: user.email,
-    role: user.role
+    role: user.role,
   });
 };

@@ -3,7 +3,7 @@ import { Product } from "../models/Product";
 
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const products = await (Product as any).find().sort({ createdAt: -1 });
 
     const safeProducts = Array.isArray(products)
       ? products.map(p => ({
@@ -25,7 +25,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
 export const getProductById = async (req: Request, res: Response) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await (Product as any).findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json({
       ...product.toObject(),
@@ -66,7 +66,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     console.log(`[DEBUG] Update data:`, req.body);
     console.log(`[DEBUG] Images in update:`, req.body.images);
 
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    const product = await (Product as any).findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
     if (!product) return res.status(404).json({ message: "Product not found" });
@@ -81,7 +81,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
-    await Product.findByIdAndDelete(req.params.id);
+    await (Product as any).findByIdAndDelete(req.params.id);
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: "Error deleting product", error });
@@ -90,7 +90,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
 export const getCollectedStories = async (req: Request, res: Response) => {
   try {
-    const stories = await Product.find({ isSold: true }).sort({
+    const stories = await (Product as any).find({ isSold: true }).sort({
       updatedAt: -1,
     });
     const formattedStories = Array.isArray(stories)

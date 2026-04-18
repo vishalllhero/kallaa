@@ -1,17 +1,18 @@
 import { Request, Response } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import { ENV } from "../_core/env";
 import { Order } from "../models/Order";
 
 // Initialize Razorpay with validation
-if (!ENV.razorpay.keyId || !ENV.razorpay.keySecret) {
-  throw new Error("Razorpay configuration missing. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables.");
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  throw new Error(
+    "Razorpay configuration missing. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables."
+  );
 }
 
 const razorpay = new Razorpay({
-  key_id: ENV.razorpay.keyId,
-  key_secret: ENV.razorpay.keySecret,
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 export const createRazorpayOrder = async (req: Request, res: Response) => {
@@ -19,12 +20,17 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
     const { amount, currency = "INR" } = req.body;
 
     // Validate input
-    if (!amount || typeof amount !== 'number' || amount <= 0) {
-      return res.status(400).json({ message: "Invalid amount. Must be a positive number." });
+    if (!amount || typeof amount !== "number" || amount <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Invalid amount. Must be a positive number." });
     }
 
-    if (amount > 10000000) { // 100k INR limit for security
-      return res.status(400).json({ message: "Amount exceeds maximum allowed limit." });
+    if (amount > 10000000) {
+      // 100k INR limit for security
+      return res
+        .status(400)
+        .json({ message: "Amount exceeds maximum allowed limit." });
     }
 
     console.log(`[Payment] Creating Razorpay order: ₹${amount} ${currency}`);
@@ -49,7 +55,7 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
     console.error(`[Payment] Order creation failed:`, error);
     res.status(500).json({
       message: "Could not create payment order",
-      error: ENV.isProduction ? undefined : error.message
+      error: process.env.NODE_ENV === "production" ? undefined : error.message,
     });
   }
 };
@@ -60,15 +66,22 @@ export const verifyPayment = async (req: Request, res: Response) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      orderDetails
+      orderDetails,
     } = req.body;
 
     // Validate required fields
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ message: "Missing required payment verification data" });
+      return res
+        .status(400)
+        .json({ message: "Missing required payment verification data" });
     }
 
-    if (!orderDetails || !orderDetails.productId || !orderDetails.customerName || !orderDetails.customerEmail) {
+    if (
+      !orderDetails ||
+      !orderDetails.productId ||
+      !orderDetails.customerName ||
+      !orderDetails.customerEmail
+    ) {
       return res.status(400).json({ message: "Incomplete order details" });
     }
 
@@ -77,27 +90,31 @@ export const verifyPayment = async (req: Request, res: Response) => {
     // Create signature for verification
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSign = crypto
-      .createHmac("sha256", ENV.razorpay.keySecret!)
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
       .update(sign)
       .digest("hex");
 
     // Verify signature
     if (razorpay_signature !== expectedSign) {
-      console.warn(`[Payment] Invalid signature for order: ${razorpay_order_id}`);
-      return res.status(400).json({ message: "Payment verification failed - invalid signature" });
+      console.warn(
+        `[Payment] Invalid signature for order: ${razorpay_order_id}`
+      );
+      return res
+        .status(400)
+        .json({ message: "Payment verification failed - invalid signature" });
     }
 
     // Check if order already exists to prevent duplicates
-    const existingOrder = await Order.findOne({
-      'razorpay_order_id': razorpay_order_id,
-      'razorpay_payment_id': razorpay_payment_id
+    const existingOrder = await (Order as any).findOne({
+      razorpay_order_id: razorpay_order_id,
+      razorpay_payment_id: razorpay_payment_id,
     });
 
     if (existingOrder) {
       console.log(`[Payment] Order already exists: ${existingOrder._id}`);
       return res.status(200).json({
         message: "Payment already verified",
-        order: existingOrder
+        order: existingOrder,
       });
     }
 
@@ -105,13 +122,20 @@ export const verifyPayment = async (req: Request, res: Response) => {
     try {
       const payment = await razorpay.payments.fetch(razorpay_payment_id);
 
-      if (payment.status !== 'captured' && payment.status !== 'authorized') {
-        console.warn(`[Payment] Payment not captured for order: ${razorpay_order_id}, status: ${payment.status}`);
+      if (payment.status !== "captured" && payment.status !== "authorized") {
+        console.warn(
+          `[Payment] Payment not captured for order: ${razorpay_order_id}, status: ${payment.status}`
+        );
         return res.status(400).json({ message: "Payment not completed" });
       }
     } catch (razorpayError) {
-      console.error(`[Payment] Failed to fetch payment details:`, razorpayError);
-      return res.status(500).json({ message: "Could not verify payment status" });
+      console.error(
+        `[Payment] Failed to fetch payment details:`,
+        razorpayError
+      );
+      return res
+        .status(500)
+        .json({ message: "Could not verify payment status" });
     }
 
     // Create order in database
@@ -132,14 +156,13 @@ export const verifyPayment = async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: "Payment verified and order created successfully",
-      order: result
+      order: result,
     });
-
   } catch (error: any) {
     console.error(`[Payment] Verification error:`, error);
     res.status(500).json({
       message: "Payment verification failed",
-      error: ENV.isProduction ? undefined : error.message
+      error: process.env.NODE_ENV === "production" ? undefined : error.message,
     });
   }
 };
