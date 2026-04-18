@@ -80,22 +80,18 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: safeMap(Object.entries(THEMES))
-          (Array.isArray(data) ? data : []).map(...)
-          (Array.isArray(orders) ? orders : []).map(...)
-          (Array.isArray(items) ? items : []).map(...)
-          ([theme, prefix]) => `
+        __html: Object.entries(THEMES)
+          .map(([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
-${safeMap(colorConfig)
-              (Array.isArray(data) ? data : []).map(...)
-              (Array.isArray(orders) ? orders : []).map(...)
-              (Array.isArray(items) ? items : []).map(...)([key, itemConfig]) => {
-  const color =
-    itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-    itemConfig.color;
-  return color ? `  --color-${key}: ${color};` : null;
-})
-  .join("\n")}
+${colorConfig
+              .map(([key, itemConfig]) => {
+                const color =
+                  itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+                  itemConfig.color;
+                return color ? `  --color-${key}: ${color};` : null;
+              })
+              .filter(Boolean)
+              .join("\n")}
 }
 `
           )
@@ -182,9 +178,7 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {safeMap(payload?.filter(item => item.type !== "none"))(Array.isArray(data) ? data : []).map(...)
-(Array.isArray(orders) ? orders : []).map(...)
-(Array.isArray(items) ? items : []).map(...)
+        {(payload?.filter(item => item.type !== "none") || []).map(
           (item, index) => {
             const key = `${ nameKey || item.name || item.dataKey || "value" } `;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
@@ -282,9 +276,7 @@ function ChartLegendContent({
         className
       )}
     >
-      {safeMap(payload?.filter(item => item.type !== "none"))(Array.isArray(data) ? data : []).map(...)
-(Array.isArray(orders) ? orders : []).map(...)
-(Array.isArray(items) ? items : []).map(...)item => {
+      {(payload?.filter(item => item.type !== "none") || []).map(item => {
         const key = `${ nameKey || item.dataKey || "value" } `;
         const itemConfig = getPayloadConfigFromPayload(config, item, key);
 

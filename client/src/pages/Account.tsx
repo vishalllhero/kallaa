@@ -13,23 +13,29 @@ export default function Account() {
   const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
-    fetch("/api/orders")
+    const API_BASE = import.meta.env.VITE_API_URL || "https://kallaa-backend-production.up.railway.app";
+    
+    fetch(`${API_BASE}/api/orders`)
       .then(res => res.json())
-      .then(data => {
-        const orders = data?.data || data;
-        setOrders(Array.isArray(orders) ? orders : []);
+      .then(res => {
+        const ordersData = res?.data || [];
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
       })
-      .catch(() => setOrders([]));
-  }, []);
+      .catch((err) => {
+        console.error("Orders fetch failed:", err);
+        setOrders([]);
+      });
 
-  useEffect(() => {
-    fetch("/api/wishlist")
+    fetch(`${API_BASE}/api/wishlist`)
       .then(res => res.json())
-      .then(data => {
-        const wishlist = data?.data || data;
-        setWishlist(Array.isArray(wishlist) ? wishlist : []);
+      .then(res => {
+        const wishlistData = res?.data || [];
+        setWishlist(Array.isArray(wishlistData) ? wishlistData : []);
       })
-      .catch(() => setWishlist([]));
+      .catch((err) => {
+        console.error("Wishlist fetch failed:", err);
+        setWishlist([]);
+      });
   }, []);
 
   // 🔐 NOT LOGGED IN
@@ -122,19 +128,22 @@ export default function Account() {
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Orders</h2>
               {!orders || !Array.isArray(orders) || orders.length === 0 ? (
-                <p>No orders available</p>
+                <p className="text-gray-500 italic">No orders available yet.</p>
               ) : (
-                safeMap(orders)(Array.isArray(data) ? data : []).map(...)
-                  (Array.isArray(orders) ? orders : []).map(...)
-                  (Array.isArray(items) ? items : []).map(...)order => (
-              <div
-                key={order.id || order._id}
-                className="border-b border-white/10 py-2"
-              >
-                <p>Order ID: {order.id || order._id}</p>
-                <p>Total: {order.total || "N/A"}</p>
-              </div>
-              ))
+                orders.map(order => (
+                  <div
+                    key={order.id || order._id}
+                    className="border-b border-white/10 py-4 last:border-0"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="font-bold">Order ID: {order.id || order._id}</p>
+                      <span className="px-2 py-1 bg-yellow-400 text-black text-[10px] uppercase font-bold rounded">
+                        {order.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-400">Total: ${order.totalPrice || order.total || "N/A"}</p>
+                  </div>
+                ))
               )}
             </div>
           )}
@@ -142,21 +151,17 @@ export default function Account() {
           {activeTab === "wishlist" && (
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Wishlist</h2>
-              {!wishlist ||
-                !Array.isArray(wishlist) ||
-                wishlist.length === 0 ? (
-                <p>No wishlist items</p>
+              {!wishlist || !Array.isArray(wishlist) || wishlist.length === 0 ? (
+                <p className="text-gray-500 italic">No wishlist items</p>
               ) : (
-                safeMap(wishlist)(Array.isArray(data) ? data : []).map(...)
-                  (Array.isArray(orders) ? orders : []).map(...)
-                  (Array.isArray(items) ? items : []).map(...)item => (
-              <div
-                key={item.id || item._id}
-                className="border-b border-white/10 py-2"
-              >
-                <p>Product: {item.name || "Unknown"}</p>
-              </div>
-              ))
+                wishlist.map(item => (
+                  <div
+                    key={item.id || item._id}
+                    className="border-b border-white/10 py-2 last:border-0"
+                  >
+                    <p>Product: {item.name || "Unknown"}</p>
+                  </div>
+                ))
               )}
             </div>
           )}

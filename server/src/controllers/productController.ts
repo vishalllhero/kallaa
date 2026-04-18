@@ -12,13 +12,17 @@ export const getAllProducts = async (req: Request, res: Response) => {
         }))
       : [];
 
-    res.json(safeProducts);
+    res.json({
+      success: true,
+      data: safeProducts
+    });
   } catch (error) {
     console.error("ERROR FETCHING PRODUCTS:", error);
     res.status(500).json({
       success: false,
-      products: [],
+      data: [],
       message: "Failed to fetch products",
+      error: error instanceof Error ? error.message : "Undefined error"
     });
   }
 };
@@ -26,65 +30,87 @@ export const getAllProducts = async (req: Request, res: Response) => {
 export const getProductById = async (req: Request, res: Response) => {
   try {
     const product = await (Product as any).findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    if (!product) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Product not found" 
+      });
+    }
     res.json({
-      ...product.toObject(),
-      id: product._id.toString(),
+      success: true,
+      data: {
+        ...product.toObject(),
+        id: product._id.toString(),
+      }
     });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching product", error });
+    res.status(500).json({ 
+      success: false, 
+      message: "Error fetching product", 
+      error: error instanceof Error ? error.message : "Undefined error" 
+    });
   }
 };
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    console.log(`[DEBUG] Incoming create product request:`, req.body);
-    console.log(`[DEBUG] Images in request:`, req.body.images);
     const data = { ...req.body };
-
-    // Task 3 compatibility: map title to name, image to images
     if (data.title && !data.name) data.name = data.title;
-    if (data.image && (!data.images || data.images.length === 0))
-      data.images = [data.image];
-
-    console.log(`[DEBUG] Final product data before save:`, data);
+    if (data.image && (!data.images || data.images.length === 0)) data.images = [data.image];
 
     const product = new Product(data);
     await product.save();
-    console.log(`[DEBUG] Product saved successfully:`, product._id);
-    console.log(`[DEBUG] Saved product images:`, product.images);
-    res.status(201).json(product);
+    res.status(201).json({
+      success: true,
+      data: product
+    });
   } catch (error) {
     console.error(`[ERROR] Error creating product:`, error);
-    res.status(500).json({ message: "Error creating product", error });
+    res.status(500).json({ 
+      success: false, 
+      message: "Error creating product", 
+      error: error instanceof Error ? error.message : "Undefined error" 
+    });
   }
 };
 
 export const updateProduct = async (req: Request, res: Response) => {
   try {
-    console.log(`[DEBUG] Update product request for ID: ${req.params.id}`);
-    console.log(`[DEBUG] Update data:`, req.body);
-    console.log(`[DEBUG] Images in update:`, req.body.images);
-
     const product = await (Product as any).findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    console.log(`[DEBUG] Product updated successfully:`, product._id);
-    console.log(`[DEBUG] Updated product images:`, product.images);
-    res.json(product);
+    if (!product) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Product not found" 
+      });
+    }
+    res.json({
+      success: true,
+      data: product
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error updating product", error });
+    res.status(500).json({ 
+      success: false, 
+      message: "Error updating product", 
+      error: error instanceof Error ? error.message : "Undefined error" 
+    });
   }
 };
 
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
     await (Product as any).findByIdAndDelete(req.params.id);
-    res.status(204).send();
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully"
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting product", error });
+    res.status(500).json({ 
+      success: false, 
+      message: "Error deleting product", 
+      error: error instanceof Error ? error.message : "Undefined error" 
+    });
   }
 };
 
@@ -99,8 +125,16 @@ export const getCollectedStories = async (req: Request, res: Response) => {
           id: s._id.toString(),
         }))
       : [];
-    res.json(formattedStories);
+    res.json({
+      success: true,
+      data: formattedStories
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching stories", error });
+    res.status(500).json({ 
+      success: false, 
+      data: [], 
+      message: "Error fetching stories", 
+      error: error instanceof Error ? error.message : "Undefined error" 
+    });
   }
 };

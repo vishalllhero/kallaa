@@ -33,8 +33,9 @@ export const register = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({
+      success: true,
       message: "Registered successfully",
-      user: {
+      data: {
         id: user._id,
         name: user.name,
         email: user.email,
@@ -44,31 +45,38 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error(`[ERROR] Register error:`, error);
-    res.status(500).json({ message: "Server error during registration" });
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error during registration",
+      error: error instanceof Error ? error.message : "Undefined error"
+    });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    console.log(`[DEBUG] Incoming login request for: ${email}`);
-
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Email and password are required" 
+      });
     }
 
     const user = await (User as any).findOne({ email });
     if (!user) {
-      console.warn(`[WARN] Login failed: User not found for ${email}`);
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ 
+        success: false, 
+        message: "Invalid email or password" 
+      });
     }
 
     const isMatch = await (user as any).comparePassword(password);
     if (!isMatch) {
-      console.warn(`[WARN] Login failed: Invalid password for ${email}`);
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ 
+        success: false, 
+        message: "Invalid email or password" 
+      });
     }
 
     const token = await createToken(
@@ -84,35 +92,50 @@ export const login = async (req: Request, res: Response) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
-    console.log(`[DEBUG] User logged in successfully: ${email}`);
     res.json({
+      success: true,
       message: "Logged in successfully",
-      user: {
+      data: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
       },
-      token, // Sending token for frontend storage if not using cookies
+      token,
     });
   } catch (error) {
     console.error(`[ERROR] Login error:`, error);
-    res.status(500).json({ message: "Server error during login" });
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error during login",
+      error: error instanceof Error ? error.message : "Undefined error"
+    });
   }
 };
 
 export const logout = (req: Request, res: Response) => {
   res.clearCookie(COOKIE_NAME);
-  res.json({ message: "Logged out successfully" });
+  res.json({ 
+    success: true, 
+    message: "Logged out successfully" 
+  });
 };
 
 export const me = async (req: Request, res: Response) => {
   const user = (req as any).user;
-  if (!user) return res.status(401).json({ message: "Not authenticated" });
+  if (!user) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Not authenticated" 
+    });
+  }
   res.json({
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
+    success: true,
+    data: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }
   });
 };

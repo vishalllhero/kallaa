@@ -79,7 +79,7 @@ export default function Products() {
 
             {/* Filters */}
             <div className="flex gap-4 p-1 bg-zinc-900 border border-white/5 rounded-full">
-              {safeMap(["all", "available", "collected"] as const, (f) => (
+              {(["all", "available", "collected"] as const).map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -95,7 +95,7 @@ export default function Products() {
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {safeMap([1, 2, 3, 4, 5, 6], (i) => (
+            {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="space-y-4">
                 <div className="aspect-[4/5] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
@@ -122,24 +122,22 @@ export default function Products() {
             layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
           >
-            {safeMap(filteredProducts)(Array.isArray(data) ? data : []).map(...)
-              (Array.isArray(orders) ? orders : []).map(...)
-              (Array.isArray(items) ? items : []).map(...)(product, idx) => (
-            <motion.div
-              layout
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              key={product.id}
-            >
-              <Link href={`/product/${product.id}`} className="group">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-6 bg-zinc-900 border border-white/5 group-hover:border-white/20 transition-all duration-700">
-                  <ImageWithFallback
-                    src={getProductImage(product.images)}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105 opacity-80 group-hover:opacity-100"
-                    debug={true}
-                  />
+            {filteredProducts.map((product, idx) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                key={product.id || product._id}
+              >
+                <Link href={`/product/${product.id || product._id}`} className="group">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-6 bg-zinc-900 border border-white/5 group-hover:border-white/20 transition-all duration-700">
+                    <ImageWithFallback
+                      src={getProductImage(product.images)}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                      debug={true}
+                    />
 
                   {/* Status Tag */}
                   <div className="absolute top-6 left-6">
@@ -185,11 +183,7 @@ export default function Products() {
 
         {/* Debug component for development */}
         <DebugImage
-          images={safeMap(products.slice(0, 3))
-            (Array.isArray(data) ? data : []).map(...)
-            (Array.isArray(orders) ? orders : []).map(...)
-            (Array.isArray(items) ? items : []).map(...)p => p.images?.[0])
-            .filter(Boolean)}
+          images={products.slice(0, 3).map(p => p.images?.[0]).filter(Boolean)}
         />
       </div>
     </div>

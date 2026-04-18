@@ -570,29 +570,27 @@ export default function ComponentsShowcase() {
                               { value: "nextjs", label: "Next.js" },
                               { value: "nuxt", label: "Nuxt" },
                               { value: "remix", label: "Remix" },
-                            ](Array.isArray(data) ? data : []).map(...)
-                              (Array.isArray(orders) ? orders : []).map(...)
-                              (Array.isArray(items) ? items : []).map(...)framework => (
-                            <CommandItem
-                              key={framework.value}
-                              value={framework.value}
-                              onSelect={currentValue => {
-                                setSelectedFramework(
-                                  currentValue === selectedFramework
-                                    ? ""
-                                    : currentValue
-                                );
-                                setOpenCombobox(false);
-                              }}
-                            >
-                              <Check
-                                className={`mr-2 h-4 w-4 ${selectedFramework === framework.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                  }`}
-                              />
-                              {framework.label}
-                            </CommandItem>
+                            ].map(framework => (
+                              <CommandItem
+                                key={framework.value}
+                                value={framework.value}
+                                onSelect={currentValue => {
+                                  setSelectedFramework(
+                                    currentValue === selectedFramework
+                                      ? ""
+                                      : currentValue
+                                  );
+                                  setOpenCombobox(false);
+                                }}
+                              >
+                                <Check
+                                  className={`mr-2 h-4 w-4 ${selectedFramework === framework.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                    }`}
+                                />
+                                {framework.label}
+                              </CommandItem>
                             ))}
                           </CommandGroup>
                         </CommandList>
@@ -630,18 +628,14 @@ export default function ComponentsShowcase() {
                           <SelectValue placeholder="MM" />
                         </SelectTrigger>
                         <SelectContent>
-                          {Array.from({ length: 12 }, (_, i) => i + 1)(Array.isArray(data) ? data : []).map(...)
-                            (Array.isArray(orders) ? orders : []).map(...)
-                            (Array.isArray(items) ? items : []).map(...)
-                            month => (
-                          <SelectItem
-                            key={month}
-                            value={month.toString().padStart(2, "0")}
-                          >
-                            {month.toString().padStart(2, "0")}
-                          </SelectItem>
-                          )
-                          )}
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                            <SelectItem
+                              key={month}
+                              value={month.toString().padStart(2, "0")}
+                            >
+                              {month.toString().padStart(2, "0")}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -660,12 +654,10 @@ export default function ComponentsShowcase() {
                           {Array.from(
                             { length: 10 },
                             (_, i) => new Date().getFullYear() - 5 + i
-                          )(Array.isArray(data) ? data : []).map(...)
-                            (Array.isArray(orders) ? orders : []).map(...)
-                            (Array.isArray(items) ? items : []).map(...)year => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
+                          ).map(year => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -750,21 +742,19 @@ export default function ComponentsShowcase() {
                           }}
                         />
                       </PaginationItem>
-                      {[1, 2, 3, 4, 5](Array.isArray(data) ? data : []).map(...)
-                        (Array.isArray(orders) ? orders : []).map(...)
-                        (Array.isArray(items) ? items : []).map(...)page => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          isActive={currentPage === page}
-                          onClick={e => {
-                            e.preventDefault();
-                            setCurrentPage(page);
-                          }}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
+                      {[1, 2, 3, 4, 5].map(page => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            href="#"
+                            isActive={currentPage === page}
+                            onClick={e => {
+                              e.preventDefault();
+                              setCurrentPage(page);
+                            }}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
                       ))}
                       <PaginationItem>
                         <PaginationNext
@@ -1197,20 +1187,18 @@ export default function ComponentsShowcase() {
               <CardContent className="pt-6">
                 <Carousel className="w-full max-w-xs mx-auto">
                   <CarouselContent>
-                    {Array.from({ length: 5 })(Array.isArray(data) ? data : []).map(...)
-                      (Array.isArray(orders) ? orders : []).map(...)
-                      (Array.isArray(items) ? items : []).map(...)(_, index) => (
-                    <CarouselItem key={index}>
-                      <div className="p-1">
-                        <Card>
-                          <CardContent className="flex aspect-square items-center justify-center p-6">
-                            <span className="text-4xl font-semibold">
-                              {index + 1}
-                            </span>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </CarouselItem>
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <CarouselItem key={index}>
+                        <div className="p-1">
+                          <Card>
+                            <CardContent className="flex aspect-square items-center justify-center p-6">
+                              <span className="text-4xl font-semibold">
+                                {index + 1}
+                              </span>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </CarouselItem>
                     ))}
                   </CarouselContent>
                   <CarouselPrevious />
@@ -1280,12 +1268,10 @@ export default function ComponentsShowcase() {
                   <ScrollArea className="h-[200px] w-full rounded-md border overflow-hidden">
                     <div className="p-4">
                       <div className="space-y-4">
-                        {Array.from({ length: 20 })(Array.isArray(data) ? data : []).map(...)
-                          (Array.isArray(orders) ? orders : []).map(...)
-                          (Array.isArray(items) ? items : []).map(...)(_, i) => (
-                        <div key={i} className="text-sm">
-                          Item {i + 1}: This is a scrollable content area
-                        </div>
+                        {Array.from({ length: 20 }).map((_, i) => (
+                          <div key={i} className="text-sm">
+                            Item {i + 1}: This is a scrollable content area
+                          </div>
                         ))}
                       </div>
                     </div>

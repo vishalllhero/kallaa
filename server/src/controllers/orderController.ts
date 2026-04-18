@@ -5,18 +5,22 @@ export const create = async (req: Request, res: Response) => {
   try {
     console.log(`[DEBUG] Incoming create order request:`, req.body);
     const order = new Order(req.body);
-    await order.save();
-    console.log(`[DEBUG] Order saved successfully:`, order._id);
-    res.status(201).json(order);
+    res.status(201).json({
+      success: true,
+      data: order
+    });
   } catch (error) {
     console.error(`[ERROR] Failed to create order:`, error);
-    res.status(500).json({ message: "Failed to create order" });
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to create order",
+      error: error instanceof Error ? error.message : "Undefined error"
+    });
   }
 };
 
 export const getAll = async (req: Request, res: Response) => {
   try {
-    console.log(`[DEBUG] Fetching all orders`);
     const orders = await (Order as any).find().sort({ createdAt: -1 });
     const formattedOrders = Array.isArray(orders)
       ? orders.map(o => ({
@@ -24,10 +28,18 @@ export const getAll = async (req: Request, res: Response) => {
           id: o._id.toString(),
         }))
       : [];
-    res.json(formattedOrders);
+    res.json({
+      success: true,
+      data: formattedOrders
+    });
   } catch (error) {
     console.error(`[ERROR] Failed to fetch orders:`, error);
-    res.status(500).json({ message: "Failed to fetch orders" });
+    res.status(500).json({ 
+      success: false, 
+      data: [], 
+      message: "Failed to fetch orders",
+      error: error instanceof Error ? error.message : "Undefined error"
+    });
   }
 };
 
@@ -35,11 +47,23 @@ export const updateStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    console.log(`[DEBUG] Updating order ${id} status to ${status}`);
     const order = await (Order as any).findByIdAndUpdate(id, { status }, { new: true });
-    res.json(order);
+    if (!order) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Order not found" 
+      });
+    }
+    res.json({
+      success: true,
+      data: order
+    });
   } catch (error) {
     console.error(`[ERROR] Failed to update order status:`, error);
-    res.status(500).json({ message: "Failed to update order status" });
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to update order status",
+      error: error instanceof Error ? error.message : "Undefined error"
+    });
   }
 };

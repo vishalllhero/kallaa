@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "https://your-backend-url.com"; // Replace with actual backend URL
+const API_BASE = import.meta.env.VITE_API_URL || "https://kallaa-backend-production.up.railway.app";
 
 const api = axios.create({
   baseURL: `${API_BASE}/api`,
@@ -19,10 +19,16 @@ api.interceptors.request.use(config => {
 });
 
 api.interceptors.response.use(
-  response => response,
+  response => {
+    if (import.meta.env.DEV) {
+      console.log(`[API RESPONSE] ${response.config.url}:`, response.data);
+    }
+    return response;
+  },
   error => {
-    // Let the calling function (like AuthContext) handle 401 unauthorized errors
-    // so we don't trigger hard page reloads and duplicate state logic.
+    if (import.meta.env.DEV) {
+      console.error(`[API ERROR] ${error.config?.url}:`, error.response?.data || error.message);
+    }
     return Promise.reject(error);
   }
 );

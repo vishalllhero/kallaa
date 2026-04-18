@@ -14,8 +14,9 @@ export default function Home() {
   React.useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const data = await productApi.getAll();
-        const products = Array.isArray(data?.data) ? data.data : [];
+        setIsLoading(true);
+        const res = await productApi.getAll();
+        const products = Array.isArray(res?.data) ? res.data : [];
         setFeaturedProducts(products.slice(0, 4));
       } catch (err) {
         console.error("Failed to load featured products:", err);
@@ -162,31 +163,35 @@ export default function Home() {
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {safeMap([1, 2, 3, 4])(Array.isArray(data) ? data : []).map(...)
-                (Array.isArray(orders) ? orders : []).map(...)
-                (Array.isArray(items) ? items : []).map(...)i => (
-              <div
-                key={i}
-                className="aspect-[3/4] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
-              </div>
+              {[1, 2, 3, 4].map(i => (
+                <div
+                  key={i}
+                  className="aspect-[3/4] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+                </div>
               ))}
             </div>
-          ) : !Array.isArray(featuredProducts) ? (
-            <div>No Data Found</div>
-          ) : featuredProducts.length > 0 ? (
+          ) : !Array.isArray(featuredProducts) || featuredProducts.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-8">🎨</div>
+              <h3 className="text-2xl font-serif text-zinc-400 mb-4">
+                Featured pieces coming soon
+              </h3>
+              <p className="text-zinc-600">
+                Our latest collection is being prepared. Check back soon!
+              </p>
+            </div>
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {safeMap(featuredProducts)(Array.isArray(data) ? data : []).map(...)
-                (Array.isArray(orders) ? orders : []).map(...)
-                (Array.isArray(items) ? items : []).map(...)(p, idx) => (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                key={p.id}
-              >
+              {featuredProducts.map((p, idx) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  key={p.id || p._id}
+                >
                 <Link href={`/product/${p.id}`} className="group block">
                   <div className="relative aspect-[3/4] overflow-hidden rounded-2xl mb-6 bg-zinc-900 border border-white/5">
                     <ImageWithFallback
@@ -218,17 +223,7 @@ export default function Home() {
                   </p>
                 </Link>
               </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-8">🎨</div>
-              <h3 className="text-2xl font-serif text-zinc-400 mb-4">
-                Featured pieces coming soon
-              </h3>
-              <p className="text-zinc-600">
-                Our latest collection is being prepared. Check back soon!
-              </p>
+            ))}
             </div>
           )}
         </div>

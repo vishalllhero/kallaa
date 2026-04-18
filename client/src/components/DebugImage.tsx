@@ -36,15 +36,17 @@ export default function DebugImage({
           <div>
             <strong>Processed URLs:</strong>
             <div className="space-y-1">
-              {safeMap(images)(Array.isArray(data) ? data : []).map(...)
-                (Array.isArray(orders) ? orders : []).map(...)
-                (Array.isArray(items) ? items : []).map(...)(img, i) => (
-              <div key={i} className="bg-zinc-800 p-2 rounded">
-                <div>Original: {img}</div>
-                <div>Processed: {getImageUrl(img)}</div>
-                <div>Valid: {isValidImagePath(img) ? "✅" : "❌"}</div>
-              </div>
-              )) || <div>No images</div>}
+              {(!images || !Array.isArray(images) || images.length === 0) ? (
+                <div>No images</div>
+              ) : (
+                images.map((img, i) => (
+                  <div key={i} className="bg-zinc-800 p-2 rounded">
+                    <div>Original: {img}</div>
+                    <div>Processed: {getImageUrl(img)}</div>
+                    <div>Valid: {isValidImagePath(img) ? "✅" : "❌"}</div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

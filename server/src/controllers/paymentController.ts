@@ -46,14 +46,18 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
     console.log(`[Payment] Order created successfully: ${order.id}`);
 
     res.json({
-      id: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      status: order.status,
+      success: true,
+      data: {
+        id: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        status: order.status,
+      }
     });
   } catch (error: any) {
     console.error(`[Payment] Order creation failed:`, error);
     res.status(500).json({
+      success: false,
       message: "Could not create payment order",
       error: process.env.NODE_ENV === "production" ? undefined : error.message,
     });
@@ -71,9 +75,10 @@ export const verifyPayment = async (req: Request, res: Response) => {
 
     // Validate required fields
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res
-        .status(400)
-        .json({ message: "Missing required payment verification data" });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Missing required payment verification data" 
+      });
     }
 
     if (
@@ -82,7 +87,10 @@ export const verifyPayment = async (req: Request, res: Response) => {
       !orderDetails.customerName ||
       !orderDetails.customerEmail
     ) {
-      return res.status(400).json({ message: "Incomplete order details" });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Incomplete order details" 
+      });
     }
 
     console.log(`[Payment] Verifying payment for order: ${razorpay_order_id}`);
@@ -99,9 +107,10 @@ export const verifyPayment = async (req: Request, res: Response) => {
       console.warn(
         `[Payment] Invalid signature for order: ${razorpay_order_id}`
       );
-      return res
-        .status(400)
-        .json({ message: "Payment verification failed - invalid signature" });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Payment verification failed - invalid signature" 
+      });
     }
 
     // Check if order already exists to prevent duplicates
@@ -113,8 +122,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
     if (existingOrder) {
       console.log(`[Payment] Order already exists: ${existingOrder._id}`);
       return res.status(200).json({
+        success: true,
         message: "Payment already verified",
-        order: existingOrder,
+        data: existingOrder,
       });
     }
 
@@ -126,16 +136,21 @@ export const verifyPayment = async (req: Request, res: Response) => {
         console.warn(
           `[Payment] Payment not captured for order: ${razorpay_order_id}, status: ${payment.status}`
         );
-        return res.status(400).json({ message: "Payment not completed" });
+        return res.status(400).json({ 
+          success: false, 
+          message: "Payment not completed" 
+        });
       }
-    } catch (razorpayError) {
+    } catch (razorpayError: any) {
       console.error(
         `[Payment] Failed to fetch payment details:`,
         razorpayError
       );
-      return res
-        .status(500)
-        .json({ message: "Could not verify payment status" });
+      return res.status(500).json({ 
+        success: false, 
+        message: "Could not verify payment status",
+        error: razorpayError.message
+      });
     }
 
     // Create order in database
@@ -155,12 +170,14 @@ export const verifyPayment = async (req: Request, res: Response) => {
     console.log(`[Payment] Payment verified and order created: ${result._id}`);
 
     res.status(200).json({
+      success: true,
       message: "Payment verified and order created successfully",
-      order: result,
+      data: result,
     });
   } catch (error: any) {
     console.error(`[Payment] Verification error:`, error);
     res.status(500).json({
+      success: false,
       message: "Payment verification failed",
       error: process.env.NODE_ENV === "production" ? undefined : error.message,
     });

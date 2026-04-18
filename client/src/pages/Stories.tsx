@@ -43,26 +43,32 @@ export default function Stories() {
 
         {loading ? (
           <div className="space-y-32">
-            {[1, 2](Array.isArray(data) ? data : []).map(...)
-              (Array.isArray(orders) ? orders : []).map(...)
-              (Array.isArray(items) ? items : []).map(...)i => (
-            <div
-              key={i}
-              className="h-96 bg-zinc-900 animate-pulse rounded-3xl"
-            />
+            {[1, 2].map(i => (
+              <div
+                key={i}
+                className="h-96 bg-zinc-900 animate-pulse rounded-3xl"
+              />
             ))}
           </div>
-        ) : !Array.isArray(collectedPieces) ? (
-          <div>No Data Found</div>
+        ) : !Array.isArray(collectedPieces) || collectedPieces.length === 0 ? (
+          <div className="text-center py-40">
+            <h3 className="text-zinc-700 text-3xl font-serif italic mb-8">
+              The archive is currently empty.
+            </h3>
+            <Link
+              href="/products"
+              className="text-yellow-500 uppercase tracking-widest text-[10px] font-bold hover:text-white transition-colors"
+            >
+              Begin your collection →
+            </Link>
+          </div>
         ) : (
           <div className="space-y-32">
-            {safeMap(collectedPieces)(Array.isArray(data) ? data : []).map(...)
-              (Array.isArray(orders) ? orders : []).map(...)
-              (Array.isArray(items) ? items : []).map(...)(piece, index) => (
-            <div
-              key={piece.id}
-              className={`flex flex-col ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} gap-16 lg:gap-32 items-center`}
-            >
+            {collectedPieces.map((piece, index) => (
+              <div
+                key={piece.id || piece._id}
+                className={`flex flex-col ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} gap-16 lg:gap-32 items-center`}
+              >
               {/* Visual */}
               <div className="w-full lg:w-1/2 group">
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-zinc-900 border border-white/5">
@@ -122,20 +128,6 @@ export default function Stories() {
               </div>
             </div>
             ))}
-          </div>
-        )}
-
-        {!loading && collectedPieces.length === 0 && (
-          <div className="text-center py-40">
-            <h3 className="text-zinc-700 text-3xl font-serif italic mb-8">
-              The archive is currently empty.
-            </h3>
-            <Link
-              href="/products"
-              className="text-yellow-500 uppercase tracking-widest text-[10px] font-bold hover:text-white transition-colors"
-            >
-              Begin your collection →
-            </Link>
           </div>
         )}
       </div>
