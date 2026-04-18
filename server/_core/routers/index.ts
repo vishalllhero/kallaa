@@ -4,7 +4,7 @@ import { Product } from "../../models/Product";
 import { Order } from "../../models/Order";
 import { User } from "../../models/User";
 import { createToken } from "../../auth";
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "../../../shared/const";
 import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
@@ -14,22 +14,34 @@ export const appRouter = router({
     }),
 
     login: publicProcedure
-      .input(z.object({
-        email: z.string().email(),
-        password: z.string(),
-      }))
+      .input(
+        z.object({
+          email: z.string().email(),
+          password: z.string(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
-        const user = await User.findOne({ email: input.email });
+        const user = await User.findOne({ email: input.email } as any);
         if (!user) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password" });
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid email or password",
+          });
         }
 
         const isValid = await (user as any).comparePassword(input.password);
         if (!isValid) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password" });
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "Invalid email or password",
+          });
         }
 
-        const token = await createToken(user._id.toString(), user.email, user.role as "user" | "admin");
+        const token = await createToken(
+          user._id.toString(),
+          user.email,
+          user.role as "user" | "admin"
+        );
 
         ctx.res.cookie(COOKIE_NAME, token, {
           maxAge: ONE_YEAR_MS,
@@ -42,15 +54,20 @@ export const appRouter = router({
       }),
 
     signup: publicProcedure
-      .input(z.object({
-        name: z.string().min(2),
-        email: z.string().email(),
-        password: z.string().min(6), // Reduced to 6 for demo ease if needed
-      }))
+      .input(
+        z.object({
+          name: z.string().min(2),
+          email: z.string().email(),
+          password: z.string().min(6), // Reduced to 6 for demo ease if needed
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const existingUser = await User.findOne({ email: input.email });
         if (existingUser) {
-          throw new TRPCError({ code: "CONFLICT", message: "Email already in use" });
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Email already in use",
+          });
         }
 
         const user = new User({
@@ -60,7 +77,11 @@ export const appRouter = router({
         });
         await user.save();
 
-        const token = await createToken(user._id.toString(), user.email, user.role as "user" | "admin");
+        const token = await createToken(
+          user._id.toString(),
+          user.email,
+          user.role as "user" | "admin"
+        );
 
         ctx.res.cookie(COOKIE_NAME, token, {
           maxAge: ONE_YEAR_MS,
@@ -80,50 +101,59 @@ export const appRouter = router({
 
   product: router({
     list: publicProcedure
-      .input(z.object({
-        limit: z.number().default(50),
-        offset: z.number().default(0),
-      }).optional())
+      .input(
+        z
+          .object({
+            limit: z.number().default(50),
+            offset: z.number().default(0),
+          })
+          .optional()
+      )
       .query(async ({ input }) => {
         const products = await Product.find()
           .limit(input?.limit || 50)
           .skip(input?.offset || 0)
           .sort({ createdAt: -1 });
-        return products(Array.isArray(data) ? data : []).map(...)
-          (Array.isArray(orders) ? orders : []).map(...)
-          (Array.isArray(items) ? items : []).map(...)p => ({ ...p.toObject(), id: p._id.toString() }));
-  }),
+        return products.map(p => ({ ...p.toObject(), id: p._id.toString() }));
+      }),
 
-  get: publicProcedure
-    .input(z.object({ id: z.string() })) // Changed to string for MongoDB ID
-    .query(async ({ input }) => {
-      const product = await Product.findById(input.id);
-      if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Product not found" });
-      return product;
+    get: publicProcedure
+      .input(z.object({ id: z.string() })) // Changed to string for MongoDB ID
+      .query(async ({ input }) => {
+        const product = await Product.findById(input.id);
+        if (!product)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Product not found",
+          });
+        return product;
+      }),
+
+    stories: publicProcedure.query(async () => {
+      const stories = await Product.find({ isSold: true }).sort({
+        updatedAt: -1,
+      });
+      return stories.map(s => ({ ...s.toObject(), id: s._id.toString() }));
     }),
 
-  stories: publicProcedure.query(async () => {
-    const stories = await Product.find({ isSold: true }).sort({ updatedAt: -1 });
-    return stories(Array.isArray(data) ? data : []).map(...)
-      (Array.isArray(orders) ? orders : []).map(...)
-      (Array.isArray(items) ? items : []).map(...)s => ({ ...s.toObject(), id: s._id.toString() }));
-}),
-
-  create: adminProcedure
-    .input(z.object({
-      name: z.string(),
-      description: z.string(),
-      story: z.string(),
-      price: z.any(), // Changed to any to handle strings/numbers
-      images: z.array(z.string()).default([]),
-    }))
+    create: adminProcedure
+      .input(
+        z.object({
+          name: z.string(),
+          description: z.string(),
+          story: z.string(),
+          price: z.any(), // Changed to any to handle strings/numbers
+          images: z.array(z.string()).default([]),
+        })
+      )
       .mutation(async ({ input }) => {
         const product = new Product(input);
         return await product.save();
       }),
 
-      update: adminProcedure
-        .input(z.object({
+    update: adminProcedure
+      .input(
+        z.object({
           id: z.string(), // Changed to string
           name: z.string().optional(),
           description: z.string().optional(),
@@ -131,42 +161,43 @@ export const appRouter = router({
           price: z.any().optional(),
           images: z.array(z.string()).optional(),
           isSold: z.boolean().optional(),
-        }))
-        .mutation(async ({ input }) => {
-          const { id, ...updates } = input;
-          return await Product.findByIdAndUpdate(id, updates, { new: true });
-        }),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        return await Product.findByIdAndUpdate(id, updates, { new: true });
+      }),
 
-        delete: adminProcedure
-          .input(z.object({ id: z.string() })) // Changed to string
-          .mutation(async ({ input }) => {
-            return await Product.findByIdAndDelete(input.id);
-          }),
+    delete: adminProcedure
+      .input(z.object({ id: z.string() })) // Changed to string
+      .mutation(async ({ input }) => {
+        return await Product.findByIdAndDelete(input.id);
+      }),
   }),
 
-order: router({
-  create: publicProcedure
-    .input(z.object({
-      productId: z.string(), // Changed to string
-      customerName: z.string(),
-      customerEmail: z.string().email(),
-      shippingAddress: z.string(),
-      totalPrice: z.any(),
-    }))
-    .mutation(async ({ input }) => {
-      const order = new Order({
-        ...input,
-        status: "pending",
-      });
-      return await order.save();
-    }),
+  order: router({
+    create: publicProcedure
+      .input(
+        z.object({
+          productId: z.string(), // Changed to string
+          customerName: z.string(),
+          customerEmail: z.string().email(),
+          shippingAddress: z.string(),
+          totalPrice: z.any(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const order = new Order({
+          ...input,
+          status: "pending",
+        });
+        return await order.save();
+      }),
 
-  list: adminProcedure.query(async () => {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    return orders(Array.isArray(data) ? data : []).map(...)
-      (Array.isArray(orders) ? orders : []).map(...)
-      (Array.isArray(items) ? items : []).map(...)o => ({ ...o.toObject(), id: o._id.toString() }));
-}),
+    list: adminProcedure.query(async () => {
+      const orders = await Order.find().sort({ createdAt: -1 });
+      return orders.map(o => ({ ...o.toObject(), id: o._id.toString() }));
+    }),
   }),
 });
 

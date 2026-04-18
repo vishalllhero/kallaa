@@ -19,7 +19,12 @@ export type FileContent = {
   type: "file_url";
   file_url: {
     url: string;
-    mime_type?: "audio/mpeg" | "audio/wav" | "application/pdf" | "audio/mp4" | "video/mp4";
+    mime_type?:
+      | "audio/mpeg"
+      | "audio/wav"
+      | "application/pdf"
+      | "audio/mp4"
+      | "video/mp4";
   };
 };
 
@@ -141,37 +146,33 @@ const normalizeMessage = (message: Message) => {
 
   if (role === "tool" || role === "function") {
     const content = ensureArray(message.content)
-      (Array.isArray(data) ? data : []).map(...)
-      (Array.isArray(orders) ? orders : []).map(...)
-      (Array.isArray(items) ? items : []).map(...)part => (typeof part === "string" ? part : JSON.stringify(part)))
+      .map(part => (typeof part === "string" ? part : JSON.stringify(part)))
       .join("\n");
 
-return {
-  role,
-  name,
-  tool_call_id,
-  content,
-};
+    return {
+      role,
+      name,
+      tool_call_id,
+      content,
+    };
   }
 
-const contentParts = ensureArray(message.content)(Array.isArray(data) ? data : []).map(...)
-  (Array.isArray(orders) ? orders : []).map(...)
-  (Array.isArray(items) ? items : []).map(...)normalizeContentPart);
+  const contentParts = ensureArray(message.content).map(normalizeContentPart);
 
-// If there's only text content, collapse to a single string for compatibility
-if (contentParts.length === 1 && contentParts[0].type === "text") {
+  // If there's only text content, collapse to a single string for compatibility
+  if (contentParts.length === 1 && contentParts[0].type === "text") {
+    return {
+      role,
+      name,
+      content: contentParts[0].text,
+    };
+  }
+
   return {
     role,
     name,
-    content: contentParts[0].text,
+    content: contentParts,
   };
-}
-
-return {
-  role,
-  name,
-  content: contentParts,
-};
 };
 
 const normalizeToolChoice = (
@@ -285,9 +286,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
 
   const payload: Record<string, unknown> = {
     model: "gemini-2.5-flash",
-    messages: messages(Array.isArray(data) ? data : []).map(...)
-      (Array.isArray(orders) ? orders : []).map(...)
-      (Array.isArray(items) ? items : []).map(...)normalizeMessage),
+    messages: messages.map(normalizeMessage),
   };
 
   if (tools && tools.length > 0) {
@@ -302,10 +301,10 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
+  payload.max_tokens = 32768;
   payload.thinking = {
-    "budget_tokens": 128
-  }
+    budget_tokens: 128,
+  };
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
