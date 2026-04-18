@@ -1,9 +1,10 @@
-import { User } from "../../drizzle/schema";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: User;
+      user?: any; // Use any for now as requested for safe casting/simplicity
     }
   }
 }
+
+export {};

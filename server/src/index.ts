@@ -1,7 +1,9 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import { connectDB } from "./db";
+import { User } from "./models/User";
 
 // Routes
 import authRoutes from "./routes/authRoutes";
@@ -17,6 +19,29 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+
+// Simple Admin Seeding
+const seedAdmin = async () => {
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@kallaa.com";
+    const adminPassword = process.env.ADMIN_PASSWORD || "123456";
+    const adminExists = await (User as any).findOne({ email: adminEmail });
+    
+    if (!adminExists) {
+      const admin = new User({
+        name: "Admin User",
+        email: adminEmail,
+        password: adminPassword,
+        role: "admin",
+      });
+      await admin.save();
+      console.log("✅ Admin user created successfully");
+    }
+  } catch (error) {
+    console.error("❌ Seeding error:", error);
+  }
+};
 
 // Debug logging
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -26,6 +51,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Connect to DB
 connectDB();
+seedAdmin();
 
 // API Routes
 app.use("/api/auth", authRoutes);
