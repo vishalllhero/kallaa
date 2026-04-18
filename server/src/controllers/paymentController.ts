@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import { Order } from "../models/Order";
+import { Order } from "../models/Order.js";
 
 // Initialize Razorpay with validation
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {

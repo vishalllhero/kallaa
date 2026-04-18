@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { SignJWT, jwtVerify } from "jose";
+import * as jose from "jose";
 
 const SALT_ROUNDS = 10;
 const JWT_SECRET = new TextEncoder().encode(
@@ -32,7 +32,7 @@ export async function createToken(
   role: "user" | "admin" = "user",
   expiresIn: string = "30d"
 ): Promise<string> {
-  const token = await new SignJWT({
+  const token = await new jose.SignJWT({
     userId,
     email,
     role,
@@ -54,7 +54,7 @@ export async function verifyToken(token: string): Promise<{
   role: "user" | "admin";
 } | null> {
   try {
-    const verified = await jwtVerify(token, JWT_SECRET);
+    const verified = await jose.jwtVerify(token, JWT_SECRET);
     return verified.payload as any;
   } catch (error) {
     console.error("[Auth] Failed to verify token:", error);

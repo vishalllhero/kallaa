@@ -1,9 +1,9 @@
 import { Router, Request } from "express";
-import * as productController from "../controllers/productController";
-import * as orderController from "../controllers/orderController";
-import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware";
-import { upload } from "../middlewares/uploadMiddleware";
-import cloudinary from "../config/cloudinary";
+import * as productController from "../controllers/productController.js";
+import * as orderController from "../controllers/orderController.js";
+import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
+import { upload } from "../middlewares/uploadMiddleware.js";
+import cloudinary from "../config/cloudinary.js";
 
 const router = Router();
 

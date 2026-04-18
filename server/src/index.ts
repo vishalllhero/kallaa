@@ -2,15 +2,15 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./db";
-import { User } from "./models/User";
+import { connectDB } from "./db.js";
+import { User } from "./models/User.js";
 
 // Routes
-import authRoutes from "./routes/authRoutes";
-import productRoutes from "./routes/productRoutes";
-import orderRoutes from "./routes/orderRoutes";
-import adminRoutes from "./routes/adminRoutes";
-import paymentRoutes from "./routes/paymentRoutes";
+import authRoutes from "./routes/authRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 dotenv.config();
 

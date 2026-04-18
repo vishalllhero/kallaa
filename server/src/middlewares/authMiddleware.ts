@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../auth";
-import { User } from "../models/User";
+import { verifyToken } from "../auth.js";
+import { User } from "../models/User.js";
 
 const COOKIE_NAME = "kallaa_session"; // Ensure this matches what's used in login
 

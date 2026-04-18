@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { User } from "../models/User";
-import { createToken } from "../auth";
+import { User } from "../models/User.js";
+import { createToken } from "../auth.js";
 
 const COOKIE_NAME = "kallaa_session";
 
