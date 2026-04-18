@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "../node_modules/tw-animate-css/dist/tw-animate.css";
+@import "tw-animate-css/dist/tw-animate.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -119,11 +119,11 @@
   * {
     @apply border-border outline-ring/50;
   }
-  
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-image: 
+    background-image:
       radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.02) 0%, transparent 50%);
     position: relative;
@@ -141,7 +141,7 @@
     pointer-events: none;
     z-index: 9999;
   }
-  
+
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),
@@ -153,8 +153,13 @@
   input[type="radio"]:not(:disabled) {
     @apply cursor-pointer;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Playfair Display', serif;
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -166,12 +171,14 @@
 }
 
 @layer components {
+
   /* ===== ULTRA PREMIUM ANIMATIONS ===== */
   @keyframes fadeInUp {
     from {
       opacity: 0;
       transform: translateY(40px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -179,13 +186,23 @@
   }
 
   @keyframes slow-zoom {
-    from { transform: scale(1); }
-    to { transform: scale(1.1); }
+    from {
+      transform: scale(1);
+    }
+
+    to {
+      transform: scale(1.1);
+    }
   }
 
   @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
   .animate-fade-in {
@@ -209,11 +226,14 @@
   }
 
   @keyframes pulse-urgency {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 1;
       transform: scale(1);
       box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
     }
+
     50% {
       opacity: 0.8;
       transform: scale(1.02);
@@ -230,7 +250,7 @@
   }
 
   /* ===== ULTRA PREMIUM BUTTONS ===== */
-  
+
   .btn-luxury {
     @apply px-8 py-4 rounded-none font-medium transition-all duration-500 relative overflow-hidden;
     background: linear-gradient(135deg, #d4af37 0%, #e8c547 50%, #d4af37 100%);
@@ -240,7 +260,7 @@
     text-transform: uppercase;
     font-size: 0.875rem;
     font-weight: 600;
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(212, 175, 55, 0.4),
       0 10px 30px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -260,10 +280,10 @@
   .btn-luxury:hover::before {
     left: 100%;
   }
-  
+
   .btn-luxury:hover {
     transform: translateY(-3px) scale(1.03);
-    box-shadow: 
+    box-shadow:
       0 0 50px rgba(212, 175, 55, 0.8),
       0 20px 50px rgba(0, 0, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -272,7 +292,7 @@
   .btn-luxury:active {
     transform: translateY(-1px) scale(1.01);
   }
-  
+
   .btn-luxury-outline {
     @apply px-8 py-4 rounded-none font-medium transition-all duration-500 relative overflow-hidden;
     background-color: transparent;
@@ -300,25 +320,25 @@
   .btn-luxury-outline:hover::before {
     left: 100%;
   }
-  
+
   .btn-luxury-outline:hover {
-    box-shadow: 
+    box-shadow:
       0 0 40px rgba(212, 175, 55, 0.6),
       inset 0 0 20px rgba(212, 175, 55, 0.1);
     transform: translateY(-3px) scale(1.03);
   }
-  
+
   /* Premium card with glow border */
   .card-luxury {
     @apply bg-card rounded-lg p-6 transition-all duration-500;
     border: 1px solid rgba(212, 175, 55, 0.2);
     position: relative;
     overflow: hidden;
-    box-shadow: 
+    box-shadow:
       0 10px 40px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(212, 175, 55, 0.1);
   }
-  
+
   .card-luxury::before {
     content: '';
     position: absolute;
@@ -331,14 +351,14 @@
     transition: opacity 0.3s ease;
     pointer-events: none;
   }
-  
+
   .card-luxury:hover::before {
     opacity: 1;
   }
-  
+
   .card-luxury:hover {
     border-color: rgba(212, 175, 55, 0.5);
-    box-shadow: 
+    box-shadow:
       0 20px 60px rgba(212, 175, 55, 0.2),
       inset 0 1px 0 rgba(212, 175, 55, 0.2);
     transform: translateY(-6px);
@@ -347,7 +367,7 @@
   /* Product card with luxury glow */
   .product-card-luxury {
     @apply relative overflow-hidden rounded-lg transition-all duration-500;
-    
+
     .product-image {
       @apply w-full aspect-square object-cover transition-transform duration-700;
       background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05));
@@ -383,7 +403,7 @@
       opacity: 1;
     }
   }
-  
+
   /* Container utility */
   .container {
     width: 100%;
@@ -434,7 +454,7 @@
   /* Vignette effect */
   .vignette {
     position: relative;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -469,25 +489,25 @@
     font-family: 'Playfair Display', serif;
     letter-spacing: 0.05em;
   }
-  
+
   .text-luxury-h2 {
     @apply text-4xl md:text-5xl font-light;
     font-family: 'Playfair Display', serif;
     letter-spacing: 0.03em;
   }
-  
+
   .text-luxury-h3 {
     @apply text-2xl md:text-3xl font-light;
     font-family: 'Playfair Display', serif;
     letter-spacing: 0.02em;
   }
-  
+
   .text-luxury-body {
     @apply text-base md:text-lg leading-relaxed;
     font-family: 'Poppins', sans-serif;
     letter-spacing: 0.01em;
   }
-  
+
   .text-luxury-small {
     @apply text-sm md:text-base;
     font-family: 'Poppins', sans-serif;
@@ -510,13 +530,13 @@
   }
 
   .shadow-luxury {
-    box-shadow: 
+    box-shadow:
       0 20px 60px rgba(0, 0, 0, 0.4),
       0 0 40px rgba(212, 175, 55, 0.1);
   }
 
   .shadow-luxury-lg {
-    box-shadow: 
+    box-shadow:
       0 30px 80px rgba(0, 0, 0, 0.5),
       0 0 60px rgba(212, 175, 55, 0.15);
   }
@@ -590,7 +610,8 @@
     @apply text-3xl;
   }
 
-  .btn-luxury, .btn-luxury-outline {
+  .btn-luxury,
+  .btn-luxury-outline {
     @apply px-6 py-3 text-xs;
   }
 }
