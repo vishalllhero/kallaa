@@ -15,11 +15,16 @@ export default function Home() {
     const fetchFeatured = async () => {
       try {
         setIsLoading(true);
-        const res = await productApi.getAll();
-        const products = Array.isArray(res?.data) ? res.data : [];
-        setFeaturedProducts(products.slice(0, 4));
+        const response = await productApi.getAll();
+        console.log("API RESPONSE (Featured):", response.data);
+        
+        // Normalize: response.data is the direct result due to our api.ts interceptor,
+        // but we'll follow the requested normalization pattern for extra safety.
+        const data = response?.data?.data || response?.data?.products || response?.data || [];
+        const productsArray = Array.isArray(data) ? data : [];
+        setFeaturedProducts(productsArray.slice(0, 4));
       } catch (err) {
-        console.error("Failed to load featured products:", err);
+        console.error("Featured products fetch error:", err);
         setFeaturedProducts([]);
       } finally {
         setIsLoading(false);
@@ -184,7 +189,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {featuredProducts.map((p, idx) => (
+              {(Array.isArray(featuredProducts) ? featuredProducts : []).map((p, idx) => (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}

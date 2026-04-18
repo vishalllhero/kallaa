@@ -18,8 +18,9 @@ export default function Account() {
     fetch(`${API_BASE}/api/orders`)
       .then(res => res.json())
       .then(res => {
-        const ordersData = res?.data || [];
-        setOrders(Array.isArray(ordersData) ? ordersData : []);
+        console.log("API RESPONSE (Orders):", res);
+        const data = res?.data?.data || res?.data?.orders || res?.data || [];
+        setOrders(Array.isArray(data) ? data : []);
       })
       .catch((err) => {
         console.error("Orders fetch failed:", err);
@@ -29,8 +30,9 @@ export default function Account() {
     fetch(`${API_BASE}/api/wishlist`)
       .then(res => res.json())
       .then(res => {
-        const wishlistData = res?.data || [];
-        setWishlist(Array.isArray(wishlistData) ? wishlistData : []);
+        console.log("API RESPONSE (Wishlist):", res);
+        const data = res?.data?.data || res?.data?.items || res?.data || [];
+        setWishlist(Array.isArray(data) ? data : []);
       })
       .catch((err) => {
         console.error("Wishlist fetch failed:", err);
@@ -130,7 +132,7 @@ export default function Account() {
               {!orders || !Array.isArray(orders) || orders.length === 0 ? (
                 <p className="text-gray-500 italic">No orders available yet.</p>
               ) : (
-                orders.map(order => (
+                (Array.isArray(orders) ? orders : []).map(order => (
                   <div
                     key={order.id || order._id}
                     className="border-b border-white/10 py-4 last:border-0"

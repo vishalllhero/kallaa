@@ -39,7 +39,7 @@ export default function DebugImage({
               {(!images || !Array.isArray(images) || images.length === 0) ? (
                 <div>No images</div>
               ) : (
-                images.map((img, i) => (
+                (Array.isArray(images) ? images : []).map((img, i) => (
                   <div key={i} className="bg-zinc-800 p-2 rounded">
                     <div>Original: {img}</div>
                     <div>Processed: {getImageUrl(img)}</div>

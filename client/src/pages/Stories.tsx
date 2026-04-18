@@ -14,9 +14,15 @@ export default function Stories() {
     const fetchStories = async () => {
       try {
         setLoading(true);
-        const data = await productApi.getStories();
-        setCollectedPieces(Array.isArray(data?.data) ? data.data : []);
+        const response = await productApi.getStories();
+        console.log("API RESPONSE (Stories):", response.data);
+        
+        // Normalize: response.data is the direct result due to our api.ts interceptor, 
+        // but we'll follow the requested normalization pattern for extra safety.
+        const data = response?.data?.data || response?.data?.products || response?.data || [];
+        setCollectedPieces(Array.isArray(data) ? data : []);
       } catch (err) {
+        console.error("Archive fetch error:", err);
         toast.error("Failed to load archive");
       } finally {
         setLoading(false);
@@ -64,7 +70,7 @@ export default function Stories() {
           </div>
         ) : (
           <div className="space-y-32">
-            {collectedPieces.map((piece, index) => (
+            {(Array.isArray(collectedPieces) ? collectedPieces : []).map((piece, index) => (
               <div
                 key={piece.id || piece._id}
                 className={`flex flex-col ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} gap-16 lg:gap-32 items-center`}

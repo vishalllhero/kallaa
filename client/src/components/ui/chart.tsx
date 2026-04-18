@@ -80,10 +80,10 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
+        __html: (Array.isArray(Object.entries(THEMES)) ? Object.entries(THEMES) : [])
           .map(([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
-${colorConfig
+${(Array.isArray(colorConfig) ? colorConfig : [])
               .map(([key, itemConfig]) => {
                 const color =
                   itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
@@ -178,7 +178,7 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {(payload?.filter(item => item.type !== "none") || []).map(
+        {(Array.isArray(payload) ? payload.filter(item => item.type !== "none") : []).map(
           (item, index) => {
             const key = `${ nameKey || item.name || item.dataKey || "value" } `;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
@@ -276,7 +276,7 @@ function ChartLegendContent({
         className
       )}
     >
-      {(payload?.filter(item => item.type !== "none") || []).map(item => {
+      {(Array.isArray(payload) ? payload.filter(item => item.type !== "none") : []).map(item => {
         const key = `${ nameKey || item.dataKey || "value" } `;
         const itemConfig = getPayloadConfigFromPayload(config, item, key);
 

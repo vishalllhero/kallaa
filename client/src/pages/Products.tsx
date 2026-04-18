@@ -20,25 +20,27 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await productApi.getAll();
-        setProducts(Array.isArray(data?.data) ? data.data : []);
+        const response = await productApi.getAll();
+        console.log("API RESPONSE (Products):", response.data);
+        
+        // Normalize: response.data is the direct result due to our api.ts interceptor,
+        // but we'll follow the requested normalization pattern for extra safety.
+        const data = response?.data?.data || response?.data?.products || response?.data || [];
+        const productArray = Array.isArray(data) ? data : [];
+        setProducts(productArray);
 
         // Debug image URLs in development
         if (import.meta.env.DEV) {
-          console.log(
-            "[Products] Loaded products:",
-            (Array.isArray(data?.data) ? data.data : []).length
-          );
-          (Array.isArray(data?.data) ? data.data : [])
-            .slice(0, 3)
-            .forEach((product: any, i: number) => {
-              debugImageInfo(
-                product.images,
-                `Product ${i + 1}: ${product.name}`
-              );
-            });
+          console.log("[Products] Loaded products count:", productArray.length);
+          productArray.slice(0, 3).forEach((product: any, i: number) => {
+            debugImageInfo(
+              product.images,
+              `Product ${i + 1}: ${product.name}`
+            );
+          });
         }
       } catch (err) {
+        console.error("Products fetch error:", err);
         toast.error("Failed to load pieces");
       } finally {
         setLoading(false);
@@ -122,7 +124,7 @@ export default function Products() {
             layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
           >
-            {filteredProducts.map((product, idx) => (
+            {(Array.isArray(filteredProducts) ? filteredProducts : []).map((product, idx) => (
               <motion.div
                 layout
                 initial={{ opacity: 0, y: 30 }}
@@ -183,7 +185,7 @@ export default function Products() {
 
         {/* Debug component for development */}
         <DebugImage
-          images={products.slice(0, 3).map(p => p.images?.[0]).filter(Boolean)}
+          images={(Array.isArray(products) ? products : []).slice(0, 3).map(p => p.images?.[0]).filter(Boolean)}
         />
       </div>
     </div>

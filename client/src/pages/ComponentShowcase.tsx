@@ -562,7 +562,7 @@ export default function ComponentsShowcase() {
                         <CommandList>
                           <CommandEmpty>No framework found</CommandEmpty>
                           <CommandGroup>
-                            {[
+                            {(Array.isArray([
                               { value: "react", label: "React" },
                               { value: "vue", label: "Vue" },
                               { value: "angular", label: "Angular" },
@@ -570,7 +570,15 @@ export default function ComponentsShowcase() {
                               { value: "nextjs", label: "Next.js" },
                               { value: "nuxt", label: "Nuxt" },
                               { value: "remix", label: "Remix" },
-                            ].map(framework => (
+                            ]) ? [
+                              { value: "react", label: "React" },
+                              { value: "vue", label: "Vue" },
+                              { value: "angular", label: "Angular" },
+                              { value: "svelte", label: "Svelte" },
+                              { value: "nextjs", label: "Next.js" },
+                              { value: "nuxt", label: "Nuxt" },
+                              { value: "remix", label: "Remix" },
+                            ] : []).map(framework => (
                               <CommandItem
                                 key={framework.value}
                                 value={framework.value}
@@ -628,7 +636,7 @@ export default function ComponentsShowcase() {
                           <SelectValue placeholder="MM" />
                         </SelectTrigger>
                         <SelectContent>
-                          {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                          {(Array.isArray(Array.from({ length: 12 }, (_, i) => i + 1)) ? Array.from({ length: 12 }, (_, i) => i + 1) : []).map(month => (
                             <SelectItem
                               key={month}
                               value={month.toString().padStart(2, "0")}
@@ -651,10 +659,13 @@ export default function ComponentsShowcase() {
                           <SelectValue placeholder="YYYY" />
                         </SelectTrigger>
                         <SelectContent>
-                          {Array.from(
+                          {(Array.isArray(Array.from(
                             { length: 10 },
                             (_, i) => new Date().getFullYear() - 5 + i
-                          ).map(year => (
+                          )) ? Array.from(
+                            { length: 10 },
+                            (_, i) => new Date().getFullYear() - 5 + i
+                          ) : []).map(year => (
                             <SelectItem key={year} value={year.toString()}>
                               {year}
                             </SelectItem>
@@ -742,7 +753,7 @@ export default function ComponentsShowcase() {
                           }}
                         />
                       </PaginationItem>
-                      {[1, 2, 3, 4, 5].map(page => (
+                      {(Array.isArray([1, 2, 3, 4, 5]) ? [1, 2, 3, 4, 5] : []).map(page => (
                         <PaginationItem key={page}>
                           <PaginationLink
                             href="#"
@@ -1187,7 +1198,7 @@ export default function ComponentsShowcase() {
               <CardContent className="pt-6">
                 <Carousel className="w-full max-w-xs mx-auto">
                   <CarouselContent>
-                    {Array.from({ length: 5 }).map((_, index) => (
+                    {(Array.isArray(Array.from({ length: 5 })) ? Array.from({ length: 5 }) : []).map((_, index) => (
                       <CarouselItem key={index}>
                         <div className="p-1">
                           <Card>
@@ -1268,7 +1279,7 @@ export default function ComponentsShowcase() {
                   <ScrollArea className="h-[200px] w-full rounded-md border overflow-hidden">
                     <div className="p-4">
                       <div className="space-y-4">
-                        {Array.from({ length: 20 }).map((_, i) => (
+                        {(Array.isArray(Array.from({ length: 20 })) ? Array.from({ length: 20 }) : []).map((_, i) => (
                           <div key={i} className="text-sm">
                             Item {i + 1}: This is a scrollable content area
                           </div>

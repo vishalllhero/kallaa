@@ -44,13 +44,21 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [pData, oData] = await Promise.all([
+      const [pRes, oRes] = await Promise.all([
         adminApi.getProducts(),
         adminApi.getOrders(),
       ]);
-      setProducts(Array.isArray(pData?.data) ? pData.data : []);
-      setOrders(Array.isArray(oData?.data) ? oData.data : []);
+      
+      console.log("API RESPONSE (Admin Products):", pRes.data);
+      console.log("API RESPONSE (Admin Orders):", oRes.data);
+
+      const pData = pRes?.data?.data || pRes?.data?.products || pRes?.data || [];
+      const oData = oRes?.data?.data || oRes?.data?.orders || oRes?.data || [];
+      
+      setProducts(Array.isArray(pData) ? pData : []);
+      setOrders(Array.isArray(oData) ? oData : []);
     } catch (err) {
+      console.error("Admin data fetch error:", err);
       toast.error("Access denied or server error");
       setProducts([]);
       setOrders([]);
@@ -339,7 +347,7 @@ export default function AdminDashboard() {
                     <div className="space-y-4">
                         {formData.images.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {formData.images.map((url, index) => (
+                            {(Array.isArray(formData.images) ? formData.images : []).map((url, index) => (
                               <div
                                 key={index}
                                 className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
@@ -355,7 +363,7 @@ export default function AdminDashboard() {
                         )}
                         {selectedFiles.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {selectedFiles.map((file, index) => (
+                            {(Array.isArray(selectedFiles) ? selectedFiles : []).map((file, index) => (
                               <div
                                 key={index}
                                 className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
@@ -462,7 +470,7 @@ export default function AdminDashboard() {
                   {(!products || products.length === 0) ? (
                     <div className="text-center py-12 text-zinc-600">No products found in inventory.</div>
                   ) : (
-                    products.map(product => (
+                    (Array.isArray(products) ? products : []).map(product => (
                       <div
                         key={product.id || product._id}
                         className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
@@ -508,7 +516,7 @@ export default function AdminDashboard() {
           <div>No Data Found</div>
         ) : (
           <div className="space-y-6">
-            {orders.map(order => (
+            {(Array.isArray(orders) ? orders : []).map(order => (
               <div
                 key={order.id || order._id}
                 className="bg-zinc-900/30 p-8 rounded-3xl border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-8"
@@ -585,7 +593,7 @@ export default function AdminDashboard() {
               <div className="font-bold">Form Data Images:</div>
               <div className="ml-2">
                 {formData.images.length > 0 ? (
-                  formData.images.map((img, i) => (
+                  (Array.isArray(formData.images) ? formData.images : []).map((img, i) => (
                     <div key={i} className="truncate">
                       [{i}]: {img}
                     </div>
