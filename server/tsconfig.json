@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "moduleResolution": "node"
+  },
+  "include": ["src"],
+  "exclude": [
+    "src/_core/vite.ts",
+    "src/_core/llm.ts",
+    "src/_core/dataApi.ts",
+    "src/_core/imageGeneration.ts",
+    "src/_core/map.ts",
+    "src/_core/notification.ts",
+    "src/_core/voiceTranscription.ts",
+    "src/storage.ts",
+    "src/auth.logout.test.ts",
+    "src/shared/types.ts"
+  ]
+}

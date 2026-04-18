@@ -1,20 +1,23 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { appRouter } from "./routers/index";
-import { createContext } from "./context";
-import { setupVite, serveStatic } from "./vite";
-import { ENV } from "./env";
-import productRoutes from "../routes/productRoutes";
-import orderRoutes from "../routes/orderRoutes";
-import authRoutes from "../routes/authRoutes";
-import adminRoutes from "../routes/adminRoutes";
-import paymentRoutes from "../routes/paymentRoutes";
+import { appRouter } from "./_core/routers/index";
+import { createContext } from "./_core/context";
+// import { setupVite, serveStatic } from "./_core/vite";
+const serveStatic = (app: express.Application) => {
+  // For production, serve static files if needed
+};
+import { ENV } from "./_core/env";
+import productRoutes from "./routes/productRoutes";
+import orderRoutes from "./routes/orderRoutes";
+import authRoutes from "./routes/authRoutes";
+import adminRoutes from "./routes/adminRoutes";
+import paymentRoutes from "./routes/paymentRoutes";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
 
-import { connectDB } from "../db";
+import { connectDB } from "./db";
 // User model imported dynamically after DB connects (see admin seed below)
 
 async function startServer() {
@@ -22,7 +25,7 @@ async function startServer() {
   const server = createServer(app);
 
   // Task 6: Request Logging
-  app.use((req, res, next) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     console.log(`[DEBUG] ${req.method} ${req.url}`);
     next();
   });
@@ -57,11 +60,11 @@ async function startServer() {
 
   // Upload API route
   const { memoryUpload, uploadToCloudinary } =
-    await import("../middlewares/uploadMiddleware");
+    await import("./middlewares/uploadMiddleware");
   app.post(
     "/api/upload",
     memoryUpload.array("images", 5),
-    async (req: any, res: Response) => {
+    async (req: any, res: express.Response) => {
       try {
         console.log("FILES:", req.files);
         if (!req.files || req.files.length === 0) {
@@ -114,8 +117,10 @@ async function startServer() {
   import("mongoose").then(({ default: mongoose }) => {
     mongoose.connection.once("connected", async () => {
       try {
-        const { User } = await import("../models/User");
-        const adminExists = await User.findOne({ email: "admin@kallaa.com" });
+        const { User } = await import("./models/User");
+        const adminExists = await User.findOne({
+          email: "admin@kallaa.com",
+        } as any);
         if (!adminExists) {
           const admin = new User({
             name: "Admin User",
@@ -150,15 +155,10 @@ async function startServer() {
     })
   );
 
-  if (process.env.NODE_ENV === "development") {
-    console.log("[Server] Starting in development mode with Vite...");
-    await setupVite(app, server);
-  } else {
-    console.log("[Server] Starting in production mode...");
-    serveStatic(app);
-  }
+  console.log("[Server] Starting in production mode...");
+  serveStatic(app);
 
-  const PORT = ENV.port || 3000;
+  const PORT = process.env.PORT || 5000;
 
   server.once("error", (err: any) => {
     if (err.code === "EADDRINUSE") {

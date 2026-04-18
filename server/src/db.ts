@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { ENV } from "./_core/env";
+import { User } from "./models/User";
 
 const MONGO_URI = ENV.mongoUri;
 
@@ -17,7 +18,7 @@ async function connectWithRetry() {
     } catch (error: any) {
       console.error("❌ MongoDB Connection Failed:", error.message);
       console.log("⚠️ Retrying in 3 seconds...");
-      await new Promise((res) => setTimeout(res, 3000));
+      await new Promise(res => setTimeout(res, 3000));
     }
   }
 }
@@ -25,7 +26,7 @@ async function connectWithRetry() {
 // Exported function: fires off background retry, resolves immediately
 // so server startup is never blocked by DB
 export const connectDB = () => {
-  connectWithRetry().catch((err) =>
+  connectWithRetry().catch(err =>
     console.error("Unexpected DB retry error:", err)
   );
 };

@@ -4,7 +4,7 @@ import { Product } from "../../models/Product";
 import { Order } from "../../models/Order";
 import { User } from "../../models/User";
 import { createToken } from "../../auth";
-import { COOKIE_NAME, ONE_YEAR_MS } from "../../../shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "../shared/const";
 import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
