@@ -8,7 +8,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@shared": path.resolve(__dirname, "../shared"),
-      "tw-animate-css/dist/tw-animate.css": path.resolve(__dirname, "node_modules/tw-animate-css/dist/tw-animate.css"),
+      "tw-animate-css/dist/tw-animate.css": path.resolve(
+        __dirname,
+        "node_modules/tw-animate-css/dist/tw-animate.css"
+      ),
     },
   },
   server: {
@@ -16,17 +19,17 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:5000",
         changeOrigin: true,
-        secure: false
+        secure: false,
       },
       "/uploads": {
         target: "http://localhost:5000",
         changeOrigin: true,
-        secure: false
-      }
-    }
+        secure: false,
+      },
+    },
   },
   build: {
     outDir: "dist",
-    emptyOutDir: true
-  }
+    emptyOutDir: true,
+  },
 });
