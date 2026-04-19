@@ -1,45 +1,20 @@
-@import "tw-animate-css/dist/tw-animate.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@custom-variant dark (&:is(.dark *));
+/* animation plugin */
+@import "tw-animate-css/dist/tw-animate.css";
 
-:root {
-  /* Light theme (fallback) */
-  --primary: #d4af37;
-  --primary-foreground: #0a0a0a;
-  --sidebar-primary: #d4af37;
-  --sidebar-primary-foreground: #0a0a0a;
-  --chart-1: #d4af37;
-  --chart-2: #c9a227;
-  --chart-3: #b8941f;
-  --chart-4: #a78617;
-  --chart-5: #96780f;
-  --radius: 0.5rem;
-  --background: oklch(0.98 0.001 0);
-  --foreground: oklch(0.1 0.001 0);
-  --card: oklch(0.95 0.001 0);
-  --card-foreground: oklch(0.1 0.001 0);
-  --popover: oklch(0.95 0.001 0);
-  --popover-foreground: oklch(0.1 0.001 0);
-  --secondary: oklch(0.15 0.001 0);
-  --secondary-foreground: oklch(0.95 0.001 0);
-  --muted: oklch(0.85 0.001 0);
-  --muted-foreground: oklch(0.4 0.001 0);
-  --accent: #d4af37;
-  --accent-foreground: oklch(0.1 0.001 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.9 0.001 0);
-  --input: oklch(0.92 0.001 0);
-  --ring: #d4af37;
-  --sidebar: oklch(0.95 0.001 0);
-  --sidebar-foreground: oklch(0.1 0.001 0);
-  --sidebar-accent: #d4af37;
-  --sidebar-accent-foreground: oklch(0.1 0.001 0);
-  --sidebar-border: oklch(0.9 0.001 0);
-  --sidebar-ring: #d4af37;
+/* ensure full height layout */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* prevent default margin issues */
+body {
+  margin: 0;
 }
 
 .dark {
