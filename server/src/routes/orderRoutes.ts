@@ -4,10 +4,16 @@ import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-router.post("/", orderController.create);
+router.post("/", authenticate, orderController.create);
+router.get("/user", authenticate, orderController.getUserOrders);
 
 // Protected Admin Routes
 router.get("/", authenticate, authorizeAdmin, orderController.getAll);
-router.put("/:id/status", authenticate, authorizeAdmin, orderController.updateStatus);
+router.put(
+  "/:id/status",
+  authenticate,
+  authorizeAdmin,
+  orderController.updateStatus
+);
 
 export default router;

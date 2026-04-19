@@ -5,6 +5,7 @@ import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { CartProvider } from "./contexts/CartContext";
 import { useAuth } from "./_core/hooks/useAuth";
 import { authApi } from "./api";
 
@@ -16,6 +17,8 @@ import Stories from "./pages/Stories";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
 import ImageTest from "./components/ImageTest";
 
 // Navbar
@@ -33,6 +36,8 @@ function Router() {
         <Route path="/products" component={Products} />
         <Route path="/product/:id" component={ProductDetail} />
         <Route path="/stories" component={Stories} />
+        <Route path="/cart" component={Cart} />
+        <Route path="/checkout" component={Checkout} />
         <Route path="/test-images" component={ImageTest} />
 
         <Route path="/login" component={Login} />
@@ -58,7 +63,9 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <AuthProvider>
-            <Router />
+            <CartProvider>
+              <Router />
+            </CartProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>

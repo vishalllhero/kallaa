@@ -34,10 +34,10 @@ export default function AdminDashboard() {
   const [formData, setFormData] = useState({
     title: "",
     price: "",
-    images: [] as string[],
-    description: "",
+    image: "",
+    story: "",
   });
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -48,13 +48,14 @@ export default function AdminDashboard() {
         adminApi.getProducts(),
         adminApi.getOrders(),
       ]);
-      
+
       console.log("API RESPONSE (Admin Products):", pRes.data);
       console.log("API RESPONSE (Admin Orders):", oRes.data);
 
-      const pData = pRes?.data?.data || pRes?.data?.products || pRes?.data || [];
+      const pData =
+        pRes?.data?.data || pRes?.data?.products || pRes?.data || [];
       const oData = oRes?.data?.data || oRes?.data?.orders || oRes?.data || [];
-      
+
       setProducts(Array.isArray(pData) ? pData : []);
       setOrders(Array.isArray(oData) ? oData : []);
     } catch (err) {
@@ -72,22 +73,37 @@ export default function AdminDashboard() {
   }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setSelectedFiles(files);
+    const file = e.target.files?.[0] || null;
+    setSelectedFile(file);
   };
 
   const handleImageUpload = async () => {
-    if (selectedFiles.length === 0) return;
+    if (!selectedFile) return;
 
     try {
       setIsUploading(true);
-      console.log("[AdminDashboard] Uploading files:", selectedFiles.length);
-      const { urls } = await adminApi.uploadImages(selectedFiles);
-      console.log("[AdminDashboard] Upload response URLs:", urls);
-      setFormData(prev => ({ ...prev, images: urls }));
-      console.log("[AdminDashboard] Set formData.images to:", urls);
-      setSelectedFiles([]);
-      toast.success("Images uploaded to gallery");
+      console.log("[AdminDashboard] Uploading file:", selectedFile.name);
+      const formDataUpload = new FormData();
+      formDataUpload.append("image", selectedFile);
+
+      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const uploadRes = await fetch(`${API_BASE}/api/products/upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formDataUpload,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error("Image upload failed");
+      }
+
+      const uploadData = await uploadRes.json();
+      const imageUrl = uploadData.data.imageUrl;
+      console.log("[AdminDashboard] Upload response URL:", imageUrl);
+      setFormData(prev => ({ ...prev, image: imageUrl }));
+      console.log("[AdminDashboard] Set formData.image to:", imageUrl);
+      setSelectedFile(null);
+      toast.success("Image uploaded successfully");
     } catch (err) {
       console.error("[AdminDashboard] Upload failed:", err);
       toast.error("Upload failed");
@@ -105,17 +121,18 @@ export default function AdminDashboard() {
     try {
       setIsSubmitting(true);
 
-      let imageUrls = formData.images;
+      let imageUrl = formData.image;
 
-      // Upload images first if any files are selected
-      if (selectedFiles.length > 0) {
-        console.log("[AdminDashboard] Uploading images first...");
+      // Upload image first if file is selected
+      if (selectedFile) {
+        console.log("[AdminDashboard] Uploading image first...");
         const formDataUpload = new FormData();
-        selectedFiles.forEach(file => formDataUpload.append("images", file));
+        formDataUpload.append("image", selectedFile);
 
         const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-        const uploadRes = await fetch(`${API_BASE}/api/admin/upload`, {
+        const uploadRes = await fetch(`${API_BASE}/api/products/upload`, {
           method: "POST",
+          credentials: "include",
           body: formDataUpload,
         });
 
@@ -124,21 +141,43 @@ export default function AdminDashboard() {
         }
 
         const uploadData = await uploadRes.json();
-        imageUrls = uploadData.urls;
-        console.log("[AdminDashboard] Images uploaded:", imageUrls);
+        imageUrl = uploadData.data.imageUrl;
+        console.log("[AdminDashboard] Image uploaded:", imageUrl);
 
-        // Clear selected files after successful upload
-        setSelectedFiles([]);
+        // Clear selected file after successful upload
+        setSelectedFile(null);
       }
 
       // Prepare product data
       const productData = {
-        name: formData.title,
+        title: formData.title,
         price: parseFloat(formData.price),
-        description: formData.description,
-        story: formData.description, // Using description as story for now
-        images: imageUrls,
+        description: formData.story, // Using story as description? Wait, schema has description and story separate
+        story: formData.story,
+        image: imageUrl,
       };
+
+      console.log("[AdminDashboard] Submitting product data:", productData);
+
+      if (isEditing && currentId) {
+        console.log("[AdminDashboard] Updating product:", currentId);
+        await adminApi.updateProduct(currentId, productData);
+        toast.success("Product updated");
+      } else {
+        console.log("[AdminDashboard] Creating new product");
+        const result = await adminApi.createProduct(productData);
+        console.log("[AdminDashboard] Create result:", result);
+        toast.success("Product added successfully");
+      }
+      resetForm();
+      fetchData();
+    } catch (err) {
+      console.error("[AdminDashboard] Submit error:", err);
+      toast.error("Failed to save product");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
       console.log("[AdminDashboard] Submitting product data:", productData);
 
@@ -166,12 +205,12 @@ export default function AdminDashboard() {
     setIsEditing(true);
     setCurrentId(product.id);
     setFormData({
-      title: product.name || "",
+      title: product.title || "",
       price: product.price?.toString() || "",
-      images: product.images || [],
-      description: product.description || product.story || "",
+      image: product.image || "",
+      story: product.story || "",
     });
-    setSelectedFiles([]); // Clear selected files when editing
+    setSelectedFile(null); // Clear selected file when editing
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -199,8 +238,8 @@ export default function AdminDashboard() {
   const resetForm = () => {
     setIsEditing(false);
     setCurrentId(null);
-    setFormData({ title: "", price: "", images: [], description: "" });
-    setSelectedFiles([]);
+    setFormData({ title: "", price: "", image: "", story: "" });
+    setSelectedFile(null);
   };
 
   if (loading)
@@ -342,48 +381,137 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
+                      Product Image
+                    </label>
+                    <div className="space-y-4">
+                        {formData.image && (
+                          <div className="w-20 h-20 rounded-lg overflow-hidden border border-white/10">
+                            <ImageWithFallback
+                              src={getImageUrl(formData.image)}
+                              className="w-full h-full object-cover"
+                              alt="Current image"
+                            />
+                          </div>
+                        )}
+                        {selectedFile && (
+                          <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50">
+                            <img
+                              src={URL.createObjectURL(selectedFile)}
+                              className="w-full h-full object-cover"
+                              alt="Preview"
+                            />
+                          </div>
+                        )}
+                      {/* File Input */}
+                      <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-yellow-400/50 transition-colors cursor-pointer p-4 group">
+                        <Plus
+                          size={20}
+                          className="text-zinc-500 group-hover:text-yellow-400 mb-1"
+                        />
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-500 group-hover:text-yellow-400 font-bold">
+                          Select Image
+                        </span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                        />
+                      </label>
+                      {/* Upload Button */}
+                      {selectedFile && (
+                        <button
+                          type="button"
+                          onClick={handleImageUpload}
+                          disabled={isUploading}
+                          className="w-full bg-yellow-400 text-black font-bold py-2 rounded-xl hover:bg-yellow-300 transition-all disabled:opacity-50"
+                        >
+                          {isUploading ? "Uploading..." : "Upload Image"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
+                      Story
+                    </label>
+                    <textarea
+                      required
+                      rows={4}
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
+                      value={formData.story}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          story: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
+                      Price ($)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
+                      value={formData.price}
+                      onChange={e =>
+                        setFormData({ ...formData, price: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
                       Product Images
                     </label>
                     <div className="space-y-4">
-                        {formData.images.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {(Array.isArray(formData.images) ? formData.images : []).map((url, index) => (
-                              <div
-                                key={index}
-                                className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
+                      {formData.images.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {(Array.isArray(formData.images)
+                            ? formData.images
+                            : []
+                          ).map((url, index) => (
+                            <div
+                              key={index}
+                              className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
+                            >
+                              <ImageWithFallback
+                                src={getImageUrl(url)}
+                                className="w-full h-full object-cover"
+                                alt={`Uploaded ${index + 1}`}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {selectedFiles.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {(Array.isArray(selectedFiles)
+                            ? selectedFiles
+                            : []
+                          ).map((file, index) => (
+                            <div
+                              key={index}
+                              className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
+                            >
+                              <img
+                                src={URL.createObjectURL(file)}
+                                className="w-full h-full object-cover"
+                                alt={`Preview ${index + 1}`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeSelectedImage(index)}
+                                className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs"
                               >
-                                <ImageWithFallback
-                                  src={getImageUrl(url)}
-                                  className="w-full h-full object-cover"
-                                  alt={`Uploaded ${index + 1}`}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {selectedFiles.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {(Array.isArray(selectedFiles) ? selectedFiles : []).map((file, index) => (
-                              <div
-                                key={index}
-                                className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
-                              >
-                                <img
-                                  src={URL.createObjectURL(file)}
-                                  className="w-full h-full object-cover"
-                                  alt={`Preview ${index + 1}`}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeSelectedImage(index)}
-                                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       {/* File Input */}
                       <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-yellow-400/50 transition-colors cursor-pointer p-4 group">
                         <Plus
@@ -467,48 +595,52 @@ export default function AdminDashboard() {
             {/* List Section */}
             <div className="lg:col-span-2">
               <div className="space-y-4">
-                  {(!products || products.length === 0) ? (
-                    <div className="text-center py-12 text-zinc-600">No products found in inventory.</div>
-                  ) : (
-                    (Array.isArray(products) ? products : []).map(product => (
-                      <div
-                        key={product.id || product._id}
-                        className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
-                      >
+                {!products || products.length === 0 ? (
+                  <div className="text-center py-12 text-zinc-600">
+                    No products found in inventory.
+                  </div>
+                ) : (
+                  (Array.isArray(products) ? products : []).map(product => (
+                    <div
+                      key={product.id || product._id}
+                      className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                    >
                         <div className="flex items-center gap-6">
                           <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
                             <ImageWithFallback
-                              src={getProductImage(product.images)}
+                              src={getImageUrl(product.image)}
                               className="w-full h-full object-cover"
                               alt=""
                             />
                           </div>
                           <div>
                             <h3 className="text-white font-serif">
-                              {product.name}
+                              {product.title}
                             </h3>
                             <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
                               ${product.price}
                             </p>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEdit(product)}
-                            className="p-3 bg-white/5 rounded-xl hover:bg-white/10 text-white transition-all"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(product.id || product._id)}
-                            className="p-3 bg-white/5 rounded-xl hover:bg-red-500/10 text-red-500 transition-all"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(product)}
+                          className="p-3 bg-white/5 rounded-xl hover:bg-white/10 text-white transition-all"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDelete(product.id || product._id)
+                          }
+                          className="p-3 bg-white/5 rounded-xl hover:bg-red-500/10 text-red-500 transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
-                    ))
-                  )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -552,25 +684,30 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div
-                    className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold border ${order.status === "completed"
+                    className={`px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold border ${
+                      order.status === "completed"
                         ? "border-green-500/20 text-green-500 bg-green-500/5"
                         : order.status === "shipped"
                           ? "border-blue-500/20 text-blue-500 bg-blue-500/5"
                           : "border-yellow-500/20 text-yellow-500 bg-yellow-500/5"
-                      }`}
+                    }`}
                   >
                     {order.status}
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => updateStatus(order.id || order._id, "shipped")}
+                      onClick={() =>
+                        updateStatus(order.id || order._id, "shipped")
+                      }
                       className="p-3 bg-white/5 rounded-xl hover:bg-white/10"
                       title="Mark Shipped"
                     >
                       <Truck size={16} />
                     </button>
                     <button
-                      onClick={() => updateStatus(order.id || order._id, "completed")}
+                      onClick={() =>
+                        updateStatus(order.id || order._id, "completed")
+                      }
                       className="p-3 bg-white/5 rounded-xl hover:bg-white/10"
                       title="Mark Completed"
                     >
@@ -593,11 +730,13 @@ export default function AdminDashboard() {
               <div className="font-bold">Form Data Images:</div>
               <div className="ml-2">
                 {formData.images.length > 0 ? (
-                  (Array.isArray(formData.images) ? formData.images : []).map((img, i) => (
-                    <div key={i} className="truncate">
-                      [{i}]: {img}
-                    </div>
-                  ))
+                  (Array.isArray(formData.images) ? formData.images : []).map(
+                    (img, i) => (
+                      <div key={i} className="truncate">
+                        [{i}]: {img}
+                      </div>
+                    )
+                  )
                 ) : (
                   <div>No images</div>
                 )}

@@ -1,17 +1,45 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Info, ShieldCheck, Truck, ArrowRight, Users, Award, Gem } from 'lucide-react';
-import ScarcityBadge from './ScarcityBadge';
-import OwnershipMessage from './OwnershipMessage';
-import StorySection from './StorySection';
-import CountdownTimer from './CountdownTimer';
+import React from "react";
+import { motion } from "framer-motion";
+import { Link } from "wouter";
+import {
+  Info,
+  ShieldCheck,
+  Truck,
+  ArrowRight,
+  Users,
+  Award,
+  Gem,
+  ShoppingCart,
+} from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
+import ScarcityBadge from "./ScarcityBadge";
+import OwnershipMessage from "./OwnershipMessage";
+import StorySection from "./StorySection";
+import CountdownTimer from "./CountdownTimer";
 
 interface ProductInfoProps {
   product: any;
   onInitiateAcquisition: () => void;
 }
 
-export default function ProductInfo({ product, onInitiateAcquisition }: ProductInfoProps) {
+export default function ProductInfo({
+  product,
+  onInitiateAcquisition,
+}: ProductInfoProps) {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      title: product.title || product.name,
+      price: product.price,
+      image: product.image || product.images?.[0],
+      story: product.story || product.description,
+    });
+    toast.success("Added to collection cart!");
+  };
+
   return (
     <motion.div
       className="flex flex-col justify-center"
@@ -44,7 +72,10 @@ export default function ProductInfo({ product, onInitiateAcquisition }: ProductI
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.5 }}
         >
-          <ScarcityBadge stockCount={product.stockCount || 3} isSold={product.isSold} />
+          <ScarcityBadge
+            stockCount={product.stockCount || 3}
+            isSold={product.isSold}
+          />
           <CountdownTimer isSold={product.isSold} />
         </motion.div>
 
@@ -92,33 +123,51 @@ export default function ProductInfo({ product, onInitiateAcquisition }: ProductI
       >
         {product.isSold ? (
           <div className="p-8 bg-zinc-900/50 rounded-2xl border border-white/5 backdrop-blur-sm">
-            <p className="text-zinc-500 uppercase text-[10px] tracking-[0.3em] mb-2 font-bold font-serif italic">Curator</p>
-            <p className="text-yellow-400 text-2xl font-serif">{product.ownerName || 'Exclusive Collector'}</p>
-            <p className="text-zinc-500 text-sm mt-4">This piece has been acquired and is no longer available for public collection.</p>
+            <p className="text-zinc-500 uppercase text-[10px] tracking-[0.3em] mb-2 font-bold font-serif italic">
+              Curator
+            </p>
+            <p className="text-yellow-400 text-2xl font-serif">
+              {product.ownerName || "Exclusive Collector"}
+            </p>
+            <p className="text-zinc-500 text-sm mt-4">
+              This piece has been acquired and is no longer available for public
+              collection.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
-            <motion.button
-              onClick={onInitiateAcquisition}
-              className="btn-luxury w-full h-20 flex flex-col items-center justify-center gap-2 group relative overflow-hidden"
-              whileHover={{
-                scale: 1.02,
-                boxShadow: "0 0 60px rgba(212, 175, 55, 0.4)",
-              }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className="flex items-center gap-3">
-                Initiate Acquisition
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-2 transition-transform duration-300"
-                />
-              </span>
-              <span className="text-[10px] opacity-80 group-hover:opacity-100 transition-opacity">
-                Secure this piece before it disappears
-              </span>
-            </motion.button>
+            <div className="flex gap-4">
+              <motion.button
+                onClick={handleAddToCart}
+                className="btn-luxury flex-1 h-16 flex items-center justify-center gap-2 group relative overflow-hidden"
+                whileHover={{
+                  scale: 1.02,
+                  boxShadow: "0 0 60px rgba(212, 175, 55, 0.4)",
+                }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ShoppingCart size={20} />
+                Add to Cart
+              </motion.button>
+              <Link href="/cart">
+                <motion.button
+                  className="btn-luxury-outline h-16 px-6 flex items-center justify-center gap-2 group relative overflow-hidden"
+                  whileHover={{
+                    scale: 1.02,
+                    boxShadow: "0 0 40px rgba(212, 175, 55, 0.3)",
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  View Cart
+                  <ArrowRight
+                    size={16}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
+                </motion.button>
+              </Link>
+            </div>
 
             {/* Coming Soon Message */}
             <motion.div
@@ -127,9 +176,12 @@ export default function ProductInfo({ product, onInitiateAcquisition }: ProductI
               transition={{ delay: 0.5 }}
               className="text-center text-yellow-400/80 text-sm bg-yellow-400/10 border border-yellow-400/20 rounded-lg p-4"
             >
-              <div className="font-medium mb-1">💎 Payment Integration Coming Soon</div>
+              <div className="font-medium mb-1">
+                💎 Payment Integration Coming Soon
+              </div>
               <div className="text-xs text-zinc-400">
-                We're preparing a secure payment system. For now, contact us directly to acquire this masterpiece.
+                We're preparing a secure payment system. For now, contact us
+                directly to acquire this masterpiece.
               </div>
             </motion.div>
 

@@ -26,9 +26,9 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? "bg-black/80 backdrop-blur-xl border-b border-white/5 py-4" : "bg-transparent py-8"}`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 animate-fade-in ${isScrolled ? "bg-black/90 backdrop-blur-2xl border-b border-white/10 py-4" : "bg-transparent py-6"}`}
     >
-      <div className="container mx-auto px-6 flex items-center justify-between">
+      <div className="container mx-auto px-8 flex items-center justify-between">
         <Link
           href="/"
           className="text-2xl font-serif tracking-[0.2em] text-white hover:text-yellow-400 transition-colors"
@@ -42,7 +42,7 @@ export default function Navbar() {
             <Link
               key={l.href}
               href={l.href}
-              className={`text-[10px] uppercase tracking-[0.3em] font-bold transition-all hover:text-yellow-400 ${location === l.href ? "text-yellow-400" : "text-zinc-400"}`}
+              className={`relative text-sm uppercase tracking-[0.15em] font-medium transition-all hover:text-yellow-400 ${location === l.href ? "text-yellow-400" : "text-white/80"} before:absolute before:bottom-0 before:left-0 before:w-0 before:h-0.5 before:bg-yellow-400 before:transition-all before:duration-300 hover:before:w-full`}
             >
               {l.label}
             </Link>
@@ -54,7 +54,7 @@ export default function Navbar() {
           {user?.role === "admin" && (
             <Link
               href="/admin"
-              className={`p-2 rounded-full transition-colors ${location === "/admin" ? "bg-yellow-400 text-black" : "text-zinc-400 hover:text-white"}`}
+              className={`p-2 rounded-full transition-colors ${location === "/admin" ? "bg-yellow-400 text-black" : "text-white/60 hover:text-white"}`}
             >
               <Shield size={20} />
             </Link>
@@ -62,12 +62,12 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-400 hidden sm:inline">
+              <span className="text-sm uppercase tracking-[0.15em] font-medium text-white/60 hidden sm:inline">
                 {user.email || user.name}
               </span>
               <button
                 onClick={logout}
-                className="text-[10px] uppercase tracking-[0.3em] font-bold text-red-500 hover:text-red-400 transition-all"
+                className="text-sm uppercase tracking-[0.15em] font-medium text-red-400 hover:text-red-300 transition-all"
               >
                 Logout
               </button>
@@ -75,7 +75,7 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-400 hover:text-white transition-all"
+              className="flex items-center gap-2 text-sm uppercase tracking-[0.15em] font-medium text-white/60 hover:text-white transition-all"
             >
               <User size={18} />
               <span className="hidden sm:inline">Sign In</span>
@@ -93,14 +93,14 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-3xl border-b border-white/10 animate-fade-in">
-          <div className="flex flex-col p-8 gap-6">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-black/95 backdrop-blur-2xl border-b border-white/10 animate-fade-in">
+          <div className="flex flex-col px-8 py-6 gap-6">
             {safeMap(links, l => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-lg font-serif"
+                className="text-lg font-serif text-white hover:text-yellow-400 transition-colors"
               >
                 {l.label}
               </Link>
