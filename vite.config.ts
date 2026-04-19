@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
+      "tw-animate-css/dist/tw-animate.css": path.resolve(import.meta.dirname, "node_modules/tw-animate-css/dist/tw-animate.css"),
     },
   },
   root: path.resolve(import.meta.dirname, "client"),

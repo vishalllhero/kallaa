@@ -12,6 +12,7 @@ exports.default = (0, vite_1.defineConfig)({
         alias: {
             "@": path_1.default.resolve(import.meta.dirname, "client", "src"),
             "@shared": path_1.default.resolve(import.meta.dirname, "shared"),
+            "tw-animate-css/dist/tw-animate.css": path_1.default.resolve(import.meta.dirname, "node_modules/tw-animate-css/dist/tw-animate.css"),
         },
     },
     root: path_1.default.resolve(import.meta.dirname, "client"),
