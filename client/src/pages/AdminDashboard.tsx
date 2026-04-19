@@ -129,7 +129,8 @@ export default function AdminDashboard() {
         const formDataUpload = new FormData();
         formDataUpload.append("image", selectedFile);
 
-        const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const API_BASE =
+          import.meta.env.VITE_API_URL || "http://localhost:5000";
         const uploadRes = await fetch(`${API_BASE}/api/products/upload`, {
           method: "POST",
           credentials: "include",
@@ -179,28 +180,6 @@ export default function AdminDashboard() {
     }
   };
 
-      console.log("[AdminDashboard] Submitting product data:", productData);
-
-      if (isEditing && currentId) {
-        console.log("[AdminDashboard] Updating product:", currentId);
-        await adminApi.updateProduct(currentId, productData);
-        toast.success("Product updated");
-      } else {
-        console.log("[AdminDashboard] Creating new product");
-        const result = await adminApi.createProduct(productData);
-        console.log("[AdminDashboard] Create result:", result);
-        toast.success("Product added successfully");
-      }
-      resetForm();
-      fetchData();
-    } catch (err) {
-      console.error("[AdminDashboard] Submit error:", err);
-      toast.error("Failed to save product");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleEdit = (product: any) => {
     setIsEditing(true);
     setCurrentId(product.id);
@@ -220,7 +199,8 @@ export default function AdminDashboard() {
       await adminApi.deleteProduct(id);
       toast.success("Product deleted");
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
+      console.error("[AdminDashboard] Delete error:", err);
       toast.error("Delete failed");
     }
   };
@@ -230,7 +210,8 @@ export default function AdminDashboard() {
       await adminApi.updateOrderStatus(id, status);
       toast.success("Order status updated");
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
+      console.error("[AdminDashboard] Status update error:", err);
       toast.error("Status update failed");
     }
   };
@@ -384,24 +365,24 @@ export default function AdminDashboard() {
                       Product Image
                     </label>
                     <div className="space-y-4">
-                        {formData.image && (
-                          <div className="w-20 h-20 rounded-lg overflow-hidden border border-white/10">
-                            <ImageWithFallback
-                              src={getImageUrl(formData.image)}
-                              className="w-full h-full object-cover"
-                              alt="Current image"
-                            />
-                          </div>
-                        )}
-                        {selectedFile && (
-                          <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50">
-                            <img
-                              src={URL.createObjectURL(selectedFile)}
-                              className="w-full h-full object-cover"
-                              alt="Preview"
-                            />
-                          </div>
-                        )}
+                      {formData.image && (
+                        <div className="w-20 h-20 rounded-lg overflow-hidden border border-white/10">
+                          <ImageWithFallback
+                            src={getImageUrl(formData.image)}
+                            className="w-full h-full object-cover"
+                            alt="Current image"
+                          />
+                        </div>
+                      )}
+                      {selectedFile && (
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50">
+                          <img
+                            src={URL.createObjectURL(selectedFile)}
+                            className="w-full h-full object-cover"
+                            alt="Preview"
+                          />
+                        </div>
+                      )}
                       {/* File Input */}
                       <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-yellow-400/50 transition-colors cursor-pointer p-4 group">
                         <Plus
@@ -605,23 +586,23 @@ export default function AdminDashboard() {
                       key={product.id || product._id}
                       className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
                     >
-                        <div className="flex items-center gap-6">
-                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
-                            <ImageWithFallback
-                              src={getImageUrl(product.image)}
-                              className="w-full h-full object-cover"
-                              alt=""
-                            />
-                          </div>
-                          <div>
-                            <h3 className="text-white font-serif">
-                              {product.title}
-                            </h3>
-                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                              ${product.price}
-                            </p>
-                          </div>
+                      <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                          <ImageWithFallback
+                            src={getImageUrl(product.image)}
+                            className="w-full h-full object-cover"
+                            alt=""
+                          />
                         </div>
+                        <div>
+                          <h3 className="text-white font-serif">
+                            {product.title}
+                          </h3>
+                          <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                            ${product.price}
+                          </p>
+                        </div>
+                      </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(product)}
