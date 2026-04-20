@@ -3,34 +3,55 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Order } from "../models/Order.js";
 
-// Initialize Razorpay with validation
-if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  throw new Error(
-    "Razorpay configuration missing. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables."
-  );
-}
+// Safe Razorpay configuration check
+const isRazorpayEnabled =
+  !!process.env.RAZORPAY_KEY_ID && !!process.env.RAZORPAY_KEY_SECRET;
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// Initialize Razorpay only if configured
+let razorpay: Razorpay | null = null;
+if (isRazorpayEnabled) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+  console.log("[Payment] Razorpay initialized successfully");
+} else {
+  console.log("[Payment] Razorpay not configured - payments disabled");
+}
 
 export const createRazorpayOrder = async (req: Request, res: Response) => {
   try {
+    // Check if Razorpay is enabled
+    if (!isRazorpayEnabled || !razorpay) {
+      console.log(
+        "[Payment] Razorpay not configured - returning safe response"
+      );
+      return res.status(200).json({
+        success: false,
+        message: "Payments temporarily disabled",
+      });
+    }
+
     const { amount, currency = "INR" } = req.body;
 
     // Validate input
     if (!amount || typeof amount !== "number" || amount <= 0) {
       return res
         .status(400)
-        .json({ message: "Invalid amount. Must be a positive number." });
+        .json({
+          success: false,
+          message: "Invalid amount. Must be a positive number.",
+        });
     }
 
     if (amount > 10000000) {
       // 100k INR limit for security
       return res
         .status(400)
-        .json({ message: "Amount exceeds maximum allowed limit." });
+        .json({
+          success: false,
+          message: "Amount exceeds maximum allowed limit.",
+        });
     }
 
     console.log(`[Payment] Creating Razorpay order: ₹${amount} ${currency}`);
@@ -52,7 +73,7 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
         amount: order.amount,
         currency: order.currency,
         status: order.status,
-      }
+      },
     });
   } catch (error: any) {
     console.error(`[Payment] Order creation failed:`, error);
@@ -66,6 +87,17 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
 
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
+    // Check if Razorpay is enabled
+    if (!isRazorpayEnabled || !razorpay) {
+      console.log(
+        "[Payment] Razorpay not configured - returning safe response"
+      );
+      return res.status(200).json({
+        success: false,
+        message: "Payments temporarily disabled",
+      });
+    }
+
     const {
       razorpay_order_id,
       razorpay_payment_id,
@@ -75,9 +107,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
 
     // Validate required fields
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Missing required payment verification data" 
+      return res.status(400).json({
+        success: false,
+        message: "Missing required payment verification data",
       });
     }
 
@@ -87,9 +119,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
       !orderDetails.customerName ||
       !orderDetails.customerEmail
     ) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Incomplete order details" 
+      return res.status(400).json({
+        success: false,
+        message: "Incomplete order details",
       });
     }
 
@@ -107,9 +139,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
       console.warn(
         `[Payment] Invalid signature for order: ${razorpay_order_id}`
       );
-      return res.status(400).json({ 
-        success: false, 
-        message: "Payment verification failed - invalid signature" 
+      return res.status(400).json({
+        success: false,
+        message: "Payment verification failed - invalid signature",
       });
     }
 
@@ -136,9 +168,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
         console.warn(
           `[Payment] Payment not captured for order: ${razorpay_order_id}, status: ${payment.status}`
         );
-        return res.status(400).json({ 
-          success: false, 
-          message: "Payment not completed" 
+        return res.status(400).json({
+          success: false,
+          message: "Payment not completed",
         });
       }
     } catch (razorpayError: any) {
@@ -146,10 +178,10 @@ export const verifyPayment = async (req: Request, res: Response) => {
         `[Payment] Failed to fetch payment details:`,
         razorpayError
       );
-      return res.status(500).json({ 
-        success: false, 
+      return res.status(500).json({
+        success: false,
         message: "Could not verify payment status",
-        error: razorpayError.message
+        error: razorpayError.message,
       });
     }
 
