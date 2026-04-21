@@ -1,10 +1,8 @@
 import bcrypt from "bcryptjs";
-import * as jose from "jose";
+import jwt from "jsonwebtoken";
 
 const SALT_ROUNDS = 10;
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.COOKIE_SECRET || "your-secret-key"
-);
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 /**
  * Hash a password using bcrypt
@@ -27,21 +25,21 @@ export async function verifyPassword(
 /**
  * Create a JWT token for a user
  */
-export async function createToken(
+export function createToken(
   userId: string,
   email: string,
   role: "user" | "admin" = "user",
   expiresIn: string = "30d"
-): Promise<string> {
-  const token = await new jose.SignJWT({
-    userId,
-    email,
-    role,
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime(expiresIn)
-    .sign(JWT_SECRET);
+): string {
+  const token = (jwt as any).sign(
+    {
+      userId,
+      email,
+      role,
+    },
+    JWT_SECRET as string,
+    { expiresIn }
+  );
 
   return token;
 }
@@ -49,14 +47,18 @@ export async function createToken(
 /**
  * Verify and decode a JWT token
  */
-export async function verifyToken(token: string): Promise<{
+export function verifyToken(token: string): {
   userId: string;
   email: string;
   role: "user" | "admin";
-} | null> {
+} | null {
   try {
-    const verified = await jose.jwtVerify(token, JWT_SECRET);
-    return verified.payload as any;
+    const decoded = (jwt as any).verify(token, JWT_SECRET) as any;
+    return {
+      userId: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+    };
   } catch (error) {
     console.error("[Auth] Failed to verify token:", error);
     return null;

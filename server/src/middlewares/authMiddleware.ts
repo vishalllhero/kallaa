@@ -19,7 +19,7 @@ export const authenticate = async (
         .json({ message: "No authentication token provided" });
     }
 
-    const payload = await verifyToken(token);
+    const payload = verifyToken(token);
     if (!payload) {
       return res.status(401).json({ message: "Invalid token" });
     }

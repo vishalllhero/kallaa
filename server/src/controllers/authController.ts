@@ -19,7 +19,7 @@ export const register = async (req: Request, res: Response) => {
     const user = new User({ name, email, password });
     await user.save();
 
-    const token = await createToken(
+    const token = createToken(
       (user._id as any).toString(),
       user.email!,
       user.role as any
@@ -35,7 +35,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       message: "Registered successfully",
-      data: {
+      user: {
         id: user._id,
         name: user.name,
         email: user.email,
@@ -93,7 +93,7 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    const token = await createToken(
+    const token = createToken(
       (user._id as any).toString(),
       user.email!,
       user.role as any
@@ -109,7 +109,7 @@ export const login = async (req: Request, res: Response) => {
     res.json({
       success: true,
       message: "Logged in successfully",
-      data: {
+      user: {
         id: user._id,
         name: user.name,
         email: user.email,
