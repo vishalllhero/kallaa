@@ -59,9 +59,21 @@ export default function AdminDashboard() {
 
       setProducts(Array.isArray(pData) ? pData : []);
       setOrders(Array.isArray(oData) ? oData : []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Admin data fetch error:", err);
-      toast.error("Access denied or server error");
+
+      // Check for authentication errors
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        toast.error("Access denied. Please log in again.");
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
+      } else {
+        toast.error("Server error loading dashboard data");
+      }
+
+      // Ensure arrays are always arrays
       setProducts([]);
       setOrders([]);
     } finally {
@@ -203,12 +215,47 @@ export default function AdminDashboard() {
     setSelectedFile(null);
   };
 
-  if (loading)
+  // Enhanced loading guard
+  if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
-        Loading Dashboard...
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mr-3" />
+        <span className="text-sm uppercase tracking-widest">
+          Loading Dashboard...
+        </span>
       </div>
     );
+  }
+
+  // Error boundary - ensure data integrity
+  if (!Array.isArray(products) || !Array.isArray(orders)) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-serif mb-4">Dashboard Error</h2>
+          <p className="text-zinc-400 mb-6">
+            Failed to load dashboard data. Please check your connection and try
+            again.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-white text-black font-bold uppercase tracking-widest rounded-full hover:bg-zinc-200 transition-colors"
+            >
+              Reload Page
+            </button>
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="px-6 py-3 border border-white/20 backdrop-blur-md hover:bg-white/10 transition-all rounded-full uppercase tracking-widest text-sm"
+            >
+              Go Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 pt-20">
@@ -285,7 +332,7 @@ export default function AdminDashboard() {
                 Total Products
               </p>
               <h3 className="text-2xl font-serif text-white">
-                {products.length}
+                {Array.isArray(products) ? products.length : 0}
               </h3>
             </div>
           </div>
@@ -298,7 +345,7 @@ export default function AdminDashboard() {
                 Total Orders
               </p>
               <h3 className="text-2xl font-serif text-white">
-                {orders.length}
+                {Array.isArray(orders) ? orders.length : 0}
               </h3>
             </div>
           </div>
@@ -457,31 +504,27 @@ export default function AdminDashboard() {
                       Product Images
                     </label>
                     <div className="space-y-4">
-                      {formData.images.length > 0 && (
+                      {formData.image && (
                         <div className="flex flex-wrap gap-2">
-                          {(Array.isArray(formData.images)
-                            ? formData.images
-                            : []
-                          ).map((url, index) => (
-                            <div
-                              key={index}
-                              className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
-                            >
-                              <ImageWithFallback
-                                src={getImageUrl(url)}
-                                className="w-full h-full object-cover"
-                                alt={`Uploaded ${index + 1}`}
-                              />
-                            </div>
-                          ))}
+                          {(formData.image ? [formData.image] : []).map(
+                            (url, index) => (
+                              <div
+                                key={index}
+                                className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
+                              >
+                                <ImageWithFallback
+                                  src={getImageUrl(url)}
+                                  className="w-full h-full object-cover"
+                                  alt={`Uploaded ${index + 1}`}
+                                />
+                              </div>
+                            )
+                          )}
                         </div>
                       )}
-                      {selectedFiles.length > 0 && (
+                      {selectedFile && (
                         <div className="flex flex-wrap gap-2">
-                          {(Array.isArray(selectedFiles)
-                            ? selectedFiles
-                            : []
-                          ).map((file, index) => (
+                          {[selectedFile].map((file, index) => (
                             <div
                               key={index}
                               className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
@@ -520,16 +563,14 @@ export default function AdminDashboard() {
                         />
                       </label>
                       {/* Upload Button */}
-                      {selectedFiles.length > 0 && (
+                      {selectedFile && (
                         <button
                           type="button"
                           onClick={handleImageUpload}
                           disabled={isUploading}
                           className="w-full bg-yellow-400 text-black font-bold py-2 rounded-xl hover:bg-yellow-300 transition-all disabled:opacity-50"
                         >
-                          {isUploading
-                            ? "Uploading..."
-                            : `Upload ${selectedFiles.length} Image${selectedFiles.length > 1 ? "s" : ""}`}
+                          {isUploading ? "Uploading..." : "Upload Image"}
                         </button>
                       )}
                     </div>
@@ -713,28 +754,24 @@ export default function AdminDashboard() {
         {import.meta.env.DEV && (
           <div className="fixed bottom-4 left-4 bg-black/90 text-white p-4 rounded-lg max-w-md z-50 text-xs max-h-96 overflow-y-auto">
             <div className="mb-2 font-bold">AdminDashboard Debug</div>
-            <div>Products: {products.length}</div>
-            <div>Orders: {orders.length}</div>
+            <div>
+              Products: {Array.isArray(products) ? products.length : "N/A"}
+            </div>
+            <div>Orders: {Array.isArray(orders) ? orders.length : "N/A"}</div>
             <div>Current Tab: {activeTab}</div>
             <div className="mt-2">
-              <div className="font-bold">Form Data Images:</div>
+              <div className="font-bold">Form Data Image:</div>
               <div className="ml-2">
-                {formData.images.length > 0 ? (
-                  (Array.isArray(formData.images) ? formData.images : []).map(
-                    (img, i) => (
-                      <div key={i} className="truncate">
-                        [{i}]: {img}
-                      </div>
-                    )
-                  )
+                {formData.image ? (
+                  <div>{formData.image}</div>
                 ) : (
-                  <div>No images</div>
+                  <div>No image selected</div>
                 )}
               </div>
             </div>
             <div className="mt-2">
               <div className="font-bold">Selected Files:</div>
-              <div>{selectedFiles.length} files selected</div>
+              <div>{selectedFile ? "1 file selected" : "No file selected"}</div>
             </div>
           </div>
         )}
