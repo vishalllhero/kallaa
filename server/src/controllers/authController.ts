@@ -75,14 +75,13 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Temporarily skip password check for debugging
-    // const isMatch = await (user as any).comparePassword(password);
-    // if (!isMatch) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: "Invalid email or password"
-    //   });
-    // }
+    const isMatch = await (user as any).comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
 
     const token = await createToken(
       (user._id as any).toString(),
