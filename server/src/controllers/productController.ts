@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Product } from "../models/Product.js";
+import { generateStory } from "../utils/storyGenerator.js";
 
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
@@ -55,6 +56,14 @@ export const getProductById = async (req: Request, res: Response) => {
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const data = { ...req.body, createdBy: (req as any).user._id };
+
+    // Auto-generate story if not provided or empty
+    if (!data.story || data.story.trim() === "") {
+      data.story = generateStory(data.title, data.mood);
+      console.log(
+        `[STORY] Auto-generated story for "${data.title}": ${data.story}`
+      );
+    }
 
     const product = new Product(data);
     await product.save();

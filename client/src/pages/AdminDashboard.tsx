@@ -36,6 +36,7 @@ export default function AdminDashboard() {
     price: "",
     image: "",
     story: "",
+    mood: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -133,6 +134,7 @@ export default function AdminDashboard() {
         description: formData.story, // Using story as description? Wait, schema has description and story separate
         story: formData.story,
         image: imageUrl,
+        mood: formData.mood, // Include mood for story generation
       };
 
       console.log("[AdminDashboard] Submitting product data:", productData);
@@ -165,6 +167,7 @@ export default function AdminDashboard() {
       price: product.price?.toString() || "",
       image: product.image || "",
       story: product.story || "",
+      mood: product.mood || "",
     });
     setSelectedFile(null); // Clear selected file when editing
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -196,7 +199,7 @@ export default function AdminDashboard() {
   const resetForm = () => {
     setIsEditing(false);
     setCurrentId(null);
-    setFormData({ title: "", price: "", image: "", story: "" });
+    setFormData({ title: "", price: "", image: "", story: "", mood: "" });
     setSelectedFile(null);
   };
 
@@ -391,10 +394,35 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
+                      Mood (for story generation)
+                    </label>
+                    <select
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
+                      value={formData.mood}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          mood: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="">Select mood (optional)</option>
+                      <option value="dark">Dark</option>
+                      <option value="emotional">Emotional</option>
+                      <option value="love">Love</option>
+                      <option value="power">Power</option>
+                      <option value="mystery">Mystery</option>
+                      <option value="serenity">Serenity</option>
+                    </select>
+                    <p className="text-zinc-600 text-xs mt-1">
+                      Leave empty for random story generation
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
                       Story
                     </label>
                     <textarea
-                      required
                       rows={4}
                       className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
                       value={formData.story}
@@ -404,7 +432,11 @@ export default function AdminDashboard() {
                           story: e.target.value,
                         })
                       }
+                      placeholder="Leave empty for AI-generated story based on mood..."
                     />
+                    <p className="text-zinc-600 text-xs mt-1">
+                      Leave blank to auto-generate an emotional story
+                    </p>
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
