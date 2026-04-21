@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import mongoose from "mongoose";
 import { connectDB } from "./db.js";
 import { User } from "./models/User.js";
 
@@ -12,12 +15,28 @@ import orderRoutes from "./routes/orderRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
-dotenv.config();
-
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // Development
+      "https://kallaa-w9et.vercel.app", // Production
+    ],
+    credentials: true, // Allow cookies and authentication headers
+  })
+);
+
+// Handle preflight requests for all routes
+app.options(
+  "*",
+  cors({
+    origin: ["http://localhost:5173", "https://kallaa-w9et.vercel.app"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -27,7 +46,7 @@ const seedAdmin = async () => {
     const adminEmail = process.env.ADMIN_EMAIL || "admin@kallaa.com";
     const adminPassword = process.env.ADMIN_PASSWORD || "123456";
     const adminExists = await (User as any).findOne({ email: adminEmail });
-    
+
     if (!adminExists) {
       const admin = new User({
         name: "Admin User",
@@ -45,13 +64,70 @@ const seedAdmin = async () => {
 
 // Debug logging
 app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log(
+    `[${new Date().toISOString()}] ${req.method} ${req.url} - Origin: ${req.headers.origin || "none"}`
+  );
   next();
 });
 
-// Connect to DB
+// Environment validation and logging
+console.log("🔍 Environment Check:");
+console.log(`   NODE_ENV: ${process.env.NODE_ENV || "not set"}`);
+console.log(`   PORT: ${process.env.PORT || "5000 (default)"}`);
+console.log(`   MONGO_URI: ${process.env.MONGO_URI ? "✅ Set" : "❌ Not set"}`);
+console.log(
+  `   ADMIN_EMAIL: ${process.env.ADMIN_EMAIL || "admin@kallaa.com (default)"}`
+);
+console.log(
+  `   RAZORPAY_KEY_ID: ${process.env.RAZORPAY_KEY_ID ? "✅ Set" : "⚠️ Not set (payments disabled)"}`
+);
+console.log(
+  `   RAZORPAY_KEY_SECRET: ${process.env.RAZORPAY_KEY_SECRET ? "✅ Set" : "⚠️ Not set (payments disabled)"}`
+);
+console.log("");
+
+// Connect to DB (background process)
 connectDB();
-seedAdmin();
+
+// Seed admin user (only if DB is configured and connected)
+if (
+  process.env.MONGO_URI ||
+  process.env.MONGODB_URI ||
+  process.env.DATABASE_URL
+) {
+  // Check if DB connection is established before seeding
+  const checkAndSeed = async () => {
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      try {
+        // Wait for mongoose to be ready
+        if (mongoose.connection.readyState === 1) {
+          // Connected
+          console.log("🔄 Starting admin user seeding...");
+          await seedAdmin();
+          return;
+        }
+      } catch (error) {
+        console.error("❌ Admin seeding failed:", error);
+      }
+
+      attempts++;
+      if (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      }
+    }
+
+    console.log(
+      "⚠️ Admin seeding skipped (database not connected after multiple attempts)"
+    );
+  };
+
+  setTimeout(checkAndSeed, 3000); // Initial delay
+} else {
+  console.log("⚠️ Skipping admin seeding (no database configured)");
+}
 
 // API Routes
 app.use("/api/auth", authRoutes);
