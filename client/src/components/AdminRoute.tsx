@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
-import { useAuth } from "../_core/hooks/useAuth";
-import React, { useEffect } from 'react';
+import { useAuth } from "@/hooks/useAuth";
+import React, { useEffect } from "react";
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -24,7 +24,9 @@ export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
         <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mr-3" />
-        <span className="text-sm uppercase tracking-widest">Verifying Access...</span>
+        <span className="text-sm uppercase tracking-widest">
+          Verifying Access...
+        </span>
       </div>
     );
   }

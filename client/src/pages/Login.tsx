@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAuth } from '@/_core/hooks/useAuth';
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const [isSignup, setIsSignup] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,19 +36,28 @@ export default function Login() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-zinc-900/50 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-2xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">{isSignup ? "Create Account" : "Welcome Back"}</h1>
-          <p className="text-zinc-400">{isSignup ? "Join the elite art community" : "Enter your credentials to continue"}</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {isSignup ? "Create Account" : "Welcome Back"}
+          </h1>
+          <p className="text-zinc-400">
+            {isSignup
+              ? "Join the elite art community"
+              : "Enter your credentials to continue"}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignup && (
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+              <User
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                size={18}
+              />
               <input
                 type="text"
                 placeholder="Full Name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={e => setName(e.target.value)}
                 className="w-full bg-zinc-800/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 transition-all"
                 required
               />
@@ -56,24 +65,30 @@ export default function Login() {
           )}
 
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+            <Mail
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+              size={18}
+            />
             <input
               type="email"
               placeholder="Email Address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="w-full bg-zinc-800/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 transition-all"
               required
             />
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+            <Lock
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+              size={18}
+            />
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full bg-zinc-800/50 border border-white/10 rounded-xl py-3 pl-10 pr-12 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 transition-all"
               required
             />
@@ -91,8 +106,13 @@ export default function Login() {
             disabled={isLoading}
             className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 group"
           >
-            {isLoading ? "Processing..." : (isSignup ? "Sign Up" : "Log In")}
-            {!isLoading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+            {isLoading ? "Processing..." : isSignup ? "Sign Up" : "Log In"}
+            {!isLoading && (
+              <ArrowRight
+                size={18}
+                className="group-hover:translate-x-1 transition-transform"
+              />
+            )}
           </button>
         </form>
 

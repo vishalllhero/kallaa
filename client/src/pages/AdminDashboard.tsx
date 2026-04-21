@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { adminApi, productApi } from "@/api";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Plus,
   Upload,
@@ -23,9 +24,11 @@ import { getProductImage, getImageUrl } from "@/utils/image";
 import { safeMap } from "@/utils/safeMap";
 
 export default function AdminDashboard() {
+  const { logout, user } = useAuth();
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"products" | "orders">("products");
 
   // Form State
@@ -45,13 +48,12 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [pRes, oRes] = await Promise.all([
-        adminApi.getProducts(),
-        adminApi.getOrders(),
-      ]);
+      setError(null);
 
-      console.log("API RESPONSE (Admin Products):", pRes.data);
-      console.log("API RESPONSE (Admin Orders):", oRes.data);
+      const [pRes, oRes] = await Promise.all([
+        adminApi.getProducts().catch(() => ({ data: [] })),
+        adminApi.getOrders().catch(() => ({ data: [] })),
+      ]);
 
       const pData =
         pRes?.data?.data || pRes?.data?.products || pRes?.data || [];
@@ -61,17 +63,8 @@ export default function AdminDashboard() {
       setOrders(Array.isArray(oData) ? oData : []);
     } catch (err: any) {
       console.error("Admin data fetch error:", err);
-
-      // Check for authentication errors
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        toast.error("Access denied. Please log in again.");
-        // Redirect to login after a short delay
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 2000);
-      } else {
-        toast.error("Server error loading dashboard data");
-      }
+      setError("Failed to load dashboard data");
+      toast.error("Failed to load dashboard data");
 
       // Ensure arrays are always arrays
       setProducts([]);
@@ -227,7 +220,34 @@ export default function AdminDashboard() {
     );
   }
 
-  // Error boundary - ensure data integrity
+  // Error boundary
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-serif mb-4">Dashboard Error</h2>
+          <p className="text-zinc-400 mb-6">{error}</p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-white text-black font-bold uppercase tracking-widest rounded-full hover:bg-zinc-200 transition-colors"
+            >
+              Reload Page
+            </button>
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="px-6 py-3 border border-white/20 backdrop-blur-md hover:bg-white/10 transition-all rounded-full uppercase tracking-widest text-sm"
+            >
+              Go Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Data integrity check
   if (!Array.isArray(products) || !Array.isArray(orders)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
@@ -264,10 +284,16 @@ export default function AdminDashboard() {
           <div>
             <h1 className="text-4xl font-serif text-white mb-2">Admin Panel</h1>
             <p className="text-zinc-500 text-sm">
-              Manage your repository and collectors
+              Welcome back, {user?.name || "Admin"}
             </p>
           </div>
           <div className="flex gap-4">
+            <button
+              onClick={logout}
+              className="px-6 py-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-full text-xs uppercase tracking-widest font-bold transition-all"
+            >
+              Logout
+            </button>
             <button
               onClick={() => setActiveTab("products")}
               className={`px-6 py-2 rounded-full text-xs uppercase tracking-widest font-bold transition-all ${activeTab === "products" ? "bg-white text-black" : "text-zinc-500 hover:text-white"}`}
@@ -332,7 +358,7 @@ export default function AdminDashboard() {
                 Total Products
               </p>
               <h3 className="text-2xl font-serif text-white">
-                {Array.isArray(products) ? products.length : 0}
+                {products?.length || 0}
               </h3>
             </div>
           </div>
@@ -345,7 +371,7 @@ export default function AdminDashboard() {
                 Total Orders
               </p>
               <h3 className="text-2xl font-serif text-white">
-                {Array.isArray(orders) ? orders.length : 0}
+                {orders?.length || 0}
               </h3>
             </div>
           </div>

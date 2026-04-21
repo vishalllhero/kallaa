@@ -3,12 +3,15 @@ import { productApi } from "@/api";
 
 interface Product {
   id: string;
-  title: string;
-  description: string;
+  title?: string;
+  name?: string;
   price: number;
-  image: string;
-  story: string;
-  createdAt: string;
+  image?: string;
+  images?: string[];
+  story?: string;
+  description?: string;
+  isSold?: boolean;
+  ownerName?: string;
 }
 
 export const useProducts = () => {
@@ -21,7 +24,11 @@ export const useProducts = () => {
       setLoading(true);
       setError(null);
       const response = await productApi.getAll();
-      const data = response?.data?.data || response?.data || [];
+      const data =
+        response?.data?.data ||
+        response?.data?.products ||
+        response?.data ||
+        [];
       setProducts(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch products");
