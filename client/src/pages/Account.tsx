@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { safeMap } from "@/utils/safeMap";
+import { orderApi } from "@/api";
 
 export default function Account() {
   const { user, logout } = useAuth();
@@ -13,31 +14,25 @@ export default function Account() {
   const [wishlist, setWishlist] = useState([]);
 
   useEffect(() => {
-    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    
-    fetch(`${API_BASE}/api/orders`)
-      .then(res => res.json())
-      .then(res => {
-        console.log("API RESPONSE (Orders):", res);
-        const data = res?.data?.data || res?.data?.orders || res?.data || [];
+    const fetchUserData = async () => {
+      try {
+        const ordersResponse = await orderApi.getUserOrders();
+        const data =
+          ordersResponse?.data?.data ||
+          ordersResponse?.data?.orders ||
+          ordersResponse?.data ||
+          [];
         setOrders(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Orders fetch failed:", err);
         setOrders([]);
-      });
+      }
 
-    fetch(`${API_BASE}/api/wishlist`)
-      .then(res => res.json())
-      .then(res => {
-        console.log("API RESPONSE (Wishlist):", res);
-        const data = res?.data?.data || res?.data?.items || res?.data || [];
-        setWishlist(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => {
-        console.error("Wishlist fetch failed:", err);
-        setWishlist([]);
-      });
+      // Note: Wishlist API not implemented yet, placeholder
+      setWishlist([]);
+    };
+
+    fetchUserData();
   }, []);
 
   // 🔐 NOT LOGGED IN
@@ -69,40 +64,44 @@ export default function Account() {
           <div className="space-y-3">
             <button
               onClick={() => setActiveTab("profile")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "profile"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
+                activeTab === "profile"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-                }`}
+              }`}
             >
               <User size={18} /> Profile
             </button>
 
             <button
               onClick={() => setActiveTab("orders")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "orders"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
+                activeTab === "orders"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-                }`}
+              }`}
             >
               <Package size={18} /> Orders
             </button>
 
             <button
               onClick={() => setActiveTab("wishlist")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "wishlist"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
+                activeTab === "wishlist"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-                }`}
+              }`}
             >
               <Heart size={18} /> Wishlist
             </button>
 
             <button
               onClick={() => setActiveTab("settings")}
-              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${activeTab === "settings"
+              className={`w-full flex items-center gap-3 px-4 py-2 rounded ${
+                activeTab === "settings"
                   ? "bg-yellow-400 text-black"
                   : "hover:bg-white/10"
-                }`}
+              }`}
             >
               <Settings size={18} /> Settings
             </button>
@@ -138,12 +137,16 @@ export default function Account() {
                     className="border-b border-white/10 py-4 last:border-0"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <p className="font-bold">Order ID: {order.id || order._id}</p>
+                      <p className="font-bold">
+                        Order ID: {order.id || order._id}
+                      </p>
                       <span className="px-2 py-1 bg-yellow-400 text-black text-[10px] uppercase font-bold rounded">
                         {order.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-400">Total: ${order.totalPrice || order.total || "N/A"}</p>
+                    <p className="text-sm text-gray-400">
+                      Total: ${order.totalPrice || order.total || "N/A"}
+                    </p>
                   </div>
                 ))
               )}
@@ -153,7 +156,9 @@ export default function Account() {
           {activeTab === "wishlist" && (
             <div className="bg-card p-6 rounded-lg border border-white/10">
               <h2 className="text-xl font-bold mb-4">Wishlist</h2>
-              {!wishlist || !Array.isArray(wishlist) || wishlist.length === 0 ? (
+              {!wishlist ||
+              !Array.isArray(wishlist) ||
+              wishlist.length === 0 ? (
                 <p className="text-gray-500 italic">No wishlist items</p>
               ) : (
                 (Array.isArray(wishlist) ? wishlist : []).map(item => (

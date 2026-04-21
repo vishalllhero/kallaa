@@ -1,14 +1,4 @@
-import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
-const api = axios.create({
-  baseURL: `${API_BASE}/api`,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
+import { api } from "@/lib/api";
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem("token");
@@ -27,7 +17,10 @@ api.interceptors.response.use(
   },
   error => {
     if (import.meta.env.DEV) {
-      console.error(`[API ERROR] ${error.config?.url}:`, error.response?.data || error.message);
+      console.error(
+        `[API ERROR] ${error.config?.url}:`,
+        error.response?.data || error.message
+      );
     }
     return Promise.reject(error);
   }
@@ -63,18 +56,18 @@ interface UserMeResponse {
 
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const { data } = await api.post("/auth/login", credentials);
+    const { data } = await api.post("/api/auth/login", credentials);
     return data;
   },
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    const { data } = await api.post("/auth/register", credentials);
+    const { data } = await api.post("/api/auth/register", credentials);
     return data;
   },
   logout: async (): Promise<void> => {
-    await api.post("/auth/logout");
+    await api.post("/api/auth/logout");
   },
   getMe: async (): Promise<UserMeResponse> => {
-    const { data } = await api.get("/auth/me");
+    const { data } = await api.get("/api/auth/me");
     return data;
   },
   isAdmin: (): boolean => {
@@ -91,47 +84,55 @@ export const authApi = {
 
 export const productApi = {
   getAll: async () => {
-    const { data } = await api.get("/products");
+    const { data } = await api.get("/api/products");
     return data;
   },
   getById: async (id: string) => {
-    const { data } = await api.get(`/products/${id}`);
+    const { data } = await api.get(`/api/products/${id}`);
     return data;
   },
   getStories: async () => {
-    const { data } = await api.get("/products/stories");
+    const { data } = await api.get("/api/products/stories");
     return data;
   },
 };
 
 export const adminApi = {
   getProducts: async () => {
-    const { data } = await api.get("/products");
+    const { data } = await api.get("/api/products");
     return data;
   },
   createProduct: async (product: any) => {
-    const { data } = await api.post("/products", product);
+    const { data } = await api.post("/api/products", product);
     return data;
   },
   updateProduct: async (id: string, product: any) => {
-    const { data } = await api.put(`/products/${id}`, product);
+    const { data } = await api.put(`/api/products/${id}`, product);
     return data;
   },
   deleteProduct: async (id: string) => {
-    await api.delete(`/products/${id}`);
+    await api.delete(`/api/products/${id}`);
   },
   getOrders: async () => {
-    const { data } = await api.get("/orders");
+    const { data } = await api.get("/api/orders");
     return data;
   },
   updateOrderStatus: async (id: string, status: string) => {
-    const { data } = await api.put(`/orders/${id}/status`, { status });
+    const { data } = await api.put(`/api/orders/${id}/status`, { status });
     return data;
   },
   uploadImages: async (files: File[]) => {
     const formData = new FormData();
     files.forEach(file => formData.append("images", file));
-    const { data } = await api.post("/admin/upload", formData, {
+    const { data } = await api.post("/api/admin/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  },
+  uploadImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const { data } = await api.post("/api/products/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return data;
@@ -140,18 +141,22 @@ export const adminApi = {
 
 export const paymentApi = {
   createOrder: async (amount: number) => {
-    const { data } = await api.post("/payments/create-order", { amount });
+    const { data } = await api.post("/api/payments/create-order", { amount });
     return data;
   },
   verify: async (paymentData: any) => {
-    const { data } = await api.post("/payments/verify", paymentData);
+    const { data } = await api.post("/api/payments/verify", paymentData);
     return data;
   },
 };
 
 export const orderApi = {
   create: async (order: any) => {
-    const { data } = await api.post("/orders", order);
+    const { data } = await api.post("/api/orders", order);
+    return data;
+  },
+  getUserOrders: async () => {
+    const { data } = await api.get("/api/orders/user");
     return data;
   },
 };

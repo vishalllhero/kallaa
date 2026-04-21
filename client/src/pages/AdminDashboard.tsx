@@ -86,19 +86,8 @@ export default function AdminDashboard() {
       const formDataUpload = new FormData();
       formDataUpload.append("image", selectedFile);
 
-      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      const uploadRes = await fetch(`${API_BASE}/api/products/upload`, {
-        method: "POST",
-        credentials: "include",
-        body: formDataUpload,
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error("Image upload failed");
-      }
-
-      const uploadData = await uploadRes.json();
-      const imageUrl = uploadData.data.imageUrl;
+      const { data } = await adminApi.uploadImage(selectedFile);
+      const imageUrl = data.imageUrl;
       console.log("[AdminDashboard] Upload response URL:", imageUrl);
       setFormData(prev => ({ ...prev, image: imageUrl }));
       console.log("[AdminDashboard] Set formData.image to:", imageUrl);
@@ -129,20 +118,8 @@ export default function AdminDashboard() {
         const formDataUpload = new FormData();
         formDataUpload.append("image", selectedFile);
 
-        const API_BASE =
-          import.meta.env.VITE_API_URL || "http://localhost:5000";
-        const uploadRes = await fetch(`${API_BASE}/api/products/upload`, {
-          method: "POST",
-          credentials: "include",
-          body: formDataUpload,
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error("Image upload failed");
-        }
-
-        const uploadData = await uploadRes.json();
-        imageUrl = uploadData.data.imageUrl;
+        const { data } = await adminApi.uploadImage(selectedFile);
+        imageUrl = data.imageUrl;
         console.log("[AdminDashboard] Image uploaded:", imageUrl);
 
         // Clear selected file after successful upload
