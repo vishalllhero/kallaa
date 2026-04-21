@@ -18,21 +18,30 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://kallaa-w9et.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // Development
-      "https://kallaa-w9et.vercel.app", // Production
-    ],
-    credentials: true, // Allow cookies and authentication headers
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
   })
 );
 
-// Handle preflight requests for all routes
 app.options(
   "*",
   cors({
-    origin: ["http://localhost:5173", "https://kallaa-w9et.vercel.app"],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
