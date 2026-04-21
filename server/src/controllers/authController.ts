@@ -75,7 +75,17 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    const isMatch = await (user as any).comparePassword(password);
+    let isMatch: boolean;
+    try {
+      isMatch = await (user as any).comparePassword(password);
+    } catch (error) {
+      console.error("[Auth] Password comparison error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Authentication error",
+      });
+    }
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,

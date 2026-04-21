@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import * as jose from "jose";
 
 const SALT_ROUNDS = 10;
@@ -10,7 +10,8 @@ const JWT_SECRET = new TextEncoder().encode(
  * Hash a password using bcrypt
  */
 export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, SALT_ROUNDS);
+  const salt = await bcrypt.genSalt(SALT_ROUNDS);
+  return bcrypt.hash(password, salt);
 }
 
 /**
