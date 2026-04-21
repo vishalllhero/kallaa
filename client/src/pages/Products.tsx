@@ -5,6 +5,7 @@ import { ShoppingBag, Star, Info, ArrowRight, Search } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProductCard from "@/components/ProductCard";
 import DebugImage from "@/components/DebugImage";
 import { getProductImage, debugImageInfo } from "@/utils/image";
 import { safeMap } from "@/utils/safeMap";
@@ -22,10 +23,14 @@ export default function Products() {
         setLoading(true);
         const response = await productApi.getAll();
         console.log("API RESPONSE (Products):", response.data);
-        
+
         // Normalize: response.data is the direct result due to our api.ts interceptor,
         // but we'll follow the requested normalization pattern for extra safety.
-        const data = response?.data?.data || response?.data?.products || response?.data || [];
+        const data =
+          response?.data?.data ||
+          response?.data?.products ||
+          response?.data ||
+          [];
         const productArray = Array.isArray(data) ? data : [];
         setProducts(productArray);
 
@@ -33,10 +38,7 @@ export default function Products() {
         if (import.meta.env.DEV) {
           console.log("[Products] Loaded products count:", productArray.length);
           productArray.slice(0, 3).forEach((product: any, i: number) => {
-            debugImageInfo(
-              product.images,
-              `Product ${i + 1}: ${product.name}`
-            );
+            debugImageInfo(product.images, `Product ${i + 1}: ${product.name}`);
           });
         }
       } catch (err) {
@@ -81,7 +83,10 @@ export default function Products() {
 
             {/* Filters */}
             <div className="flex gap-4 p-1 bg-zinc-900 border border-white/5 rounded-full">
-              {(Array.isArray(["all", "available", "collected"] as const) ? (["all", "available", "collected"] as const) : []).map(f => (
+              {(Array.isArray(["all", "available", "collected"] as const)
+                ? (["all", "available", "collected"] as const)
+                : []
+              ).map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -97,15 +102,17 @@ export default function Products() {
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {(Array.isArray([1, 2, 3, 4, 5, 6]) ? [1, 2, 3, 4, 5, 6] : []).map(i => (
-              <div key={i} className="space-y-4">
-                <div className="aspect-[4/5] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+            {(Array.isArray([1, 2, 3, 4, 5, 6]) ? [1, 2, 3, 4, 5, 6] : []).map(
+              i => (
+                <div key={i} className="space-y-4">
+                  <div className="aspect-[4/5] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+                  </div>
+                  <div className="h-6 w-2/3 bg-zinc-900 animate-pulse rounded" />
+                  <div className="h-4 w-1/3 bg-zinc-900 animate-pulse rounded" />
                 </div>
-                <div className="h-6 w-2/3 bg-zinc-900 animate-pulse rounded" />
-                <div className="h-4 w-1/3 bg-zinc-900 animate-pulse rounded" />
-              </div>
-            ))}
+              )
+            )}
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20">
@@ -124,25 +131,18 @@ export default function Products() {
             layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
           >
-            {(Array.isArray(filteredProducts) ? filteredProducts : []).map((product, idx) => (
-              <motion.div
-                layout
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                key={product.id || product._id}
-              >
-                <Link href={`/product/${product.id || product._id}`} className="group">
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-6 bg-zinc-900 border border-white/5 group-hover:border-white/20 transition-all duration-700">
-                    <ImageWithFallback
-                      src={getProductImage(product.images)}
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105 opacity-80 group-hover:opacity-100"
-                      debug={true}
-                    />
-
+            {(Array.isArray(filteredProducts) ? filteredProducts : []).map(
+              (product, idx) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  key={product.id || product._id}
+                  className="relative"
+                >
                   {/* Status Tag */}
-                  <div className="absolute top-6 left-6">
+                  <div className="absolute top-6 left-6 z-10">
                     {product.isSold ? (
                       <div className="px-4 py-1 bg-white/10 backdrop-blur-md border border-white/10 text-white text-[8px] font-bold uppercase tracking-[0.3em]">
                         Collected
@@ -154,38 +154,19 @@ export default function Products() {
                     )}
                   </div>
 
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-
-                  <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                    <span className="text-white text-2xl font-serif">
-                      ${parseFloat(product.price).toLocaleString()}
-                    </span>
-                    <div className="w-12 h-12 rounded-full border border-white/10 group-hover:bg-white flex items-center justify-center text-white group-hover:text-black transition-all duration-300">
-                      <ArrowRight size={20} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="px-2">
-                  <h3 className="text-zinc-400 text-xl font-serif mb-1 group-hover:text-white transition-colors">
-                    {product.name}
-                  </h3>
-                  <p className="text-zinc-600 text-[10px] uppercase tracking-[0.3em] font-bold">
-                    {product.isSold
-                      ? `Curated by ${product.ownerName || "Unknown"}`
-                      : "Artist Edition"}
-                  </p>
-                </div>
-              </Link>
-            </motion.div>
-            ))}
+                  <ProductCard product={product} />
+                </motion.div>
+              )
+            )}
           </motion.div>
         )}
 
         {/* Debug component for development */}
         <DebugImage
-          images={(Array.isArray(products) ? products : []).slice(0, 3).map(p => p.images?.[0]).filter(Boolean)}
+          images={(Array.isArray(products) ? products : [])
+            .slice(0, 3)
+            .map(p => p.images?.[0])
+            .filter(Boolean)}
         />
       </div>
     </div>

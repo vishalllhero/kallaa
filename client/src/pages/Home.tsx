@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { productApi } from "@/api";
 import { motion, useScroll, useTransform } from "framer-motion";
 import ImageWithFallback from "@/components/ImageWithFallback";
+import ProductCard from "@/components/ProductCard";
 import { getProductImage, debugImageInfo } from "@/utils/image";
 import { safeMap } from "@/utils/safeMap";
 
@@ -114,6 +115,147 @@ export default function Home() {
               Collected Stories <Play size={16} fill="white" />
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Collection */}
+      <section className="py-32 bg-zinc-900/50">
+        <div className="container px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-serif text-white mb-4">
+              Featured Collection
+            </h2>
+            <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
+              Discover pieces that tell stories of creativity, passion, and
+              artistic vision.
+            </p>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-[4/5] bg-zinc-800 animate-pulse rounded-2xl relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+                </div>
+              ))}
+            </div>
+          ) : !Array.isArray(featuredProducts) ||
+            featuredProducts.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-8">🎨</div>
+              <h3 className="text-2xl font-serif text-zinc-400 mb-4">
+                Featured pieces coming soon
+              </h3>
+              <p className="text-zinc-600">
+                Our latest collection is being prepared. Check back soon!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {(Array.isArray(featuredProducts) ? featuredProducts : []).map(
+                (product, idx) => (
+                  <motion.div
+                    key={product.id || product._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <ProductCard product={product} />
+                  </motion.div>
+                )
+              )}
+            </div>
+          )}
+
+          <div className="text-center mt-16">
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-[#d4af37] text-black font-bold uppercase tracking-widest hover:bg-[#e8c547] transition-all rounded-full"
+            >
+              Explore Full Collection
+              <ArrowRight size={20} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Collected Stories Section */}
+      <section className="py-32 bg-black">
+        <div className="container px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-serif text-white mb-4">
+              Collected Stories
+            </h2>
+            <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
+              Every piece finds its home. Here are the stories of collectors who
+              found their perfect match.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            {/* Placeholder for collected stories - would be populated from API */}
+            <div className="bg-zinc-900/30 p-8 rounded-2xl border border-white/5">
+              <div className="flex gap-6 mb-6">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                  <div className="w-full h-full bg-gradient-to-br from-[#d4af37] to-[#e8c547] flex items-center justify-center">
+                    <span className="text-black font-bold text-lg">A</span>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-white font-serif text-lg mb-1">
+                    Anonymous Collector
+                  </h3>
+                  <p className="text-zinc-500 text-sm">3 months ago</p>
+                </div>
+              </div>
+              <blockquote className="text-zinc-300 italic mb-4">
+                "This piece spoke to me in a way I can't explain. It now hangs
+                in my study, a daily reminder of the beauty that exists when art
+                meets soul."
+              </blockquote>
+              <div className="text-[#d4af37] text-sm uppercase tracking-wider">
+                "Eternal Dreams" by KALLAA
+              </div>
+            </div>
+
+            <div className="bg-zinc-900/30 p-8 rounded-2xl border border-white/5">
+              <div className="flex gap-6 mb-6">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                  <div className="w-full h-full bg-gradient-to-br from-[#d4af37] to-[#e8c547] flex items-center justify-center">
+                    <span className="text-black font-bold text-lg">M</span>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-white font-serif text-lg mb-1">
+                    Museum Curator
+                  </h3>
+                  <p className="text-zinc-500 text-sm">6 months ago</p>
+                </div>
+              </div>
+              <blockquote className="text-zinc-300 italic mb-4">
+                "In my 20 years of collecting, this is the most emotionally
+                resonant piece I've encountered. It's not just art—it's a
+                conversation."
+              </blockquote>
+              <div className="text-[#d4af37] text-sm uppercase tracking-wider">
+                "Whispers of Time" by KALLAA
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-16">
+            <Link
+              href="/stories"
+              className="inline-flex items-center gap-3 px-8 py-4 border border-white/20 backdrop-blur-md hover:bg-white/10 transition-all rounded-full uppercase tracking-widest text-sm"
+            >
+              Read More Stories
+              <Play size={16} />
+            </Link>
+          </div>
         </div>
       </section>
 
