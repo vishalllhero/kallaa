@@ -9,6 +9,9 @@ router.get("/", productController.getAllProducts);
 router.get("/stories", productController.getCollectedStories);
 router.get("/:id", productController.getProductById);
 
+// Collect/Own product (protected)
+router.post("/:id/collect", authenticate, productController.collectProduct);
+
 // Upload route
 router.post(
   "/upload",

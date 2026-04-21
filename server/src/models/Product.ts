@@ -12,6 +12,11 @@ const productSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    // Ownership system
+    isSold: { type: Boolean, default: false },
+    ownerName: { type: String },
+    ownerStory: { type: String },
+    soldAt: { type: Date },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },

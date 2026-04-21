@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import {
@@ -9,9 +9,11 @@ import {
   Users,
   Award,
   Gem,
-  ShoppingCart,
+  Heart,
+  X,
 } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { productApi } from "@/api";
 import { toast } from "sonner";
 import ScarcityBadge from "./ScarcityBadge";
 import OwnershipMessage from "./OwnershipMessage";
@@ -27,17 +29,41 @@ export default function ProductInfo({
   product,
   onInitiateAcquisition,
 }: ProductInfoProps) {
-  const { addToCart } = useCart();
+  const { user } = useAuth();
+  const [showCollectModal, setShowCollectModal] = useState(false);
+  const [ownerName, setOwnerName] = useState(user?.name || "");
+  const [ownerStory, setOwnerStory] = useState("");
+  const [isCollecting, setIsCollecting] = useState(false);
 
-  const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      title: product.title || product.name,
-      price: product.price,
-      image: product.image || product.images?.[0],
-      story: product.story || product.description,
-    });
-    toast.success("Added to collection cart!");
+  const handleCollectPiece = async () => {
+    if (!user) {
+      toast.error("Please sign in to collect this piece");
+      return;
+    }
+
+    try {
+      setIsCollecting(true);
+      const response = await productApi.collectProduct(product.id, {
+        ownerName: ownerName || "Anonymous Collector",
+        ownerStory: ownerStory || "",
+      });
+
+      if (response.success) {
+        toast.success(
+          "🎨 Piece successfully collected! You now own this story."
+        );
+        setShowCollectModal(false);
+        // Optionally refresh the page or update state
+        window.location.reload();
+      } else {
+        toast.error(response.message || "Failed to collect piece");
+      }
+    } catch (error: any) {
+      console.error("Collect error:", error);
+      toast.error("Failed to collect piece. Please try again.");
+    } finally {
+      setIsCollecting(false);
+    }
   };
 
   return (
@@ -136,38 +162,24 @@ export default function ProductInfo({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex gap-4">
-              <motion.button
-                onClick={handleAddToCart}
-                className="btn-luxury flex-1 h-16 flex items-center justify-center gap-2 group relative overflow-hidden"
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: "0 0 60px rgba(212, 175, 55, 0.4)",
-                }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ShoppingCart size={20} />
-                Add to Cart
-              </motion.button>
-              <Link href="/cart">
-                <motion.button
-                  className="btn-luxury-outline h-16 px-6 flex items-center justify-center gap-2 group relative overflow-hidden"
-                  whileHover={{
-                    scale: 1.02,
-                    boxShadow: "0 0 40px rgba(212, 175, 55, 0.3)",
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  View Cart
-                  <ArrowRight
-                    size={16}
-                    className="group-hover:translate-x-1 transition-transform"
-                  />
-                </motion.button>
-              </Link>
-            </div>
+            <motion.button
+              onClick={() => setShowCollectModal(true)}
+              className="btn-luxury w-full h-20 flex flex-col items-center justify-center gap-2 group relative overflow-hidden"
+              whileHover={{
+                scale: 1.02,
+                boxShadow: "0 0 60px rgba(212, 175, 55, 0.4)",
+              }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+            >
+              <span className="flex items-center gap-3">
+                <Heart size={20} className="group-hover:fill-current" />
+                Collect This Piece
+              </span>
+              <span className="text-[10px] opacity-80 group-hover:opacity-100 transition-opacity">
+                Become the custodian of this story
+              </span>
+            </motion.button>
 
             {/* Coming Soon Message */}
             <motion.div
@@ -259,6 +271,92 @@ export default function ProductInfo({
 
       {/* Story Section */}
       <StorySection story={product.story} delay={1.3} />
+
+      {/* Collect Modal */}
+      {showCollectModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div
+            className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+            onClick={() => setShowCollectModal(false)}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-xl p-8 relative"
+          >
+            <button
+              onClick={() => setShowCollectModal(false)}
+              className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+
+            <div className="text-center mb-8">
+              <Heart size={48} className="mx-auto mb-4 text-[#d4af37]" />
+              <h2 className="text-3xl font-serif text-white mb-2">
+                Collect This Piece
+              </h2>
+              <p className="text-zinc-400">
+                You are about to become the custodian of "
+                {product.title || product.name}"
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
+                  Your Name (as it will appear to others)
+                </label>
+                <input
+                  type="text"
+                  value={ownerName}
+                  onChange={e => setOwnerName(e.target.value)}
+                  className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#d4af37] transition-colors"
+                  placeholder="Anonymous Collector"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
+                  Your Story (optional)
+                </label>
+                <textarea
+                  value={ownerStory}
+                  onChange={e => setOwnerStory(e.target.value)}
+                  rows={4}
+                  className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#d4af37] transition-colors"
+                  placeholder="Share why this piece spoke to you..."
+                />
+              </div>
+
+              <div className="bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-xl p-4">
+                <p className="text-[#d4af37] text-sm">
+                  By collecting this piece, you become its permanent custodian.
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              <button
+                onClick={handleCollectPiece}
+                disabled={isCollecting}
+                className="w-full bg-[#d4af37] text-black font-bold py-4 rounded-xl hover:bg-[#e8c547] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isCollecting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                    Collecting...
+                  </>
+                ) : (
+                  <>
+                    <Heart size={20} />
+                    Collect This Piece - ${product.price?.toLocaleString()}
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }

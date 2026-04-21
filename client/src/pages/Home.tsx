@@ -10,32 +10,39 @@ import { safeMap } from "@/utils/safeMap";
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = React.useState<any[]>([]);
+  const [collectedStories, setCollectedStories] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-    const fetchFeatured = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await productApi.getAll();
-        console.log("API RESPONSE (Featured):", response.data);
 
-        // Normalize: response.data is the direct result due to our api.ts interceptor,
-        // but we'll follow the requested normalization pattern for extra safety.
-        const data =
-          response?.data?.data ||
-          response?.data?.products ||
-          response?.data ||
+        // Fetch featured products (available ones)
+        const productsResponse = await productApi.getAll();
+        const productsData =
+          productsResponse?.data?.data ||
+          productsResponse?.data?.products ||
+          productsResponse?.data ||
           [];
-        const productsArray = Array.isArray(data) ? data : [];
-        setFeaturedProducts(productsArray.slice(0, 4));
+        const productsArray = Array.isArray(productsData) ? productsData : [];
+        setFeaturedProducts(productsArray.filter(p => !p.isSold).slice(0, 4));
+
+        // Fetch collected stories
+        const storiesResponse = await productApi.getStories();
+        const storiesData =
+          storiesResponse?.data?.data || storiesResponse?.data || [];
+        const storiesArray = Array.isArray(storiesData) ? storiesData : [];
+        setCollectedStories(storiesArray.slice(0, 2));
       } catch (err) {
-        console.error("Featured products fetch error:", err);
+        console.error("Data fetch error:", err);
         setFeaturedProducts([]);
+        setCollectedStories([]);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchFeatured();
+    fetchData();
   }, []);
 
   return (
@@ -196,56 +203,57 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            {/* Placeholder for collected stories - would be populated from API */}
-            <div className="bg-zinc-900/30 p-8 rounded-2xl border border-white/5">
-              <div className="flex gap-6 mb-6">
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
-                  <div className="w-full h-full bg-gradient-to-br from-[#d4af37] to-[#e8c547] flex items-center justify-center">
-                    <span className="text-black font-bold text-lg">A</span>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-white font-serif text-lg mb-1">
-                    Anonymous Collector
-                  </h3>
-                  <p className="text-zinc-500 text-sm">3 months ago</p>
-                </div>
-              </div>
-              <blockquote className="text-zinc-300 italic mb-4">
-                "This piece spoke to me in a way I can't explain. It now hangs
-                in my study, a daily reminder of the beauty that exists when art
-                meets soul."
-              </blockquote>
-              <div className="text-[#d4af37] text-sm uppercase tracking-wider">
-                "Eternal Dreams" by KALLAA
-              </div>
+          {collectedStories.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-8">🎨</div>
+              <h3 className="text-2xl font-serif text-zinc-400 mb-4">
+                Stories coming soon
+              </h3>
+              <p className="text-zinc-600">
+                Be the first to collect a piece and share your story.
+              </p>
             </div>
-
-            <div className="bg-zinc-900/30 p-8 rounded-2xl border border-white/5">
-              <div className="flex gap-6 mb-6">
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
-                  <div className="w-full h-full bg-gradient-to-br from-[#d4af37] to-[#e8c547] flex items-center justify-center">
-                    <span className="text-black font-bold text-lg">M</span>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+              {collectedStories.map((story, idx) => (
+                <motion.div
+                  key={story.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-zinc-900/30 p-8 rounded-2xl border border-white/5"
+                >
+                  <div className="flex gap-6 mb-6">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                      <div className="w-full h-full bg-gradient-to-br from-[#d4af37] to-[#e8c547] flex items-center justify-center">
+                        <span className="text-black font-bold text-lg">
+                          {(story.ownerName || "A")[0].toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-white font-serif text-lg mb-1">
+                        {story.ownerName || "Anonymous Collector"}
+                      </h3>
+                      <p className="text-zinc-500 text-sm">
+                        {story.soldAt
+                          ? new Date(story.soldAt).toLocaleDateString()
+                          : "Recently"}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <h3 className="text-white font-serif text-lg mb-1">
-                    Museum Curator
-                  </h3>
-                  <p className="text-zinc-500 text-sm">6 months ago</p>
-                </div>
-              </div>
-              <blockquote className="text-zinc-300 italic mb-4">
-                "In my 20 years of collecting, this is the most emotionally
-                resonant piece I've encountered. It's not just art—it's a
-                conversation."
-              </blockquote>
-              <div className="text-[#d4af37] text-sm uppercase tracking-wider">
-                "Whispers of Time" by KALLAA
-              </div>
+                  {story.ownerStory && (
+                    <blockquote className="text-zinc-300 italic mb-4">
+                      "{story.ownerStory}"
+                    </blockquote>
+                  )}
+                  <div className="text-[#d4af37] text-sm uppercase tracking-wider">
+                    "{story.title || story.name}" by KALLAA
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          )}
 
           <div className="text-center mt-16">
             <Link

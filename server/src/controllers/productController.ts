@@ -145,10 +145,80 @@ export const uploadImage = async (req: Request, res: Response) => {
   }
 };
 
+export const collectProduct = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { ownerName, ownerStory } = req.body;
+    const userId = (req as any).user._id;
+
+    // Check if product exists and is not sold
+    const product = await (Product as any).findById(id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    if (product.isSold) {
+      return res.status(400).json({
+        success: false,
+        message: "This piece has already been collected",
+      });
+    }
+
+    // Mark product as sold with ownership details
+    const updatedProduct = await (Product as any).findByIdAndUpdate(
+      id,
+      {
+        isSold: true,
+        ownerName: ownerName || "Anonymous Collector",
+        ownerStory: ownerStory || "",
+        soldAt: new Date(),
+      },
+      { new: true }
+    );
+
+    // Create order record
+    const { Order } = await import("../models/Order.js");
+    const order = new Order({
+      userId,
+      products: [id],
+      total: product.price,
+      status: "completed",
+    });
+    await order.save();
+
+    console.log(`[COLLECT] Product ${id} collected by user ${userId}`);
+
+    res.json({
+      success: true,
+      data: {
+        product: {
+          ...updatedProduct.toObject(),
+          id: updatedProduct._id.toString(),
+        },
+        order: {
+          ...order.toObject(),
+          id: order._id.toString(),
+        },
+      },
+      message: "Piece successfully collected!",
+    });
+  } catch (error) {
+    console.error(`[ERROR] Error collecting product:`, error);
+    res.status(500).json({
+      success: false,
+      message: "Error collecting product",
+      error: error instanceof Error ? error.message : "Undefined error",
+    });
+  }
+};
+
 export const getCollectedStories = async (req: Request, res: Response) => {
   try {
     const stories = await (Product as any).find({ isSold: true }).sort({
-      updatedAt: -1,
+      soldAt: -1,
     });
     const formattedStories = Array.isArray(stories)
       ? stories.map(s => ({

@@ -95,6 +95,13 @@ export const productApi = {
     const { data } = await api.get("/api/products/stories");
     return data;
   },
+  collectProduct: async (
+    id: string,
+    ownerData: { ownerName: string; ownerStory: string }
+  ) => {
+    const { data } = await api.post(`/api/products/${id}/collect`, ownerData);
+    return data;
+  },
 };
 
 export const adminApi = {
