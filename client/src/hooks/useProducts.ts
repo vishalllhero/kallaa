@@ -23,7 +23,7 @@ export const useProducts = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await productApi.getAll();
+      const response = await productApi.getAll().catch(() => ({ data: [] }));
       const data =
         response?.data?.data ||
         response?.data?.products ||
@@ -33,6 +33,7 @@ export const useProducts = () => {
     } catch (err: any) {
       setError(err.message || "Failed to fetch products");
       console.error("useProducts error:", err);
+      setProducts([]); // Ensure products is always an array
     } finally {
       setLoading(false);
     }
@@ -42,5 +43,10 @@ export const useProducts = () => {
     fetchProducts();
   }, []);
 
-  return { products, loading, error, refetch: fetchProducts };
+  return {
+    products: products || [], // Guarantee array return
+    loading,
+    error,
+    refetch: fetchProducts,
+  };
 };

@@ -21,7 +21,7 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await productApi.getAll();
+        const response = await productApi.getAll().catch(() => ({ data: [] }));
         console.log("API RESPONSE (Products):", response.data);
 
         // Normalize: response.data is the direct result due to our api.ts interceptor,
@@ -51,11 +51,13 @@ export default function Products() {
     fetchProducts();
   }, []);
 
-  const filteredProducts = products.filter(p => {
-    if (filter === "available") return !p.isSold;
-    if (filter === "collected") return p.isSold;
-    return true;
-  });
+  const filteredProducts = (Array.isArray(products) ? products : []).filter(
+    p => {
+      if (filter === "available") return !p?.isSold;
+      if (filter === "collected") return p?.isSold;
+      return true;
+    }
+  );
 
   return (
     <div className="min-h-screen bg-black pt-32 pb-20 px-6">

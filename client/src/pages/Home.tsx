@@ -19,17 +19,21 @@ export default function Home() {
         setIsLoading(true);
 
         // Fetch featured products (available ones)
-        const productsResponse = await productApi.getAll();
+        const productsResponse = await productApi
+          .getAll()
+          .catch(() => ({ data: [] }));
         const productsData =
           productsResponse?.data?.data ||
           productsResponse?.data?.products ||
           productsResponse?.data ||
           [];
         const productsArray = Array.isArray(productsData) ? productsData : [];
-        setFeaturedProducts(productsArray.filter(p => !p.isSold).slice(0, 4));
+        setFeaturedProducts(productsArray.filter(p => !p?.isSold).slice(0, 4));
 
         // Fetch collected stories
-        const storiesResponse = await productApi.getStories();
+        const storiesResponse = await productApi
+          .getStories()
+          .catch(() => ({ data: [] }));
         const storiesData =
           storiesResponse?.data?.data || storiesResponse?.data || [];
         const storiesArray = Array.isArray(storiesData) ? storiesData : [];
@@ -203,7 +207,7 @@ export default function Home() {
             </p>
           </div>
 
-          {collectedStories.length === 0 ? (
+          {!Array.isArray(collectedStories) || collectedStories.length === 0 ? (
             <div className="text-center py-20">
               <div className="text-6xl mb-8">🎨</div>
               <h3 className="text-2xl font-serif text-zinc-400 mb-4">
@@ -215,43 +219,45 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-              {collectedStories.map((story, idx) => (
-                <motion.div
-                  key={story.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="bg-zinc-900/30 p-8 rounded-2xl border border-white/5"
-                >
-                  <div className="flex gap-6 mb-6">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
-                      <div className="w-full h-full bg-gradient-to-br from-[#d4af37] to-[#e8c547] flex items-center justify-center">
-                        <span className="text-black font-bold text-lg">
-                          {(story.ownerName || "A")[0].toUpperCase()}
-                        </span>
+              {(Array.isArray(collectedStories) ? collectedStories : []).map(
+                (story, idx) => (
+                  <motion.div
+                    key={story.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="bg-zinc-900/30 p-8 rounded-2xl border border-white/5"
+                  >
+                    <div className="flex gap-6 mb-6">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                        <div className="w-full h-full bg-gradient-to-br from-[#d4af37] to-[#e8c547] flex items-center justify-center">
+                          <span className="text-black font-bold text-lg">
+                            {(story.ownerName || "A")[0].toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-white font-serif text-lg mb-1">
+                          {story.ownerName || "Anonymous Collector"}
+                        </h3>
+                        <p className="text-zinc-500 text-sm">
+                          {story.soldAt
+                            ? new Date(story.soldAt).toLocaleDateString()
+                            : "Recently"}
+                        </p>
                       </div>
                     </div>
-                    <div>
-                      <h3 className="text-white font-serif text-lg mb-1">
-                        {story.ownerName || "Anonymous Collector"}
-                      </h3>
-                      <p className="text-zinc-500 text-sm">
-                        {story.soldAt
-                          ? new Date(story.soldAt).toLocaleDateString()
-                          : "Recently"}
-                      </p>
+                    {story.ownerStory && (
+                      <blockquote className="text-zinc-300 italic mb-4">
+                        "{story.ownerStory}"
+                      </blockquote>
+                    )}
+                    <div className="text-[#d4af37] text-sm uppercase tracking-wider">
+                      "{story.title || story.name}" by KALLAA
                     </div>
-                  </div>
-                  {story.ownerStory && (
-                    <blockquote className="text-zinc-300 italic mb-4">
-                      "{story.ownerStory}"
-                    </blockquote>
-                  )}
-                  <div className="text-[#d4af37] text-sm uppercase tracking-wider">
-                    "{story.title || story.name}" by KALLAA
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                )
+              )}
             </div>
           )}
 

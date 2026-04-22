@@ -247,16 +247,27 @@ export default function AdminDashboard() {
     );
   }
 
-  // Data integrity check
-  if (!Array.isArray(products) || !Array.isArray(orders)) {
+  // Enhanced data integrity check
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mr-3" />
+        <span className="text-sm uppercase tracking-widest">
+          Loading Dashboard...
+        </span>
+      </div>
+    );
+  }
+
+  if (error || !Array.isArray(products) || !Array.isArray(orders)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
         <div className="text-center">
           <div className="text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-serif mb-4">Dashboard Error</h2>
           <p className="text-zinc-400 mb-6">
-            Failed to load dashboard data. Please check your connection and try
-            again.
+            {error ||
+              "Failed to load dashboard data. Please check your connection and try again."}
           </p>
           <div className="flex gap-4 justify-center">
             <button
