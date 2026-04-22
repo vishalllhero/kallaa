@@ -51,8 +51,8 @@ export default function AdminDashboard() {
       setError(null);
 
       const [pRes, oRes] = await Promise.all([
-        adminApi.getProducts().catch(() => ({ data: [] })),
-        adminApi.getOrders().catch(() => ({ data: [] })),
+        adminApi.getProducts().catch(() => ({ data: { data: [] } })),
+        adminApi.getOrders().catch(() => ({ data: { data: [] } })),
       ]);
 
       const pData =
@@ -663,7 +663,7 @@ export default function AdminDashboard() {
             {/* List Section */}
             <div className="lg:col-span-2">
               <div className="space-y-4">
-                {!products || products.length === 0 ? (
+                {!products || products?.length || 0 === 0 ? (
                   <div className="text-center py-12 text-zinc-600">
                     No products found in inventory.
                   </div>
@@ -792,7 +792,8 @@ export default function AdminDashboard() {
           <div className="fixed bottom-4 left-4 bg-black/90 text-white p-4 rounded-lg max-w-md z-50 text-xs max-h-96 overflow-y-auto">
             <div className="mb-2 font-bold">AdminDashboard Debug</div>
             <div>
-              Products: {Array.isArray(products) ? products.length : "N/A"}
+              Products:{" "}
+              {Array.isArray(products) ? products?.length || 0 : "N/A"}
             </div>
             <div>Orders: {Array.isArray(orders) ? orders.length : "N/A"}</div>
             <div>Current Tab: {activeTab}</div>

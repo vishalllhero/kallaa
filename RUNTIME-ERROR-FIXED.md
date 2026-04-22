@@ -110,7 +110,7 @@ setFeaturedProducts(productsArray.slice(0, 4));
 **Empty State Handling:**
 
 ```typescript
-) : (Array.isArray(featuredProducts) && featuredProducts.length > 0) ? (
+) : (Array.isArray(featuredProducts) && featuredproducts?.length || 0 > 0) ? (
   // Show products grid
 ) : (
   // Show "coming soon" message

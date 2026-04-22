@@ -116,7 +116,8 @@ export default function Products() {
               )
             )}
           </div>
-        ) : filteredProducts.length === 0 ? (
+        ) : !Array.isArray(filteredProducts) ||
+          filteredProducts.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-8">🎨</div>
             <h3 className="text-2xl font-serif text-zinc-400 mb-4">
