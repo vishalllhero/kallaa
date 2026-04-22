@@ -2,24 +2,30 @@
 
 ## The Problem
 
-ALL routes (`/admin`, `/login`, `/products`, etc.) return 404 on Vercel because:
-
-1. Vercel uses **repository root** instead of `/client` as project root
-2. SPA routing not configured for client-side navigation
+ALL routes (`/admin`, `/login`, `/products`, etc.) return 404 on Vercel because Vercel uses **repository root** instead of `/client` as project root.
 
 ## The Solution
 
-### Step 1: Delete & Re-import Project
+### IMMEDIATE FIX: Update Vercel Settings
 
-1. **DELETE** existing Vercel project completely
-2. **Re-import** from GitHub repository
-3. **During import**: Set **Root Directory = `client`**
+1. Go to **Vercel Dashboard** → **Your Project** → **Settings** → **General**
+2. Change **Root Directory** from `(empty)` to `client`
+3. **Save** changes
+4. **Redeploy** with "Clear build cache" enabled
 
-### Step 2: Verify Configuration
+### If That Doesn't Work: Nuclear Reset
+
+1. **DELETE** the Vercel project completely
+2. **Wait 5 minutes** for cleanup
+3. **Re-import** from GitHub
+4. **During import**: Set **Root Directory = `client`**
+5. **Deploy**
+
+### Verify Configuration
 
 ```
-Root Directory: client ✅
-Framework: Vite ✅
+Root Directory: client ✅ (CRITICAL)
+Framework: Vite ✅ (auto-detected)
 Build Command: npm run build ✅
 Output Directory: dist ✅
 ```
