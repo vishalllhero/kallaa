@@ -67,6 +67,10 @@ export const createProduct = async (req: Request, res: Response) => {
       });
     }
 
+    // Generate image variants
+    const thumbnail = image.replace("/upload/", "/upload/w_300,c_limit/");
+    const zoomImage = image.replace("/upload/", "/upload/w_1400,c_limit/");
+
     // Prepare product data
     const data = {
       title,
@@ -74,12 +78,14 @@ export const createProduct = async (req: Request, res: Response) => {
       description: description || "",
       story: story || "",
       image,
+      thumbnail,
+      zoomImage,
       createdBy: (req as any).user._id,
     };
 
     // Auto-generate story if not provided or empty
     if (!data.story || data.story.trim() === "") {
-      data.story = generateStory(data.title, req.body.mood);
+      data.story = generateStory(data.title);
       console.log(
         `[STORY] Auto-generated story for "${data.title}": ${data.story}`
       );

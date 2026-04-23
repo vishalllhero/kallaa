@@ -111,16 +111,39 @@ export default function ProductInfo({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
         >
-          {product.name}
+          {product.title || product.name}
         </motion.h1>
 
         <motion.div
-          className="text-3xl md:text-4xl font-serif text-[#d4af37] mb-4"
+          className="text-3xl md:text-4xl font-serif text-[#d4af37] mb-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.6 }}
         >
           ${product.price?.toLocaleString()}
+        </motion.div>
+
+        {/* Ownership Status */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.65 }}
+        >
+          <div
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+              product.owner === "Available"
+                ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                : "bg-red-500/10 text-red-400 border border-red-500/20"
+            }`}
+          >
+            <div
+              className={`w-2 h-2 rounded-full ${
+                product.owner === "Available" ? "bg-green-400" : "bg-red-400"
+              }`}
+            />
+            {product.owner}
+          </div>
         </motion.div>
       </div>
 
@@ -133,22 +156,26 @@ export default function ProductInfo({
       >
         <h3 className="text-zinc-500 text-[10px] uppercase tracking-[0.4em] font-bold mb-6 flex items-center gap-2">
           <Info size={14} className="text-[#d4af37]/50" />
-          The Essence
+          The Narrative
         </h3>
         <div className="max-w-lg">
-          <p className="text-zinc-300 text-lg leading-relaxed font-serif italic mb-6">
-            {product.story ||
-              product.description ||
-              `"This is not just an artwork.
-
-It is a moment captured before it disappeared.
-
-'The Last Gaze' was painted in isolation — a study of beauty that refuses to stay still.
-
-Only one exists.
-
-Once claimed, it will never return."`}
-          </p>
+          <div className="text-zinc-300 text-lg leading-relaxed font-serif mb-6">
+            {product.story ? (
+              <p className="italic">"{product.story}"</p>
+            ) : product.description ? (
+              <p>{product.description}</p>
+            ) : (
+              <div className="space-y-4 italic">
+                <p>This is not just an artwork.</p>
+                <p>It is a moment captured before it disappeared.</p>
+                <p>
+                  Painted in isolation — a study of beauty that refuses to stay
+                  still.
+                </p>
+                <p>Only one exists. Once claimed, it will never return.</p>
+              </div>
+            )}
+          </div>
           <div className="pt-6 border-t border-[#d4af37]/20">
             <p className="text-zinc-500 text-sm italic font-serif">
               "Art doesn't ask to be understood. It asks to be felt."

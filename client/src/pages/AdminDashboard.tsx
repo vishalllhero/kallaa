@@ -39,7 +39,6 @@ export default function AdminDashboard() {
     price: "",
     description: "",
     story: "",
-    mood: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -231,7 +230,7 @@ export default function AdminDashboard() {
   const resetForm = () => {
     setIsEditing(false);
     setCurrentId(null);
-    setFormData({ title: "", price: "", description: "", story: "", mood: "" });
+    setFormData({ title: "", price: "", description: "", story: "" });
     setSelectedFile(null);
   };
 
@@ -456,69 +455,53 @@ export default function AdminDashboard() {
                       Product Image *
                     </label>
                     <div className="space-y-4">
-                      {selectedFile ? (
-                        <div className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-[#d4af37]/50">
-                          <img
-                            src={URL.createObjectURL(selectedFile)}
-                            className="w-full h-full object-cover"
-                            alt="Selected image"
-                          />
+                      <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-[#d4af37]/50 transition-colors cursor-pointer p-8 group">
+                        <Plus
+                          size={32}
+                          className="text-zinc-500 group-hover:text-[#d4af37] mb-3"
+                        />
+                        <span className="text-sm font-medium text-zinc-400 group-hover:text-[#d4af37] mb-2">
+                          Upload Product Image
+                        </span>
+                        <span className="text-xs text-zinc-600 text-center">
+                          High-quality image required
+                          <br />
+                          Will auto-generate thumbnail & zoom versions
+                        </span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          required
+                        />
+                      </label>
+
+                      {selectedFile && (
+                        <div className="flex items-center gap-3 p-3 bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-lg">
+                          <div className="w-8 h-8 bg-[#d4af37]/20 rounded-lg flex items-center justify-center">
+                            <CheckCircle size={16} className="text-[#d4af37]" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-white">
+                              {selectedFile.name}
+                            </p>
+                            <p className="text-xs text-zinc-400">
+                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
                           <button
                             type="button"
                             onClick={() => setSelectedFile(null)}
-                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600"
+                            className="text-zinc-400 hover:text-red-400 transition-colors"
                           >
-                            ×
+                            <X size={16} />
                           </button>
                         </div>
-                      ) : (
-                        <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-[#d4af37]/50 transition-colors cursor-pointer p-6 group">
-                          <Plus
-                            size={24}
-                            className="text-zinc-500 group-hover:text-[#d4af37] mb-2"
-                          />
-                          <span className="text-[10px] uppercase tracking-widest text-zinc-500 group-hover:text-[#d4af37] font-bold text-center">
-                            Click to select image
-                          </span>
-                          <span className="text-[8px] text-zinc-600 mt-1">
-                            Required for product creation
-                          </span>
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleFileSelect}
-                          />
-                        </label>
                       )}
                     </div>
                   </div>
-                  <div>
-                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
-                      Mood (for story generation)
-                    </label>
-                    <select
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
-                      value={formData.mood}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          mood: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="">Select mood (optional)</option>
-                      <option value="dark">Dark</option>
-                      <option value="emotional">Emotional</option>
-                      <option value="love">Love</option>
-                      <option value="power">Power</option>
-                      <option value="mystery">Mystery</option>
-                      <option value="serenity">Serenity</option>
-                    </select>
-                    <p className="text-zinc-600 text-xs mt-1">
-                      Leave empty for random story generation
-                    </p>
-                  </div>
+
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
                       Story
@@ -604,7 +587,9 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-6">
                         <div className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 group-hover:border-[#d4af37]/20 transition-colors">
                           <ImageWithFallback
-                            src={getImageUrl(product.image)}
+                            src={getImageUrl(
+                              product.thumbnail || product.image
+                            )}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </div>

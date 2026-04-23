@@ -155,7 +155,12 @@ export default function ProductDetail() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
           >
-            <ProductGallery images={product.image} title={product.name} />
+            <ImageSlider
+              mainImage={product.image}
+              thumbnail={product.thumbnail}
+              zoomImage={product.zoomImage}
+              alt={product.name}
+            />
           </motion.div>
 
           {/* Info Section - Details on right */}

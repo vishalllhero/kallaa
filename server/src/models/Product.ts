@@ -3,22 +3,30 @@ import mongoose from "mongoose";
 const productSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
-    description: { type: String, default: "" },
     price: { type: Number, required: true },
-    image: { type: String, required: true },
+    description: { type: String, default: "" },
     story: { type: String, default: "" },
+
+    // Single image system with variants
+    image: { type: String, required: true }, // Original/full size
+    thumbnail: { type: String, required: true }, // 300px width
+    zoomImage: { type: String, required: true }, // 1400px width
+
+    // Ownership system
+    owner: { type: String, default: "Available" },
+    quantity: { type: Number, default: 1 },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    // Ownership system
+
+    // Legacy fields (deprecated)
     isSold: { type: Boolean, default: false },
     ownerName: { type: String },
     ownerStory: { type: String },
     soldAt: { type: Date },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
