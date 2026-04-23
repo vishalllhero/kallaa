@@ -4,7 +4,7 @@ import { productApi } from "@/api";
 import { ChevronLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import ProductGallery from "@/components/ProductGallery";
+import ImageSlider from "@/components/ImageSlider";
 import ProductInfo from "@/components/ProductInfo";
 
 export default function ProductDetail() {
@@ -156,10 +156,8 @@ export default function ProductDetail() {
             transition={{ duration: 0.8, delay: 0.1 }}
           >
             <ImageSlider
-              mainImage={product.image}
-              thumbnail={product.thumbnail}
-              zoomImage={product.zoomImage}
-              alt={product.name}
+              images={product.image || []}
+              alt={product.title || product.name || "Product"}
             />
           </motion.div>
 

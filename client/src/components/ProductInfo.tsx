@@ -12,7 +12,7 @@ import {
   Heart,
   X,
 } from "lucide-react";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { productApi } from "@/api";
 import { toast } from "sonner";
 import ScarcityBadge from "./ScarcityBadge";
