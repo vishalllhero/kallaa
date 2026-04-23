@@ -17,35 +17,67 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  "https://kallaa-w9et.vercel.app",
+  "https://kallaa-w9et-ars81vpn7-kallaa.vercel.app",
+  "http://localhost:5173", // For development
+  "http://localhost:3000", // Alternative dev port
+];
+
 app.use(
   cors({
-    origin: "*",
+    origin: function (origin, callback) {
+      console.log("CORS check - Origin:", origin);
+
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) {
+        console.log("CORS: Allowing request with no origin");
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        console.log("CORS: Allowing origin:", origin);
+        return callback(null, true);
+      }
+
+      console.log("CORS blocked origin:", origin);
+      return callback(new Error("CORS policy violation"));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
 
 app.use(express.json());
 app.use(cookieParser());
 
-// Simple Admin Seeding
+// Admin User Seeding
 const seedAdmin = async () => {
   try {
     const adminEmail = process.env.ADMIN_EMAIL || "admin@kallaa.com";
     const adminPassword = process.env.ADMIN_PASSWORD || "123456";
+
+    console.log("🔍 Checking for admin user:", adminEmail);
+
     const adminExists = await (User as any).findOne({ email: adminEmail });
 
     if (!adminExists) {
       const admin = new User({
         name: "Admin User",
         email: adminEmail,
-        password: adminPassword,
+        password: adminPassword, // Will be hashed by the pre-save hook
         role: "admin",
       });
       await admin.save();
       console.log("✅ Admin user created successfully");
+      console.log("   Email:", adminEmail);
+      console.log("   Password:", adminPassword);
+    } else {
+      console.log("ℹ️ Admin user already exists");
     }
   } catch (error) {
-    console.error("❌ Seeding error:", error);
+    console.error("❌ Failed to seed admin user:", error);
   }
 };
 
