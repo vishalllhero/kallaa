@@ -15,12 +15,14 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
 
   if (allImages.length === 0) {
     return (
-      <div className="w-full h-96 bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
+      <div className="w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
-            <span className="text-zinc-400 text-lg">🎨</span>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
+            <span className="text-zinc-400 text-2xl">🎨</span>
           </div>
-          <span className="text-zinc-500 text-sm">No images available</span>
+          <span className="text-zinc-500 text-sm font-medium">
+            No image available
+          </span>
         </div>
       </div>
     );

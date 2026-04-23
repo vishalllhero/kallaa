@@ -89,19 +89,28 @@ export default function AdminDashboard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (!formData.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      toast.error("Valid price is required");
+      return;
+    }
+    if (!selectedFile) {
+      toast.error("Please select an image");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
-      if (!selectedFile) {
-        toast.error("Please select an image file");
-        return;
-      }
-
-      // First, upload the image
+      // Upload image first
       const imageFormData = new FormData();
       imageFormData.append("image", selectedFile);
 
-      console.log("Uploading image...");
       const uploadResponse = await fetch("/api/products/upload", {
         method: "POST",
         credentials: "include",
@@ -109,61 +118,47 @@ export default function AdminDashboard() {
       });
 
       if (!uploadResponse.ok) {
-        const uploadError = await uploadResponse.json().catch(() => ({}));
-        throw new Error(uploadError.error || "Failed to upload image");
+        throw new Error("Failed to upload image");
       }
 
       const uploadResult = await uploadResponse.json();
-      console.log("UPLOAD RESPONSE:", uploadResult);
-
       const imageUrl = uploadResult.data?.imageUrl;
 
       if (!imageUrl) {
-        throw new Error("Image upload failed - no URL received");
+        throw new Error("Image upload failed");
       }
 
-      console.log("Image uploaded successfully:", imageUrl);
-
-      // Now create the product with the image URL
+      // Create product with image URL
       const productData = {
-        title: formData.title,
-        price: formData.price,
-        description: formData.description,
-        story: formData.story,
-        mood: formData.mood,
+        title: formData.title.trim(),
+        price: parseFloat(formData.price),
+        description: formData.description.trim(),
+        story: formData.story.trim(),
         image: imageUrl,
       };
-
-      console.log("FINAL PRODUCT DATA:", productData);
-
-      console.log("Creating product with data:", productData);
 
       const response = await fetch("/api/products", {
         method: "POST",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to create product");
+        throw new Error("Failed to create product");
       }
 
       const result = await response.json();
-
       if (result.success) {
         toast.success("Product created successfully!");
         resetForm();
-        fetchData(); // Refresh the product list
+        fetchData();
       } else {
         throw new Error(result.message || "Failed to create product");
       }
     } catch (err: any) {
-      console.error("Product creation error:", err);
-      toast.error(err.message || "Failed to create product");
+      console.error("Error:", err);
+      toast.error(err.message || "An error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -199,13 +194,26 @@ export default function AdminDashboard() {
     if (!deleteModal.productId) return;
 
     try {
-      await adminApi.deleteProduct(deleteModal.productId);
-      toast.success("Product deleted successfully");
-      fetchData();
-      closeDeleteModal();
+      const response = await fetch(`/api/products/${deleteModal.productId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success("Product deleted successfully");
+        fetchData();
+        closeDeleteModal();
+      } else {
+        throw new Error(result.message || "Failed to delete product");
+      }
     } catch (err: any) {
-      console.error("[AdminDashboard] Delete error:", err);
-      toast.error("Failed to delete product");
+      console.error("Delete error:", err);
+      toast.error(err.message || "Failed to delete product");
     }
   };
 
@@ -445,43 +453,44 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
-                      Product Image
+                      Product Image *
                     </label>
                     <div className="space-y-4">
-                      {formData.image && (
-                        <div className="w-20 h-20 rounded-lg overflow-hidden border border-white/10">
-                          <ImageWithFallback
-                            src={getImageUrl(formData.image)}
-                            className="w-full h-full object-cover"
-                            alt="Current image"
-                          />
-                        </div>
-                      )}
-                      {selectedFile && (
-                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50">
+                      {selectedFile ? (
+                        <div className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-[#d4af37]/50">
                           <img
                             src={URL.createObjectURL(selectedFile)}
                             className="w-full h-full object-cover"
-                            alt="Preview"
+                            alt="Selected image"
                           />
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFile(null)}
+                            className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs hover:bg-red-600"
+                          >
+                            ×
+                          </button>
                         </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-[#d4af37]/50 transition-colors cursor-pointer p-6 group">
+                          <Plus
+                            size={24}
+                            className="text-zinc-500 group-hover:text-[#d4af37] mb-2"
+                          />
+                          <span className="text-[10px] uppercase tracking-widest text-zinc-500 group-hover:text-[#d4af37] font-bold text-center">
+                            Click to select image
+                          </span>
+                          <span className="text-[8px] text-zinc-600 mt-1">
+                            Required for product creation
+                          </span>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                          />
+                        </label>
                       )}
-                      {/* File Input */}
-                      <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-yellow-400/50 transition-colors cursor-pointer p-4 group">
-                        <Plus
-                          size={20}
-                          className="text-zinc-500 group-hover:text-yellow-400 mb-1"
-                        />
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-500 group-hover:text-yellow-400 font-bold">
-                          Select Image
-                        </span>
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                        />
-                      </label>
                     </div>
                   </div>
                   <div>
