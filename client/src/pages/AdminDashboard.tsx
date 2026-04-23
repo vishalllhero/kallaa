@@ -165,7 +165,7 @@ export default function AdminDashboard() {
 
   const handleEdit = (product: any) => {
     setIsEditing(true);
-    setCurrentId(product.id);
+    setCurrentId(product._id || product.id);
     setFormData({
       title: product.title || "",
       price: product.price?.toString() || "",
@@ -178,9 +178,16 @@ export default function AdminDashboard() {
   };
 
   const openDeleteModal = (product: any) => {
+    const productId = product._id || product.id;
+    console.log(
+      "DELETE CLICKED",
+      productId,
+      "for product:",
+      product.title || product.name
+    );
     setDeleteModal({
       isOpen: true,
-      productId: product.id || product._id,
+      productId: productId,
       productTitle: product.title || product.name || "this product",
     });
   };
@@ -190,7 +197,12 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async () => {
-    if (!deleteModal.productId) return;
+    if (!deleteModal.productId) {
+      console.error("No product ID to delete");
+      return;
+    }
+
+    console.log("DELETING PRODUCT", deleteModal.productId);
 
     try {
       const response = await fetch(`/api/products/${deleteModal.productId}`, {
@@ -199,19 +211,27 @@ export default function AdminDashboard() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete product");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`
+        );
       }
 
       const result = await response.json();
       if (result.success) {
         toast.success("Product deleted successfully");
-        fetchData();
+
+        // Update local state immediately for better UX
+        setProducts(prev =>
+          prev.filter(p => (p._id || p.id) !== deleteModal.productId)
+        );
+
         closeDeleteModal();
       } else {
         throw new Error(result.message || "Failed to delete product");
       }
     } catch (err: any) {
-      console.error("Delete error:", err);
+      console.error("DELETE ERROR:", err);
       toast.error(err.message || "Failed to delete product");
     }
   };
