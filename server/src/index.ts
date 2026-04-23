@@ -5,7 +5,6 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
-import { connectDB } from "./db.js";
 import { User } from "./models/User.js";
 
 // Routes
@@ -18,30 +17,9 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 const app = express();
 
 // Middleware
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://kallaa-w9et.vercel.app",
-];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
-
-app.options(
-  "*",
-  cors({
-    origin: allowedOrigins,
+    origin: "*",
     credentials: true,
   })
 );
@@ -95,8 +73,18 @@ console.log(
 );
 console.log("");
 
-// Connect to DB (background process)
-connectDB();
+// Connect to MongoDB
+const MONGO_URI =
+  process.env.MONGO_URI || process.env.MONGODB_URI || process.env.DATABASE_URL;
+
+if (MONGO_URI) {
+  mongoose
+    .connect(MONGO_URI)
+    .then(() => console.log("✅ MongoDB connected"))
+    .catch(err => console.error("❌ MongoDB connection error:", err));
+} else {
+  console.warn("⚠️ No MongoDB URI found - database operations will fail");
+}
 
 // Seed admin user (only if DB is configured and connected)
 if (
@@ -152,6 +140,15 @@ app.get("/health", (req, res) => res.json({ status: "ok" }));
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("[ERROR]", err.stack);
   res.status(500).json({ error: "Internal server error" });
+});
+
+// Prevent crashes
+process.on("uncaughtException", err => {
+  console.error("Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
 const PORT = process.env.PORT || 5000;
