@@ -92,7 +92,7 @@ export const createProduct = async (req: Request, res: Response) => {
 
     res.status(201).json({
       success: true,
-      product,
+      data: product,
     });
   } catch (error) {
     console.error(`[ERROR] Error creating product:`, error);
@@ -174,7 +174,11 @@ export const uploadImage = async (req: Request, res: Response) => {
       req.file.originalname
     );
 
-    return res.json({ url: result });
+    console.log("Cloudinary URL:", result);
+    return res.json({
+      success: true,
+      data: { imageUrl: result },
+    });
   } catch (err: any) {
     console.error("UPLOAD ERROR:", err);
     console.error("Error details:", {

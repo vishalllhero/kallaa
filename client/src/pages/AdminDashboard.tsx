@@ -109,7 +109,13 @@ export default function AdminDashboard() {
       }
 
       const uploadResult = await uploadResponse.json();
-      const imageUrl = uploadResult.url;
+      console.log("UPLOAD RESPONSE:", uploadResult);
+
+      const imageUrl = uploadResult.data?.imageUrl;
+
+      if (!imageUrl) {
+        throw new Error("Image upload failed - no URL received");
+      }
 
       console.log("Image uploaded successfully:", imageUrl);
 
