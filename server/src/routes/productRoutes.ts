@@ -15,6 +15,9 @@ router.post("/:id/collect", authenticate, productController.collectProduct);
 // Image upload route
 router.post("/upload", upload.single("image"), productController.uploadImage);
 
+// Test Cloudinary connection
+router.get("/test-cloudinary", productController.testCloudinary);
+
 // Protected Admin Routes
 router.post("/", authenticate, authorizeAdmin, productController.createProduct);
 router.put(

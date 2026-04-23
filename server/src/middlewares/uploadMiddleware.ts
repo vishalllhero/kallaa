@@ -48,20 +48,25 @@ export const uploadToCloudinary = async (
   filename: string
 ): Promise<string> => {
   try {
-    console.log(`[CLOUDINARY] Starting upload for file: ${filename}`);
+    console.log(
+      `[CLOUDINARY] Starting upload for file: ${filename}, buffer size: ${buffer.length} bytes`
+    );
 
-    const uploadOptions = {
-      folder: "kallaa",
-      public_id: `${Date.now()}-${filename}`,
-      resource_type: "auto" as const,
-    };
+    // Test basic connectivity first
+    console.log(`[CLOUDINARY] Testing connection...`);
+    const pingResult = await cloudinary.api.ping();
+    console.log(`[CLOUDINARY] Ping successful:`, pingResult.status);
 
     const result = await new Promise<any>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        uploadOptions,
+        {},
         (error, result) => {
           if (error) {
-            console.error("[CLOUDINARY] Upload error:", error);
+            console.error("[CLOUDINARY] Upload error details:", {
+              message: error.message,
+              http_code: error.http_code,
+              error: error.error,
+            });
             reject(error);
           } else if (result) {
             console.log(`[CLOUDINARY] Upload successful: ${result.secure_url}`);

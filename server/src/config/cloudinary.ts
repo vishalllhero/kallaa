@@ -11,10 +11,28 @@ if (!cloudName || !apiKey || !apiSecret) {
   );
 }
 
+// Validate format (basic checks)
+if (
+  cloudName.includes(" ") ||
+  apiKey.includes(" ") ||
+  apiSecret.includes(" ")
+) {
+  console.warn(
+    "⚠️ WARNING: Cloudinary credentials contain spaces - this may cause authentication issues"
+  );
+}
+
+if (!/^[a-zA-Z0-9]+$/.test(cloudName)) {
+  console.warn("⚠️ WARNING: Cloudinary cloud name contains invalid characters");
+}
+
+console.log("Cloudinary Ready:", !!process.env.CLOUDINARY_API_KEY);
 console.log("Cloudinary config:", {
   cloud_name: cloudName ? "✅ Set" : "❌ Missing",
-  api_key: apiKey ? "✅ Set" : "❌ Missing",
-  api_secret: apiSecret ? "✅ Set" : "❌ Missing",
+  api_key: apiKey ? "✅ Set (" + apiKey.substring(0, 8) + "...)" : "❌ Missing",
+  api_secret: apiSecret
+    ? "✅ Set (" + apiSecret.substring(0, 8) + "...)"
+    : "❌ Missing",
 });
 
 cloudinary.config({

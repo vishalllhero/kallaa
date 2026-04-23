@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Product } from "../models/Product.js";
 import { generateStory } from "../utils/storyGenerator.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
@@ -155,6 +156,16 @@ export const uploadImage = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
+    // Log file details
+    console.log("File details:", {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      buffer: req.file.buffer
+        ? `Buffer(${req.file.buffer.length} bytes)`
+        : "No buffer",
+    });
+
     const { uploadToCloudinary } =
       await import("../middlewares/uploadMiddleware.js");
 
@@ -166,7 +177,37 @@ export const uploadImage = async (req: Request, res: Response) => {
     return res.json({ url: result });
   } catch (err: any) {
     console.error("UPLOAD ERROR:", err);
-    return res.status(500).json({ error: err.message });
+    console.error("Error details:", {
+      message: err.message,
+      name: err.name,
+      stack: err.stack,
+    });
+    return res.status(500).json({
+      error: err.message,
+      details: err.name,
+      http_code: err.http_code,
+    });
+  }
+};
+
+// Test Cloudinary connection
+export const testCloudinary = async (req: Request, res: Response) => {
+  try {
+    console.log("Testing Cloudinary connection...");
+    const result = await cloudinary.api.ping();
+    res.json({
+      status: "success",
+      message: "Cloudinary connection OK",
+      ping: result,
+    });
+  } catch (error: any) {
+    console.error("Cloudinary test failed:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Cloudinary connection failed",
+      error: error.message,
+      http_code: error.http_code,
+    });
   }
 };
 
