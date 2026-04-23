@@ -136,22 +136,6 @@ export const adminApi = {
     const { data } = await api.put(`/api/orders/${id}/status`, { status });
     return data;
   },
-  uploadImages: async (files: File[]) => {
-    const formData = new FormData();
-    files.forEach(file => formData.append("images", file));
-    const { data } = await api.post("/api/admin/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return data;
-  },
-  uploadImage: async (file: File) => {
-    const formData = new FormData();
-    formData.append("image", file);
-    const { data } = await api.post("/api/products/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return data;
-  },
 };
 
 export const paymentApi = {

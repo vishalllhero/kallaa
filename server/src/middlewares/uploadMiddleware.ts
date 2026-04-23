@@ -33,15 +33,8 @@ const fileFilter = (
   }
 };
 
+// Memory-based upload for production
 export const upload = multer({
-  storage: diskStorage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-});
-
-export const memoryUpload = multer({
   storage: memoryStorage,
   fileFilter: fileFilter,
   limits: {
@@ -49,30 +42,42 @@ export const memoryUpload = multer({
   },
 });
 
-// Cloudinary upload utility function
+// Cloudinary upload utility function using buffer/stream
 export const uploadToCloudinary = async (
   buffer: Buffer,
   filename: string
 ): Promise<string> => {
-  return new Promise((resolve, reject) => {
+  try {
+    console.log(`[CLOUDINARY] Starting upload for file: ${filename}`);
+
     const uploadOptions = {
-      folder: "kallaa_products",
+      folder: "kallaa",
       public_id: `${Date.now()}-${filename}`,
       resource_type: "auto" as const,
     };
 
-    cloudinary.uploader
-      .upload_stream(uploadOptions, (error, result) => {
-        if (error) {
-          console.error("Cloudinary upload error:", error);
-          reject(error);
-        } else if (result) {
-          console.log("Cloudinary upload success:", result.secure_url);
-          resolve(result.secure_url);
-        } else {
-          reject(new Error("Upload failed - no result"));
+    const result = await new Promise<any>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        uploadOptions,
+        (error, result) => {
+          if (error) {
+            console.error("[CLOUDINARY] Upload error:", error);
+            reject(error);
+          } else if (result) {
+            console.log(`[CLOUDINARY] Upload successful: ${result.secure_url}`);
+            resolve(result);
+          } else {
+            reject(new Error("Upload failed - no result"));
+          }
         }
-      })
-      .end(buffer);
-  });
+      );
+
+      uploadStream.end(buffer);
+    });
+
+    return result.secure_url;
+  } catch (error) {
+    console.error("[CLOUDINARY] Upload failed:", error);
+    throw error;
+  }
 };

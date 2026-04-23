@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as productController from "../controllers/productController.js";
 import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
-import { memoryUpload } from "../middlewares/uploadMiddleware.js";
+import { upload } from "../middlewares/uploadMiddleware.js";
 
 const router = Router();
 
@@ -12,13 +12,8 @@ router.get("/:id", productController.getProductById);
 // Collect/Own product (protected)
 router.post("/:id/collect", authenticate, productController.collectProduct);
 
-// Upload route
-router.post(
-  "/upload",
-  authenticate,
-  memoryUpload.single("image"),
-  productController.uploadImage
-);
+// Image upload route
+router.post("/upload", upload.single("image"), productController.uploadImage);
 
 // Protected Admin Routes
 router.post("/", authenticate, authorizeAdmin, productController.createProduct);

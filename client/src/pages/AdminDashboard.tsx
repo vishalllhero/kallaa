@@ -37,12 +37,11 @@ export default function AdminDashboard() {
   const [formData, setFormData] = useState({
     title: "",
     price: "",
-    image: "",
+    description: "",
     story: "",
     mood: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchData = async () => {
@@ -83,82 +82,75 @@ export default function AdminDashboard() {
     setSelectedFile(file);
   };
 
-  const handleImageUpload = async () => {
-    if (!selectedFile) return;
-
-    try {
-      setIsUploading(true);
-      console.log("[AdminDashboard] Uploading file:", selectedFile.name);
-      const formDataUpload = new FormData();
-      formDataUpload.append("image", selectedFile);
-
-      const { data } = await adminApi.uploadImage(selectedFile);
-      const imageUrl = data.imageUrl;
-      console.log("[AdminDashboard] Upload response URL:", imageUrl);
-      setFormData(prev => ({ ...prev, image: imageUrl }));
-      console.log("[AdminDashboard] Set formData.image to:", imageUrl);
-      setSelectedFile(null);
-      toast.success("Image uploaded successfully");
-    } catch (err) {
-      console.error("[AdminDashboard] Upload failed:", err);
-      toast.error("Upload failed");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const removeSelectedImage = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setIsSubmitting(true);
 
-      let imageUrl = formData.image;
-
-      // Upload image first if file is selected
-      if (selectedFile) {
-        console.log("[AdminDashboard] Uploading image first...");
-        const formDataUpload = new FormData();
-        formDataUpload.append("image", selectedFile);
-
-        const { data } = await adminApi.uploadImage(selectedFile);
-        imageUrl = data.imageUrl;
-        console.log("[AdminDashboard] Image uploaded:", imageUrl);
-
-        // Clear selected file after successful upload
-        setSelectedFile(null);
+      if (!selectedFile) {
+        toast.error("Please select an image file");
+        return;
       }
 
-      // Prepare product data
+      // First, upload the image
+      const imageFormData = new FormData();
+      imageFormData.append("image", selectedFile);
+
+      console.log("Uploading image...");
+      const uploadResponse = await fetch("/api/products/upload", {
+        method: "POST",
+        credentials: "include",
+        body: imageFormData,
+      });
+
+      if (!uploadResponse.ok) {
+        const uploadError = await uploadResponse.json().catch(() => ({}));
+        throw new Error(uploadError.error || "Failed to upload image");
+      }
+
+      const uploadResult = await uploadResponse.json();
+      const imageUrl = uploadResult.url;
+
+      console.log("Image uploaded successfully:", imageUrl);
+
+      // Now create the product with the image URL
       const productData = {
         title: formData.title,
-        price: parseFloat(formData.price),
-        description: formData.story, // Using story as description? Wait, schema has description and story separate
+        price: formData.price,
+        description: formData.description,
         story: formData.story,
+        mood: formData.mood,
         image: imageUrl,
-        mood: formData.mood, // Include mood for story generation
       };
 
-      console.log("[AdminDashboard] Submitting product data:", productData);
+      console.log("Creating product with data:", productData);
 
-      if (isEditing && currentId) {
-        console.log("[AdminDashboard] Updating product:", currentId);
-        await adminApi.updateProduct(currentId, productData);
-        toast.success("Product updated");
-      } else {
-        console.log("[AdminDashboard] Creating new product");
-        const result = await adminApi.createProduct(productData);
-        console.log("[AdminDashboard] Create result:", result);
-        toast.success("Product added successfully");
+      const response = await fetch("/api/products", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create product");
       }
-      resetForm();
-      fetchData();
-    } catch (err) {
-      console.error("[AdminDashboard] Submit error:", err);
-      toast.error("Failed to save product");
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Product created successfully!");
+        resetForm();
+        fetchData(); // Refresh the product list
+      } else {
+        throw new Error(result.message || "Failed to create product");
+      }
+    } catch (err: any) {
+      console.error("Product creation error:", err);
+      toast.error(err.message || "Failed to create product");
     } finally {
       setIsSubmitting(false);
     }
@@ -170,7 +162,7 @@ export default function AdminDashboard() {
     setFormData({
       title: product.title || "",
       price: product.price?.toString() || "",
-      image: product.image || "",
+      description: product.description || "",
       story: product.story || "",
       mood: product.mood || "",
     });
@@ -204,7 +196,7 @@ export default function AdminDashboard() {
   const resetForm = () => {
     setIsEditing(false);
     setCurrentId(null);
-    setFormData({ title: "", price: "", image: "", story: "", mood: "" });
+    setFormData({ title: "", price: "", description: "", story: "", mood: "" });
     setSelectedFile(null);
   };
 
@@ -463,17 +455,6 @@ export default function AdminDashboard() {
                           onChange={handleFileSelect}
                         />
                       </label>
-                      {/* Upload Button */}
-                      {selectedFile && (
-                        <button
-                          type="button"
-                          onClick={handleImageUpload}
-                          disabled={isUploading}
-                          className="w-full bg-yellow-400 text-black font-bold py-2 rounded-xl hover:bg-yellow-300 transition-all disabled:opacity-50"
-                        >
-                          {isUploading ? "Uploading..." : "Upload Image"}
-                        </button>
-                      )}
                     </div>
                   </div>
                   <div>
@@ -522,96 +503,7 @@ export default function AdminDashboard() {
                       Leave blank to auto-generate an emotional story
                     </p>
                   </div>
-                  <div>
-                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
-                      Price ($)
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
-                      value={formData.price}
-                      onChange={e =>
-                        setFormData({ ...formData, price: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
-                      Product Images
-                    </label>
-                    <div className="space-y-4">
-                      {formData.image && (
-                        <div className="flex flex-wrap gap-2">
-                          {(formData.image ? [formData.image] : []).map(
-                            (url, index) => (
-                              <div
-                                key={index}
-                                className="w-20 h-20 rounded-lg overflow-hidden border border-white/10"
-                              >
-                                <ImageWithFallback
-                                  src={getImageUrl(url)}
-                                  className="w-full h-full object-cover"
-                                  alt={`Uploaded ${index + 1}`}
-                                />
-                              </div>
-                            )
-                          )}
-                        </div>
-                      )}
-                      {selectedFile && (
-                        <div className="flex flex-wrap gap-2">
-                          {[selectedFile].map((file, index) => (
-                            <div
-                              key={index}
-                              className="relative w-20 h-20 rounded-lg overflow-hidden border border-yellow-400/50"
-                            >
-                              <img
-                                src={URL.createObjectURL(file)}
-                                className="w-full h-full object-cover"
-                                alt={`Preview ${index + 1}`}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeSelectedImage(index)}
-                                className="absolute top-1 right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs"
-                              >
-                                ×
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {/* File Input */}
-                      <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-yellow-400/50 transition-colors cursor-pointer p-4 group">
-                        <Plus
-                          size={20}
-                          className="text-zinc-500 group-hover:text-yellow-400 mb-1"
-                        />
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-500 group-hover:text-yellow-400 font-bold">
-                          Select Images (Max 5)
-                        </span>
-                        <input
-                          type="file"
-                          multiple
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                        />
-                      </label>
-                      {/* Upload Button */}
-                      {selectedFile && (
-                        <button
-                          type="button"
-                          onClick={handleImageUpload}
-                          disabled={isUploading}
-                          className="w-full bg-yellow-400 text-black font-bold py-2 rounded-xl hover:bg-yellow-300 transition-all disabled:opacity-50"
-                        >
-                          {isUploading ? "Uploading..." : "Upload Image"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
+
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
                       Description
@@ -632,7 +524,7 @@ export default function AdminDashboard() {
                   <div className="flex gap-4">
                     <button
                       type="submit"
-                      disabled={isSubmitting || isUploading}
+                      disabled={isSubmitting}
                       className="flex-1 bg-white text-black font-bold py-3 rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isSubmitting ? (

@@ -55,7 +55,26 @@ export const getProductById = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const data = { ...req.body, createdBy: (req as any).user._id };
+    console.log("PRODUCT CREATE - BODY:", req.body);
+
+    // Check if image URL is provided
+    if (!req.body.image) {
+      return res.status(400).json({
+        success: false,
+        message: "Image URL is required",
+      });
+    }
+
+    // Prepare product data
+    const data = {
+      title: req.body.title,
+      description: req.body.description || "",
+      price: Number(req.body.price),
+      story: req.body.story || "",
+      mood: req.body.mood || "",
+      image: req.body.image,
+      createdBy: (req as any).user._id,
+    };
 
     // Auto-generate story if not provided or empty
     if (!data.story || data.story.trim() === "") {
@@ -67,9 +86,12 @@ export const createProduct = async (req: Request, res: Response) => {
 
     const product = new Product(data);
     await product.save();
+
+    console.log(`[PRODUCT] Created product: ${product._id}`);
+
     res.status(201).json({
       success: true,
-      data: product,
+      product,
     });
   } catch (error) {
     console.error(`[ERROR] Error creating product:`, error);
@@ -127,30 +149,24 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
 export const uploadImage = async (req: Request, res: Response) => {
   try {
+    console.log("Incoming file:", req.file);
+
     if (!req.file) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No file uploaded" });
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
     const { uploadToCloudinary } =
       await import("../middlewares/uploadMiddleware.js");
-    const imageUrl = await uploadToCloudinary(
+
+    const result = await uploadToCloudinary(
       req.file.buffer,
       req.file.originalname
     );
 
-    res.json({
-      success: true,
-      data: { imageUrl },
-    });
-  } catch (error) {
-    console.error(`[ERROR] Image upload error:`, error);
-    res.status(500).json({
-      success: false,
-      message: "Error uploading image",
-      error: error instanceof Error ? error.message : "Undefined error",
-    });
+    return res.json({ url: result });
+  } catch (err: any) {
+    console.error("UPLOAD ERROR:", err);
+    return res.status(500).json({ error: err.message });
   }
 };
 
