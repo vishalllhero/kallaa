@@ -55,10 +55,7 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    console.log("Login endpoint hit with:", {
-      email: req.body.email,
-      method: req.method,
-    });
+    console.log("LOGIN BODY:", req.body);
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({
@@ -67,7 +64,20 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
+    console.log("Searching for user with email:", email);
     const user = await (User as any).findOne({ email });
+    console.log(
+      "DB USER:",
+      user
+        ? {
+            id: user._id,
+            email: user.email,
+            role: user.role,
+            hasPassword: !!user.password,
+          }
+        : "null"
+    );
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -75,9 +85,11 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
+    console.log("Comparing passwords...");
     let isMatch: boolean;
     try {
       isMatch = await (user as any).comparePassword(password);
+      console.log("Password match result:", isMatch);
     } catch (error) {
       console.error("[Auth] Password comparison error:", error);
       return res.status(500).json({
@@ -87,11 +99,14 @@ export const login = async (req: Request, res: Response) => {
     }
 
     if (!isMatch) {
+      console.log("Password does not match");
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
       });
     }
+
+    console.log("Authentication successful");
 
     const token = createToken(
       (user._id as any).toString(),

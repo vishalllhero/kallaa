@@ -1,0 +1,6 @@
+{
+  "name": "Admin User",
+  "email": "admin@kallaa.com",
+  "password": "$2b$10$lnJjq7kOLT8Gz2ieuq8UgO0ufR4VZG929GiLfVok4Lkq8Sb6HZJH2",
+  "role": "admin"
+}
