@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import ImageWithFallback from "./ImageWithFallback";
+import ZoomImage from "./ZoomImage";
 
 interface ImageSliderProps {
   mainImage: string;
@@ -28,29 +29,21 @@ export default function ImageSlider({
 
   return (
     <div className="space-y-4">
-      {/* Main Image */}
-      <div className="relative aspect-[4/5] bg-zinc-900 rounded-2xl overflow-hidden border border-white/5">
-        <motion.div
-          key={selectedImage}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="absolute inset-0"
-        >
-          <ImageWithFallback
-            src={images[selectedImage].main}
-            alt={alt}
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
-
-        {/* Zoom on hover */}
-        <motion.div
-          className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity cursor-zoom-in"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3 }}
+      {/* Main Image with Zoom */}
+      <motion.div
+        key={selectedImage}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="relative aspect-[4/5] bg-zinc-900 rounded-2xl overflow-hidden border border-white/5"
+      >
+        <ZoomImage
+          src={images[selectedImage].zoom || images[selectedImage].main}
+          alt={alt}
+          className="w-full h-full"
+          zoomFactor={1.1}
         />
-      </div>
+      </motion.div>
 
       {/* Thumbnails (ready for multiple images) */}
       {images.length > 1 && (
