@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import ThumbnailList from './ThumbnailList';
-import ImageZoom from './ImageZoom';
-import { getProductImages } from '@/utils/image';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import ThumbnailList from "./ThumbnailList";
+import ImageZoom from "./ImageZoom";
+import { getProductImages } from "@/utils/image";
 
 interface ProductGalleryProps {
   images: string | string[] | undefined;
@@ -39,7 +39,14 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
 
       {/* Main Image */}
       <div className="flex-1 order-1 xl:order-2">
-        <div className="relative aspect-[4/5] bg-zinc-900 rounded-3xl overflow-hidden border border-white/5">
+        <motion.div
+          className="relative aspect-[4/5] bg-zinc-900 rounded-3xl overflow-hidden border border-white/5 group cursor-zoom-in"
+          whileHover={{
+            scale: 1.02,
+            boxShadow: "0 0 60px rgba(212, 175, 55, 0.2)",
+          }}
+          transition={{ duration: 0.3 }}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={selectedImageIndex}
@@ -72,7 +79,11 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
           {allImages.length > 1 && (
             <>
               <motion.button
-                onClick={() => setSelectedImageIndex(prev => prev > 0 ? prev - 1 : allImages.length - 1)}
+                onClick={() =>
+                  setSelectedImageIndex(prev =>
+                    prev > 0 ? prev - 1 : allImages.length - 1
+                  )
+                }
                 className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-300 border border-white/10"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -81,7 +92,11 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
                 ‹
               </motion.button>
               <motion.button
-                onClick={() => setSelectedImageIndex(prev => prev < allImages.length - 1 ? prev + 1 : 0)}
+                onClick={() =>
+                  setSelectedImageIndex(prev =>
+                    prev < allImages.length - 1 ? prev + 1 : 0
+                  )
+                }
                 className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-300 border border-white/10"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -91,7 +106,7 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
               </motion.button>
             </>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

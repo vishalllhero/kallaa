@@ -106,7 +106,7 @@ export default function ProductInfo({
         </motion.div>
 
         <motion.h1
-          className="text-luxury-h1 mb-8 leading-tight"
+          className="text-luxury-h1 mb-8 leading-tight font-serif"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -115,7 +115,7 @@ export default function ProductInfo({
         </motion.h1>
 
         <motion.div
-          className="text-3xl md:text-4xl font-serif text-white/60"
+          className="text-3xl md:text-4xl font-serif text-[#d4af37] mb-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.6 }}
@@ -132,12 +132,30 @@ export default function ProductInfo({
         transition={{ duration: 0.5, delay: 0.7 }}
       >
         <h3 className="text-zinc-500 text-[10px] uppercase tracking-[0.4em] font-bold mb-6 flex items-center gap-2">
-          <Info size={14} className="text-yellow-400/50" />
-          The Narrative
+          <Info size={14} className="text-[#d4af37]/50" />
+          The Essence
         </h3>
-        <p className="text-zinc-300 text-lg leading-relaxed font-serif italic max-w-lg">
-          "{product.story || product.description}"
-        </p>
+        <div className="max-w-lg">
+          <p className="text-zinc-300 text-lg leading-relaxed font-serif italic mb-6">
+            {product.story ||
+              product.description ||
+              `"This is not just an artwork.
+
+It is a moment captured before it disappeared.
+
+'The Last Gaze' was painted in isolation — a study of beauty that refuses to stay still.
+
+Only one exists.
+
+Once claimed, it will never return."`}
+          </p>
+          <div className="pt-6 border-t border-[#d4af37]/20">
+            <p className="text-zinc-500 text-sm italic font-serif">
+              "Art doesn't ask to be understood. It asks to be felt."
+            </p>
+            <p className="text-zinc-600 text-xs mt-2">— KALLAA Archive</p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Action Button */}
@@ -174,10 +192,10 @@ export default function ProductInfo({
             >
               <span className="flex items-center gap-3">
                 <Heart size={20} className="group-hover:fill-current" />
-                Collect This Piece
+                Claim This Piece
               </span>
               <span className="text-[10px] opacity-80 group-hover:opacity-100 transition-opacity">
-                Become the custodian of this story
+                Become the permanent custodian
               </span>
             </motion.button>
 
@@ -208,6 +226,36 @@ export default function ProductInfo({
             </motion.p>
           </div>
         )}
+      </motion.div>
+
+      {/* Ownership Benefits */}
+      <motion.div
+        className="mb-12 p-6 bg-gradient-to-br from-[#d4af37]/5 to-[#d4af37]/10 border border-[#d4af37]/20 rounded-2xl"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.85 }}
+      >
+        <h4 className="text-[#d4af37] text-sm font-serif font-medium mb-4 uppercase tracking-wide">
+          Your Acquisition Includes
+        </h4>
+        <ul className="space-y-3 text-sm text-zinc-300">
+          <li className="flex items-center gap-3">
+            <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full"></div>
+            Signed digital certificate of authenticity
+          </li>
+          <li className="flex items-center gap-3">
+            <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full"></div>
+            Permanent placement in the KALLAA story archive
+          </li>
+          <li className="flex items-center gap-3">
+            <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full"></div>
+            Your identity recorded as the custodian
+          </li>
+          <li className="flex items-center gap-3">
+            <div className="w-1.5 h-1.5 bg-[#d4af37] rounded-full"></div>
+            This piece will never be reproduced or sold again
+          </li>
+        </ul>
       </motion.div>
 
       {/* Premium Badges */}

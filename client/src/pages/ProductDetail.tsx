@@ -145,11 +145,11 @@ export default function ProductDetail() {
           </Link>
         </motion.div>
 
-        {/* Main Content Layout */}
-        <div className="grid grid-cols-1 xl:grid-cols-[300px_1fr_400px] gap-12 xl:gap-16">
-          {/* Gallery Section - Takes full width on mobile/tablet */}
+        {/* Main Content Layout - Luxury Design */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_500px] gap-8 lg:gap-16">
+          {/* Gallery Section - Large image on left */}
           <motion.div
-            className="xl:col-start-2 xl:col-span-1"
+            className="order-2 lg:order-1"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
@@ -157,9 +157,9 @@ export default function ProductDetail() {
             <ProductGallery images={product.images} title={product.name} />
           </motion.div>
 
-          {/* Info Section */}
+          {/* Info Section - Details on right */}
           <motion.div
-            className="xl:col-start-3 xl:col-span-1"
+            className="order-1 lg:order-2"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
