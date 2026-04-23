@@ -41,6 +41,7 @@ export default function ProductDetail() {
         const data = await productApi.getById(productId);
         console.log("[ProductDetail] API returned data:", data);
         const product = data?.data || data;
+        console.log("[ProductDetail] Full product data:", product);
         console.log("[ProductDetail] Setting product state with:", product);
 
         setProduct(product);
@@ -154,7 +155,7 @@ export default function ProductDetail() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
           >
-            <ProductGallery images={product.images} title={product.name} />
+            <ProductGallery images={product.image} title={product.name} />
           </motion.div>
 
           {/* Info Section - Details on right */}
@@ -180,10 +181,8 @@ export default function ProductDetail() {
           <div>Product ID: {product?.id || "none"}</div>
           <div>Loading: {loading ? "true" : "false"}</div>
           <div>Product Name: {product?.name || "none"}</div>
-          <div>Images Count: {product?.images?.length || 0}</div>
-          <div>
-            First Image: {product?.images?.[0]?.substring(0, 30) || "none"}...
-          </div>
+          <div>Image Field: {product?.image ? "present" : "missing"}</div>
+          <div>Image URL: {product?.image?.substring(0, 30) || "none"}...</div>
         </div>
       )}
 
