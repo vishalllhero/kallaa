@@ -43,6 +43,11 @@ export default function AdminDashboard() {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    productId: string | null;
+    productTitle: string;
+  }>({ isOpen: false, productId: null, productTitle: "" });
 
   const fetchData = async () => {
     try {
@@ -178,15 +183,29 @@ export default function AdminDashboard() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure?")) return;
+  const openDeleteModal = (product: any) => {
+    setDeleteModal({
+      isOpen: true,
+      productId: product.id || product._id,
+      productTitle: product.title || product.name || "this product",
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, productId: null, productTitle: "" });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.productId) return;
+
     try {
-      await adminApi.deleteProduct(id);
-      toast.success("Product deleted");
+      await adminApi.deleteProduct(deleteModal.productId);
+      toast.success("Product deleted successfully");
       fetchData();
+      closeDeleteModal();
     } catch (err: any) {
       console.error("[AdminDashboard] Delete error:", err);
-      toast.error("Delete failed");
+      toast.error("Failed to delete product");
     }
   };
 
@@ -571,15 +590,22 @@ export default function AdminDashboard() {
                   (Array.isArray(products) ? products : []).map(product => (
                     <div
                       key={product.id || product._id}
-                      className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition-colors"
+                      className="bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 p-6 rounded-2xl border border-white/10 flex items-center justify-between hover:border-[#d4af37]/30 hover:shadow-lg hover:shadow-[#d4af37]/10 transition-all duration-300 group"
                     >
                       <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-800">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 group-hover:border-[#d4af37]/20 transition-colors">
                           <ImageWithFallback
                             src={getImageUrl(product.image)}
-                            className="w-full h-full object-cover"
-                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
+                        </div>
+                        <div>
+                          <h3 className="font-serif font-medium text-white mb-1 group-hover:text-[#d4af37] transition-colors">
+                            {product.title || product.name}
+                          </h3>
+                          <p className="text-[#d4af37] text-sm font-medium">
+                            ${product.price?.toLocaleString()}
+                          </p>
                         </div>
                         <div>
                           <h3 className="text-white font-serif">
@@ -593,15 +619,13 @@ export default function AdminDashboard() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(product)}
-                          className="p-3 bg-white/5 rounded-xl hover:bg-white/10 text-white transition-all"
+                          className="p-3 bg-white/5 rounded-xl hover:bg-[#d4af37]/20 text-white hover:text-[#d4af37] transition-all duration-300 hover:scale-105 border border-transparent hover:border-[#d4af37]/30"
                         >
                           <Edit size={16} />
                         </button>
                         <button
-                          onClick={() =>
-                            handleDelete(product.id || product._id)
-                          }
-                          className="p-3 bg-white/5 rounded-xl hover:bg-red-500/10 text-red-500 transition-all"
+                          onClick={() => openDeleteModal(product)}
+                          className="p-3 bg-red-500/10 rounded-xl hover:bg-red-500/20 text-red-500 transition-all duration-300 hover:scale-105 border border-red-500/20 hover:border-red-500/40"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -714,6 +738,48 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={closeDeleteModal}
+          />
+          <div className="relative bg-zinc-900 border border-red-500/20 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} className="text-red-500" />
+              </div>
+              <h3 className="text-xl font-serif text-white mb-2">
+                Delete Product
+              </h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Are you sure you want to permanently delete{" "}
+                <span className="text-white font-medium">
+                  "{deleteModal.productTitle}"
+                </span>
+                ? This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={closeDeleteModal}
+                className="flex-1 py-3 px-4 bg-zinc-800 text-zinc-300 rounded-xl hover:bg-zinc-700 transition-all duration-200 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200 font-medium"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
