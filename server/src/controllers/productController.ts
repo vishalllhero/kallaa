@@ -58,22 +58,22 @@ export const createProduct = async (req: Request, res: Response) => {
   try {
     console.log("PRODUCT CREATE - BODY:", req.body);
 
-    const { title, price, imageUrl } = req.body;
+    const { title, price, description, story, image } = req.body;
 
-    if (!title || !price || !imageUrl) {
+    if (!title || !price || !image) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields: title, price, imageUrl",
+        message: "Missing required fields",
       });
     }
 
     // Prepare product data
     const data = {
-      title: req.body.title,
-      price: Number(req.body.price),
-      description: req.body.description || "",
-      story: req.body.story || "",
-      image: req.body.imageUrl,
+      title,
+      price: Number(price),
+      description: description || "",
+      story: story || "",
+      image,
       createdBy: (req as any).user._id,
     };
 
