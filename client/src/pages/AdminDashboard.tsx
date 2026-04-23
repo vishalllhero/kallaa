@@ -126,8 +126,10 @@ export default function AdminDashboard() {
         description: formData.description,
         story: formData.story,
         mood: formData.mood,
-        image: imageUrl,
+        imageUrl: imageUrl,
       };
+
+      console.log("FINAL PRODUCT DATA:", productData);
 
       console.log("Creating product with data:", productData);
 

@@ -58,28 +58,28 @@ export const createProduct = async (req: Request, res: Response) => {
   try {
     console.log("PRODUCT CREATE - BODY:", req.body);
 
-    // Check if image URL is provided
-    if (!req.body.image) {
+    const { title, price, imageUrl } = req.body;
+
+    if (!title || !price || !imageUrl) {
       return res.status(400).json({
         success: false,
-        message: "Image URL is required",
+        message: "Missing required fields: title, price, imageUrl",
       });
     }
 
     // Prepare product data
     const data = {
       title: req.body.title,
-      description: req.body.description || "",
       price: Number(req.body.price),
+      description: req.body.description || "",
       story: req.body.story || "",
-      mood: req.body.mood || "",
-      image: req.body.image,
+      image: req.body.imageUrl,
       createdBy: (req as any).user._id,
     };
 
     // Auto-generate story if not provided or empty
     if (!data.story || data.story.trim() === "") {
-      data.story = generateStory(data.title, data.mood);
+      data.story = generateStory(data.title, req.body.mood);
       console.log(
         `[STORY] Auto-generated story for "${data.title}": ${data.story}`
       );
