@@ -5,6 +5,7 @@ import { productApi } from "@/api";
 import { motion, useScroll, useTransform } from "framer-motion";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import ProductCard from "@/components/ProductCard";
+import { ProductCardSkeleton } from "@/components/Skeleton";
 import { getProductImage, debugImageInfo } from "@/utils/image";
 import { safeMap } from "@/utils/safeMap";
 
@@ -145,12 +146,7 @@ export default function Home() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="aspect-[4/5] bg-zinc-800 animate-pulse rounded-2xl relative overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
-                </div>
+                <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : !Array.isArray(featuredProducts) ||
@@ -336,13 +332,8 @@ export default function Home() {
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {(Array.isArray([1, 2, 3, 4]) ? [1, 2, 3, 4] : []).map(i => (
-                <div
-                  key={i}
-                  className="aspect-[3/4] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
-                </div>
+              {[...Array(4)].map((_, i) => (
+                <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : !Array.isArray(featuredProducts) ||

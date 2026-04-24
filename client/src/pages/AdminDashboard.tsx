@@ -17,6 +17,7 @@ import {
   X,
   Truck,
   CheckCircle,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import ImageWithFallback from "@/components/ImageWithFallback";
@@ -491,83 +492,141 @@ export default function AdminDashboard() {
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
                       Product Image *
                     </label>
-                    <div className="space-y-4">
-                      <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-xl hover:border-[#d4af37]/50 transition-colors cursor-pointer p-8 group">
-                        <Plus
-                          size={32}
-                          className="text-zinc-500 group-hover:text-[#d4af37] mb-3"
-                        />
-                        <span className="text-sm font-medium text-zinc-400 group-hover:text-[#d4af37] mb-2">
-                          Upload Product Image
-                        </span>
-                        <span className="text-xs text-zinc-600 text-center">
-                          High-quality image required
-                          <br />
-                          Will auto-generate thumbnail & zoom versions
-                        </span>
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleFileSelect}
-                          required
-                        />
-                      </label>
-
+                    <div className="space-y-6">
+                      {/* Image Preview */}
                       {selectedFile && (
-                        <div className="flex items-center gap-3 p-3 bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-lg">
-                          <div className="w-8 h-8 bg-[#d4af37]/20 rounded-lg flex items-center justify-center">
-                            <CheckCircle size={16} className="text-[#d4af37]" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white">
+                        <div className="relative w-48 h-48 mx-auto bg-zinc-900 rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-2xl">
+                          <img
+                            src={URL.createObjectURL(selectedFile)}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          <div className="absolute bottom-3 left-3 right-3">
+                            <p className="text-white text-sm font-medium truncate">
                               {selectedFile.name}
                             </p>
-                            <p className="text-xs text-zinc-400">
+                            <p className="text-zinc-300 text-xs">
                               {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                             </p>
                           </div>
                           <button
                             type="button"
                             onClick={() => setSelectedFile(null)}
-                            className="text-zinc-400 hover:text-red-400 transition-colors"
+                            className="absolute top-3 right-3 w-8 h-8 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center text-white transition-colors"
                           >
                             <X size={16} />
                           </button>
+                        </div>
+                      )}
+
+                      {/* Upload Area */}
+                      {!selectedFile && (
+                        <label className="flex flex-col items-center justify-center border-2 border-dashed border-zinc-600 rounded-2xl hover:border-[#d4af37]/60 transition-all duration-300 cursor-pointer p-12 group bg-gradient-to-br from-zinc-900/50 to-zinc-800/30">
+                          <div className="w-16 h-16 bg-[#d4af37]/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-[#d4af37]/20 transition-colors">
+                            <Plus
+                              size={32}
+                              className="text-zinc-500 group-hover:text-[#d4af37] transition-colors"
+                            />
+                          </div>
+                          <span className="text-lg font-serif font-medium text-zinc-400 group-hover:text-[#d4af37] mb-2 transition-colors">
+                            Select Masterpiece Image
+                          </span>
+                          <span className="text-sm text-zinc-600 text-center leading-relaxed">
+                            High-resolution image required
+                            <br />
+                            <span className="text-[#d4af37]/70">
+                              Auto-generates thumbnail & zoom variants
+                            </span>
+                          </span>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                            required
+                          />
+                        </label>
+                      )}
+
+                      {/* Auto-Generated Variants Preview */}
+                      {selectedFile && (
+                        <div className="bg-zinc-900/30 rounded-xl p-4 border border-zinc-700/50">
+                          <h4 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
+                            <Gem size={14} className="text-[#d4af37]" />
+                            Auto-Generated Variants
+                          </h4>
+                          <div className="flex gap-3">
+                            <div className="flex-1">
+                              <div className="aspect-square bg-zinc-800 rounded-lg overflow-hidden mb-2">
+                                <img
+                                  src={URL.createObjectURL(selectedFile)}
+                                  alt="Thumbnail"
+                                  className="w-full h-full object-cover opacity-60"
+                                />
+                              </div>
+                              <p className="text-xs text-zinc-500 text-center">
+                                Thumbnail
+                              </p>
+                            </div>
+                            <div className="flex-1">
+                              <div className="aspect-square bg-zinc-800 rounded-lg overflow-hidden mb-2">
+                                <img
+                                  src={URL.createObjectURL(selectedFile)}
+                                  alt="Zoom"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <p className="text-xs text-zinc-500 text-center">
+                                Zoom View
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
-                      Story
+                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2 flex items-center gap-2">
+                      Artist's Narrative
+                      <span className="text-zinc-600 text-[8px]">
+                        (Optional)
+                      </span>
                     </label>
-                    <textarea
-                      rows={4}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
-                      value={formData.story}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          story: e.target.value,
-                        })
-                      }
-                      placeholder="Leave empty for AI-generated story based on mood..."
-                    />
-                    <p className="text-zinc-600 text-xs mt-1">
-                      Leave blank to auto-generate an emotional story
-                    </p>
+                    <div className="space-y-3">
+                      <textarea
+                        rows={5}
+                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#d4af37]/50 focus:ring-1 focus:ring-[#d4af37]/20 transition-all resize-none font-serif italic text-sm leading-relaxed"
+                        value={formData.story}
+                        onChange={e =>
+                          setFormData({ ...formData, story: e.target.value })
+                        }
+                        placeholder="Share the emotional journey, inspiration, or story behind this creation. Leave empty for auto-generation..."
+                      />
+                      <div className="flex items-center justify-between">
+                        <p className="text-zinc-600 text-xs font-light">
+                          This narrative will be prominently featured on the
+                          artwork page
+                        </p>
+                        {!formData.story && (
+                          <div className="flex items-center gap-2 text-[#d4af37]/70 text-xs">
+                            <Sparkles size={12} />
+                            Auto-generated if empty
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
-                      Description
+                      Artwork Description
                     </label>
                     <textarea
                       required
                       rows={4}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30"
+                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#d4af37]/50 focus:ring-1 focus:ring-[#d4af37]/20 transition-all resize-none font-serif text-sm leading-relaxed"
                       value={formData.description}
                       onChange={e =>
                         setFormData({
@@ -575,7 +634,11 @@ export default function AdminDashboard() {
                           description: e.target.value,
                         })
                       }
+                      placeholder="Describe the artistic essence, technique, and emotional impact of this piece..."
                     />
+                    <p className="text-zinc-600 text-xs mt-2 font-light">
+                      This will be displayed as the primary artwork description
+                    </p>
                   </div>
                   <div className="flex gap-4">
                     <button

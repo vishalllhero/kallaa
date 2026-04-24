@@ -106,7 +106,7 @@ export default function ProductInfo({
         </motion.div>
 
         <motion.h1
-          className="text-luxury-h1 mb-8 leading-tight font-serif"
+          className="text-luxury-h1 mb-6 leading-tight font-serif"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
@@ -114,13 +114,121 @@ export default function ProductInfo({
           {product.title || product.name}
         </motion.h1>
 
+        {/* Emotional Story Section - Above Price */}
         <motion.div
-          className="text-3xl md:text-4xl font-serif text-[#d4af37] mb-6"
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.55 }}
+        >
+          <div className="bg-gradient-to-br from-zinc-900/50 to-zinc-800/30 border border-zinc-700/50 rounded-2xl p-8 backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-[#d4af37]/20 rounded-full flex items-center justify-center">
+                <Heart size={16} className="text-[#d4af37]" />
+              </div>
+              <h3 className="text-[#d4af37] text-sm font-serif font-medium uppercase tracking-wider">
+                The Artist's Vision
+              </h3>
+            </div>
+            <div className="text-zinc-200 text-base leading-relaxed font-serif">
+              {product.story ? (
+                <p className="italic leading-relaxed">"{product.story}"</p>
+              ) : product.description ? (
+                <p className="leading-relaxed">{product.description}</p>
+              ) : (
+                <div className="space-y-3 italic leading-relaxed text-zinc-300">
+                  <p>This piece was born from a moment of pure inspiration.</p>
+                  <p>
+                    Painted during the quiet hours when the world sleeps, it
+                    captures the essence of solitude and creation.
+                  </p>
+                  <p>
+                    Each brushstroke tells a story that only reveals itself to
+                    those who pause to listen.
+                  </p>
+                  <p>
+                    This is not just art — it's a preserved emotion, waiting for
+                    its perfect companion.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="mt-6 pt-4 border-t border-zinc-700/50">
+              <p className="text-zinc-500 text-xs italic font-serif">
+                "Every masterpiece deserves a custodian who understands its
+                silence."
+              </p>
+              <p className="text-zinc-600 text-xs mt-2">
+                — KALLAA Curatorial Archive
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Price Section */}
+        <motion.div
+          className="mb-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.6 }}
+          transition={{ duration: 0.4, delay: 0.8 }}
         >
-          ${product.price?.toLocaleString()}
+          <div className="flex items-baseline gap-4">
+            <span className="text-4xl md:text-5xl font-serif text-[#d4af37] font-light">
+              ${product.price?.toLocaleString()}
+            </span>
+            <span className="text-zinc-500 text-sm font-medium uppercase tracking-wider">
+              Investment Value
+            </span>
+          </div>
+          <p className="text-zinc-600 text-xs mt-2 font-serif italic">
+            This piece appreciates in both beauty and worth over time.
+          </p>
+        </motion.div>
+
+        {/* Unique Archive Number */}
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.65 }}
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-black/50 border border-[#d4af37]/50 rounded-lg backdrop-blur-sm">
+            <Award size={14} className="text-[#d4af37]" />
+            <span className="text-[#d4af37] text-xs font-medium font-mono tracking-wider">
+              UNIQUE ARCHIVE #
+              {String(
+                (product._id || product.id || "").slice(-6)
+              ).toUpperCase()}
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Scarcity Indicator */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.7 }}
+        >
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
+                <span className="text-red-400 text-sm font-bold">1</span>
+              </div>
+              <div>
+                <p className="text-red-300 text-sm font-medium">
+                  Only 1 Piece Exists
+                </p>
+                <p className="text-red-400/70 text-xs">
+                  This artwork will never be reproduced
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-red-300 text-xs font-mono">LIMITED</p>
+              <p className="text-red-400 text-lg font-bold">∞</p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Ownership Status */}
@@ -128,10 +236,10 @@ export default function ProductInfo({
           className="mb-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.65 }}
+          transition={{ duration: 0.4, delay: 0.75 }}
         >
           <div
-            className={`inline-flex items-center gap-3 px-6 py-3 rounded-full text-sm font-medium border-2 ${
+            className={`inline-flex items-center gap-3 px-6 py-3 rounded-full text-sm font-medium border-2 backdrop-blur-sm ${
               product.owner === "Available"
                 ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
                 : "bg-amber-500/10 text-amber-300 border-amber-500/30"
@@ -147,8 +255,8 @@ export default function ProductInfo({
             />
             <span className="font-serif">
               {product.owner === "Available"
-                ? "Available for Acquisition"
-                : `Owned by ${product.owner}`}
+                ? "Available for Private Acquisition"
+                : `Permanently Owned by ${product.owner}`}
             </span>
           </div>
         </motion.div>
@@ -241,37 +349,42 @@ export default function ProductInfo({
             {product.owner === "Available" ? (
               <motion.button
                 onClick={() => onInitiateAcquisition()}
-                className="btn-luxury w-full h-20 flex flex-col items-center justify-center gap-2 group relative overflow-hidden"
+                className="btn-luxury w-full h-24 flex flex-col items-center justify-center gap-3 group relative overflow-hidden"
                 whileHover={{
                   scale: 1.02,
-                  boxShadow: "0 0 60px rgba(212, 175, 55, 0.4)",
+                  boxShadow: "0 0 80px rgba(212, 175, 55, 0.6)",
                 }}
                 whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.3 }}
               >
                 <span className="flex items-center gap-3">
-                  <ShoppingCart
-                    size={20}
-                    className="group-hover:scale-110 transition-transform"
+                  <Heart
+                    size={24}
+                    className="group-hover:fill-current group-hover:scale-110 transition-all duration-300"
                   />
-                  Acquire This Masterpiece
+                  <span className="text-lg font-serif font-medium">
+                    Become Its Custodian
+                  </span>
                 </span>
-                <span className="text-[10px] opacity-80 group-hover:opacity-100 transition-opacity">
-                  Secure your place in art history
+                <span className="text-[10px] opacity-80 group-hover:opacity-100 transition-opacity font-light">
+                  This piece will wait for no one else
                 </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#d4af37]/0 via-[#d4af37]/10 to-[#d4af37]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </motion.button>
             ) : (
               <motion.div
-                className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-zinc-800/50 border border-zinc-600/50 rounded-2xl"
+                className="w-full h-24 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 border border-zinc-700/50 rounded-2xl backdrop-blur-sm"
                 initial={{ opacity: 0.7 }}
                 animate={{ opacity: 1 }}
               >
                 <span className="flex items-center gap-3 text-zinc-500">
-                  <Crown size={20} />
-                  Already Acquired
+                  <Crown size={24} className="text-amber-400" />
+                  <span className="text-lg font-serif font-medium">
+                    Permanently Acquired
+                  </span>
                 </span>
-                <span className="text-[10px] text-zinc-600">
-                  This piece has found its custodian
+                <span className="text-[10px] text-zinc-600 font-light">
+                  This masterpiece has found its forever home
                 </span>
               </motion.div>
             )}

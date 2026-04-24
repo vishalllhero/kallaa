@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageSlider from "@/components/ImageSlider";
 import ProductInfo from "@/components/ProductInfo";
+import { ProductSkeleton } from "@/components/Skeleton";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -156,9 +157,19 @@ export default function ProductDetail() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-12 h-12 border-t-2 border-yellow-400 rounded-full animate-spin" />
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen bg-black text-white"
+      >
+        <div className="container mx-auto px-6 pt-24 pb-20">
+          <div className="mb-16">
+            <div className="h-4 bg-zinc-800 rounded w-32 mb-8 animate-pulse" />
+            <div className="h-12 bg-zinc-800 rounded w-96 animate-pulse" />
+          </div>
+          <ProductSkeleton />
+        </div>
+      </motion.div>
     );
   if (!product) {
     return (
