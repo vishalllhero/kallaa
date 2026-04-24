@@ -16,7 +16,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
 
-// Middleware
+// Custom CORS middleware for better control
 const allowedOrigins = [
   "https://kallaa-w9et.vercel.app",
   "https://kallaa-w9et-ars81vpn7-kallaa.vercel.app",
@@ -24,30 +24,58 @@ const allowedOrigins = [
   "http://localhost:3000", // Alternative dev port
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      console.log("CORS check - Origin:", origin);
+// Custom CORS middleware with comprehensive logging
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const origin = req.headers.origin;
+  const method = req.method;
+  const path = req.path;
 
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) {
-        console.log("CORS: Allowing request with no origin");
-        return callback(null, true);
-      }
+  console.log(`🌐 CORS [${method}] ${path} - Origin: ${origin || "none"}`);
 
-      if (allowedOrigins.includes(origin)) {
-        console.log("CORS: Allowing origin:", origin);
-        return callback(null, true);
-      }
+  // Check if origin is allowed
+  const isAllowedOrigin = !origin || allowedOrigins.includes(origin);
 
-      console.log("CORS blocked origin:", origin);
-      return callback(new Error("CORS policy violation"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  })
-);
+  if (!isAllowedOrigin) {
+    console.log(
+      `🚫 CORS BLOCKED - Origin '${origin}' not in allowed list:`,
+      allowedOrigins
+    );
+    return res.status(403).json({
+      success: false,
+      error: "CORS policy violation",
+      message: "Origin not allowed",
+      origin: origin,
+      allowedOrigins: allowedOrigins,
+    });
+  }
+
+  // Set CORS headers explicitly
+  res.header("Access-Control-Allow-Origin", origin || "*");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie, Cache-Control, X-Requested-With"
+  );
+  res.header("Access-Control-Max-Age", "86400"); // 24 hours
+
+  // Handle preflight OPTIONS requests
+  if (method === "OPTIONS") {
+    console.log(`✅ CORS PREFLIGHT - Responding with 200 for ${path}`);
+    return res.status(200).json({
+      success: true,
+      message: "CORS preflight successful",
+      origin: origin,
+      allowed: true,
+    });
+  }
+
+  console.log(`✅ CORS ALLOWED - Proceeding with ${method} ${path}`);
+  next();
+});
 
 app.use(express.json());
 app.use(cookieParser());
@@ -243,6 +271,16 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payments", paymentRoutes);
 
+// CORS test endpoint
+app.get("/cors-test", (req, res) => {
+  res.json({
+    success: true,
+    message: "CORS is working!",
+    origin: req.headers.origin,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Health check with detailed status
 app.get("/health", (req, res) => {
   const dbState = mongoose.connection.readyState;
@@ -259,6 +297,10 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || "development",
+    cors: {
+      allowedOrigins: allowedOrigins,
+      currentOrigin: req.headers.origin,
+    },
     database: {
       status: dbStatus,
       name: mongoose.connection.db?.databaseName || null,
