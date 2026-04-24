@@ -10,30 +10,56 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
+    console.log(`🔐 AUTH CHECK: ${req.method} ${req.path}`);
+
     const token =
       req.cookies[COOKIE_NAME] || req.headers.authorization?.split(" ")[1];
 
+    console.log("🔐 Token present:", !!token);
+    console.log("🔐 Cookie name:", COOKIE_NAME);
+    console.log("🔐 Cookies available:", Object.keys(req.cookies || {}));
+
     if (!token) {
+      console.log("❌ AUTH FAILED: No token provided");
       return res
         .status(401)
-        .json({ message: "No authentication token provided" });
+        .json({ success: false, message: "No authentication token provided" });
     }
 
     const payload = verifyToken(token);
+    console.log(
+      "🔐 Token payload:",
+      payload
+        ? { userId: payload.userId, email: payload.email, role: payload.role }
+        : "INVALID"
+    );
+
     if (!payload) {
-      return res.status(401).json({ message: "Invalid token" });
+      console.log("❌ AUTH FAILED: Invalid token");
+      return res.status(401).json({ success: false, message: "Invalid token" });
     }
 
     const user = await (User as any).findById(payload.userId);
+    console.log(
+      "🔐 User lookup result:",
+      user ? { id: user._id, email: user.email, role: user.role } : "NOT FOUND"
+    );
+
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      console.log("❌ AUTH FAILED: User not found in database");
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
 
     (req as any).user = user;
+    console.log("✅ AUTH SUCCESS: User authenticated:", user.email);
     next();
-  } catch (error) {
-    console.error(`[ERROR] Authentication error:`, error);
-    res.status(500).json({ message: "Server error during authentication" });
+  } catch (error: any) {
+    console.error(`💥 CRITICAL AUTH ERROR:`, error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error during authentication" });
   }
 };
 

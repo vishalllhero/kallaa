@@ -38,9 +38,13 @@ interface AuthContextType {
   getCurrentUser: () => User | null;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(() => {
     try {
       const savedUser = localStorage.getItem("user");
@@ -97,30 +101,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLocation("/");
   };
 
-  const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+  const login = async (
+    credentials: LoginCredentials
+  ): Promise<AuthResponse> => {
     try {
+      console.log("🔐 FRONTEND: Starting login for:", credentials.email);
       setLoading(true);
+
       const result = await authApi.login(credentials);
+      console.log("🔐 FRONTEND: Login API response:", result);
+
+      if (!result.success || !result.user || !result.token) {
+        throw new Error("Invalid login response from server");
+      }
+
       handleAuthSuccess(result, "Logged in successfully!");
+      console.log("🔐 FRONTEND: Login successful, redirecting...");
       return result;
     } catch (error: any) {
-      const msg = error.response?.data?.message || "Authentication failed";
-      toast.error(msg);
+      console.error("🔐 FRONTEND: Login failed:", error);
+
+      let errorMessage = "Authentication failed";
+      if (error.response?.status === 401) {
+        errorMessage = "Invalid email or password";
+      } else if (error.response?.status === 400) {
+        errorMessage =
+          error.response.data?.message || "Please check your credentials";
+      } else if (error.response?.status >= 500) {
+        errorMessage = "Server error - please try again later";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+  const register = async (
+    credentials: RegisterCredentials
+  ): Promise<AuthResponse> => {
     try {
+      console.log("🔐 FRONTEND: Starting registration for:", credentials.email);
       setLoading(true);
+
       const result = await authApi.register(credentials);
+      console.log("🔐 FRONTEND: Registration API response:", result);
+
+      if (!result.success || !result.user || !result.token) {
+        throw new Error("Invalid registration response from server");
+      }
+
       handleAuthSuccess(result, "Account created successfully!");
+      console.log("🔐 FRONTEND: Registration successful, redirecting...");
       return result;
     } catch (error: any) {
-      const msg = error.response?.data?.message || "Registration failed";
-      toast.error(msg);
+      console.error("🔐 FRONTEND: Registration failed:", error);
+
+      let errorMessage = "Registration failed";
+      if (error.response?.status === 400) {
+        errorMessage =
+          error.response.data?.message || "Please check your information";
+      } else if (error.response?.status === 409) {
+        errorMessage = "Email already exists";
+      } else if (error.response?.status >= 500) {
+        errorMessage = "Server error - please try again later";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
       throw error;
     } finally {
       setLoading(false);
@@ -147,8 +199,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Handle global 401 unauthorized errors
   useEffect(() => {
     const interceptor = api.interceptors.response.use(
-      (response) => response,
-      (error) => {
+      response => response,
+      error => {
         if (error.response?.status === 401) {
           // If 401, auto-logout cleanly without infinite loops
           setUser(null);
@@ -169,7 +221,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getCurrentUser = () => user;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, isAuthenticated: !!user, login, register, logout, loadUser, getCurrentUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        isAuthenticated: !!user,
+        login,
+        register,
+        logout,
+        loadUser,
+        getCurrentUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

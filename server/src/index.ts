@@ -52,33 +52,66 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Admin User Seeding
-const seedAdmin = async () => {
-  try {
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@kallaa.com";
-    const adminPassword = process.env.ADMIN_PASSWORD || "123456";
+// Admin User Seeding with retry logic
+const seedAdmin = async (retries = 3) => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || "admin@kallaa.com";
+      const adminPassword = process.env.ADMIN_PASSWORD || "123456";
 
-    console.log("🔍 Checking for admin user:", adminEmail);
+      console.log(
+        `🔍 Admin seeding attempt ${attempt}/${retries}:`,
+        adminEmail
+      );
 
-    const adminExists = await (User as any).findOne({ email: adminEmail });
+      // Check if DB is connected
+      if (mongoose.connection.readyState !== 1) {
+        console.log("⏳ Waiting for database connection...");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        continue;
+      }
 
-    if (!adminExists) {
-      const admin = new User({
-        name: "Admin User",
-        email: adminEmail,
-        password: adminPassword, // Will be hashed by the pre-save hook
-        role: "admin",
-      });
-      await admin.save();
-      console.log("✅ Admin user created successfully");
-      console.log("   Email:", adminEmail);
-      console.log("   Password:", adminPassword);
-    } else {
-      console.log("ℹ️ Admin user already exists");
+      const adminExists = await (User as any).findOne({ email: adminEmail });
+
+      if (!adminExists) {
+        console.log("📝 Creating admin user...");
+        const admin = new User({
+          name: "Admin User",
+          email: adminEmail,
+          password: adminPassword, // Will be hashed by the pre-save hook
+          role: "admin",
+        });
+
+        await admin.save();
+        console.log("✅ Admin user created successfully");
+        console.log("   Email:", adminEmail);
+        console.log("   Password:", adminPassword);
+        console.log(
+          "   Login URL: POST /api/auth/login with email/password above"
+        );
+        return true;
+      } else {
+        console.log("ℹ️ Admin user already exists");
+        return true;
+      }
+    } catch (error: any) {
+      console.error(
+        `❌ Admin seeding attempt ${attempt} failed:`,
+        error.message
+      );
+
+      if (attempt === retries) {
+        console.error(
+          "💥 All admin seeding attempts failed - authentication may not work"
+        );
+        return false;
+      }
+
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-  } catch (error) {
-    console.error("❌ Failed to seed admin user:", error);
   }
+  return false;
 };
 
 // Debug logging
@@ -105,58 +138,103 @@ console.log(
 );
 console.log("");
 
-// Connect to MongoDB
+// Connect to MongoDB with enhanced stability
 const MONGO_URI =
   process.env.MONGO_URI || process.env.MONGODB_URI || process.env.DATABASE_URL;
 
-if (MONGO_URI) {
-  mongoose
-    .connect(MONGO_URI)
-    .then(() => console.log("✅ MongoDB connected"))
-    .catch(err => console.error("❌ MongoDB connection error:", err));
-} else {
-  console.warn("⚠️ No MongoDB URI found - database operations will fail");
-}
+const connectToMongoDB = async () => {
+  if (!MONGO_URI) {
+    console.error("❌ CRITICAL: No MongoDB URI found in environment variables");
+    console.error("   Set MONGO_URI, MONGODB_URI, or DATABASE_URL");
+    console.error(
+      "   Example: MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/db"
+    );
+    return;
+  }
 
-// Seed admin user (only if DB is configured and connected)
-if (
-  process.env.MONGO_URI ||
-  process.env.MONGODB_URI ||
-  process.env.DATABASE_URL
-) {
-  // Check if DB connection is established before seeding
-  const checkAndSeed = async () => {
-    let attempts = 0;
-    const maxAttempts = 10;
+  try {
+    console.log("🔄 Connecting to MongoDB...");
+    console.log("   URI:", MONGO_URI.substring(0, 30) + "...");
 
-    while (attempts < maxAttempts) {
-      try {
-        // Wait for mongoose to be ready
-        if (mongoose.connection.readyState === 1) {
-          // Connected
-          console.log("🔄 Starting admin user seeding...");
-          await seedAdmin();
-          return;
-        }
-      } catch (error) {
-        console.error("❌ Admin seeding failed:", error);
-      }
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10,
+      bufferCommands: false,
+    });
 
-      attempts++;
-      if (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
-      }
+    console.log("✅ MongoDB connected successfully");
+    console.log(
+      "   Database:",
+      mongoose.connection.db?.databaseName || "unknown"
+    );
+    console.log("   Host:", mongoose.connection.host || "unknown");
+
+    // Set up connection event listeners
+    mongoose.connection.on("error", err => {
+      console.error("❌ MongoDB runtime error:", err);
+    });
+
+    mongoose.connection.on("disconnected", () => {
+      console.warn("⚠️ MongoDB disconnected");
+    });
+
+    mongoose.connection.on("reconnected", () => {
+      console.log("✅ MongoDB reconnected");
+    });
+  } catch (error: any) {
+    console.error("💥 FAILED to connect to MongoDB:", error.message);
+    console.error(
+      "   This will cause authentication and data operations to fail"
+    );
+
+    if (error.message?.includes("authentication failed")) {
+      console.error("   → Check username/password in connection string");
+    } else if (error.message?.includes("getaddrinfo ENOTFOUND")) {
+      console.error("   → Check cluster URL - might be incorrect or paused");
+    } else if (error.message?.includes("connection timed out")) {
+      console.error("   → Network connectivity issue or firewall");
     }
 
-    console.log(
-      "⚠️ Admin seeding skipped (database not connected after multiple attempts)"
-    );
-  };
+    // Don't exit in production - let the app continue with degraded functionality
+    if (process.env.NODE_ENV !== "production") {
+      console.error(
+        "   Exiting in development mode due to DB connection failure"
+      );
+      process.exit(1);
+    }
+  }
+};
 
-  setTimeout(checkAndSeed, 3000); // Initial delay
-} else {
-  console.log("⚠️ Skipping admin seeding (no database configured)");
-}
+// Initialize DB connection
+connectToMongoDB();
+
+// Seed admin user after DB connection
+const initializeAdmin = async () => {
+  if (!MONGO_URI) {
+    console.log("⚠️ Skipping admin seeding - no MongoDB URI configured");
+    return;
+  }
+
+  // Wait for DB connection
+  let attempts = 0;
+  while (mongoose.connection.readyState !== 1 && attempts < 10) {
+    console.log("⏳ Waiting for DB connection before seeding admin...");
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    attempts++;
+  }
+
+  if (mongoose.connection.readyState === 1) {
+    await seedAdmin();
+  } else {
+    console.error(
+      "❌ Database not connected after 20 seconds - admin seeding skipped"
+    );
+  }
+};
+
+initializeAdmin();
 
 // API Routes
 app.use("/api/auth", authRoutes);
@@ -165,22 +243,93 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payments", paymentRoutes);
 
-// Health check
-app.get("/health", (req, res) => res.json({ status: "ok" }));
+// Health check with detailed status
+app.get("/health", (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const dbStatuses: { [key: number]: string } = {
+    0: "disconnected",
+    1: "connected",
+    2: "connecting",
+    3: "disconnecting",
+  };
+  const dbStatus = dbStatuses[dbState] || "unknown";
+
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "development",
+    database: {
+      status: dbStatus,
+      name: mongoose.connection.db?.databaseName || null,
+      host: mongoose.connection.host || null,
+    },
+    memory: {
+      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+    },
+  });
+});
 
 // Global error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error("[ERROR]", err.stack);
-  res.status(500).json({ error: "Internal server error" });
+  console.error("[GLOBAL ERROR]", err.stack || err.message);
+  console.error("[ERROR DETAILS]", {
+    message: err.message,
+    stack: err.stack,
+    code: err.code,
+    errno: err.errno,
+    syscall: err.syscall,
+  });
+
+  // Handle CORS errors specifically
+  if (err.message === "CORS policy violation") {
+    console.error("[CORS ERROR] Origin blocked:", req.headers.origin);
+    return res.status(403).json({
+      success: false,
+      message: "CORS policy violation",
+      origin: req.headers.origin,
+    });
+  }
+
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
+  });
 });
 
-// Prevent crashes
+// Prevent crashes - enhanced error handling
 process.on("uncaughtException", err => {
-  console.error("Uncaught Exception:", err);
+  console.error("💥 CRITICAL: Uncaught Exception:", err);
+  console.error("Stack:", err.stack);
+  // Don't exit in production, just log
+  if (process.env.NODE_ENV !== "production") {
+    process.exit(1);
+  }
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  console.error(
+    "💥 CRITICAL: Unhandled Rejection at:",
+    promise,
+    "reason:",
+    reason
+  );
+  // Don't exit in production, just log
+  if (process.env.NODE_ENV !== "production") {
+    process.exit(1);
+  }
+});
+
+process.on("SIGTERM", () => {
+  console.log("📴 SIGTERM received, shutting down gracefully...");
+  process.exit(0);
+});
+
+process.on("SIGINT", () => {
+  console.log("📴 SIGINT received, shutting down gracefully...");
+  process.exit(0);
 });
 
 const PORT = process.env.PORT || 5000;

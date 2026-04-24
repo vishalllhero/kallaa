@@ -55,60 +55,80 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    console.log("LOGIN REQUEST - Origin:", req.headers.origin);
-    console.log("LOGIN REQUEST - Method:", req.method);
-    console.log("LOGIN BODY:", req.body);
+    console.log("🔐 LOGIN REQUEST - Origin:", req.headers.origin);
+    console.log("🔐 LOGIN REQUEST - Method:", req.method);
+    console.log("🔐 LOGIN BODY:", req.body);
+
     const { email, password } = req.body;
+
+    // Validate input
     if (!email || !password) {
+      console.log("❌ LOGIN FAILED: Missing email or password");
       return res.status(400).json({
         success: false,
         message: "Email and password are required",
       });
     }
 
-    console.log("Searching for user with email:", email);
-    const user = await (User as any).findOne({ email });
+    // Normalize email
+    const normalizedEmail = email.toLowerCase().trim();
+    console.log("🔍 Searching for user with email:", normalizedEmail);
+
+    const user = await (User as any).findOne({ email: normalizedEmail });
     console.log(
-      "DB USER:",
+      "📊 DB USER FOUND:",
       user
         ? {
-            id: user._id,
+            id: user._id.toString(),
             email: user.email,
             role: user.role,
             hasPassword: !!user.password,
+            passwordHash: user.password
+              ? user.password.substring(0, 10) + "..."
+              : "none",
           }
-        : "null"
+        : "❌ NO USER FOUND"
     );
 
     if (!user) {
+      console.log(
+        "❌ LOGIN FAILED: User not found for email:",
+        normalizedEmail
+      );
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
       });
     }
 
-    console.log("Comparing passwords...");
+    console.log("🔐 Comparing passwords...");
     let isMatch: boolean;
     try {
       isMatch = await (user as any).comparePassword(password);
-      console.log("Password match result:", isMatch);
+      console.log(
+        "🔐 Password match result:",
+        isMatch ? "✅ MATCH" : "❌ NO MATCH"
+      );
     } catch (error) {
-      console.error("[Auth] Password comparison error:", error);
+      console.error("💥 AUTH ERROR: Password comparison failed:", error);
       return res.status(500).json({
         success: false,
-        message: "Authentication error",
+        message: "Authentication system error",
       });
     }
 
     if (!isMatch) {
-      console.log("Password does not match");
+      console.log(
+        "❌ LOGIN FAILED: Password mismatch for user:",
+        normalizedEmail
+      );
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
       });
     }
 
-    console.log("Authentication successful");
+    console.log("✅ AUTHENTICATION SUCCESSFUL for user:", normalizedEmail);
 
     const token = createToken(
       (user._id as any).toString(),
@@ -116,12 +136,15 @@ export const login = async (req: Request, res: Response) => {
       user.role as any
     );
 
+    // Set cookie for session management
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
+
+    console.log("🍪 Cookie set for user:", normalizedEmail);
 
     res.json({
       success: true,
@@ -134,12 +157,20 @@ export const login = async (req: Request, res: Response) => {
       },
       token,
     });
-  } catch (error) {
-    console.error(`[ERROR] Login error:`, error);
+
+    console.log("📤 Login response sent successfully");
+  } catch (error: any) {
+    console.error(`💥 CRITICAL LOGIN ERROR:`, {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      name: error.name,
+    });
+
     res.status(500).json({
       success: false,
       message: "Server error during login",
-      error: error instanceof Error ? error.message : "Undefined error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
