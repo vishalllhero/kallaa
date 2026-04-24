@@ -190,7 +190,10 @@ export default function ProductInfo({
               <div className="space-y-4 italic leading-relaxed">
                 <p>This is not just an artwork.</p>
                 <p>It is a moment captured before it disappeared.</p>
-                <p>Painted in isolation — a study of beauty that refuses to stay still.</p>
+                <p>
+                  Painted in isolation — a study of beauty that refuses to stay
+                  still.
+                </p>
                 <p>Only one exists. Once claimed, it will never return.</p>
               </div>
             )}
@@ -204,18 +207,11 @@ export default function ProductInfo({
                 <p className="text-zinc-400 text-sm italic font-serif">
                   "Art doesn't ask to be understood. It asks to be felt."
                 </p>
-                <p className="text-zinc-500 text-xs mt-1">— KALLAA Curatorial Archive</p>
+                <p className="text-zinc-500 text-xs mt-1">
+                  — KALLAA Curatorial Archive
+                </p>
               </div>
             </div>
-          </div>
-        </div>
-            )}
-          </div>
-          <div className="pt-6 border-t border-[#d4af37]/20">
-            <p className="text-zinc-500 text-sm italic font-serif">
-              "Art doesn't ask to be understood. It asks to be felt."
-            </p>
-            <p className="text-zinc-600 text-xs mt-2">— KALLAA Archive</p>
           </div>
         </div>
       </motion.div>

@@ -96,68 +96,83 @@ export default function ImageSlider({ images, alt }: ImageSliderProps) {
   const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
 
   return (
-    <>
-      <div className="space-y-4">
-        {/* Main Image with Zoom */}
-        <motion.div
-          key={selectedImage}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="relative aspect-[4/5] bg-zinc-900 rounded-2xl overflow-hidden border border-white/5 group cursor-pointer"
-          onClick={toggleFullscreen}
+    <div className="space-y-4">
+      {/* Main Image with Zoom */}
+      <motion.div
+        key={selectedImage}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="relative aspect-[4/5] bg-zinc-900 rounded-2xl overflow-hidden border border-white/5 group cursor-pointer"
+        onClick={toggleFullscreen}
+      >
+        <ZoomImage
+          src={currentImage.zoom || currentImage.main}
+          alt={`${alt} - Image ${selectedImage + 1}`}
+          className="w-full h-full"
+          zoomFactor={1.1}
+        />
+
+        {/* Navigation arrows - only show if multiple images */}
+        {imageArray.length > 1 && (
+          <>
+            <motion.button
+              onClick={e => {
+                e.stopPropagation();
+                goToPrevious();
+              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Previous image"
+            >
+              ‹
+            </motion.button>
+            <motion.button
+              onClick={e => {
+                e.stopPropagation();
+                goToNext();
+              }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Next image"
+            >
+              ›
+            </motion.button>
+          </>
+        )}
+
+        {/* Fullscreen toggle */}
+        <motion.button
+          onClick={e => {
+            e.stopPropagation();
+            toggleFullscreen();
+          }}
+          className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label="Toggle fullscreen"
         >
-          <ZoomImage
-            src={currentImage.zoom || currentImage.main}
-            alt={`${alt} - Image ${selectedImage + 1}`}
-            className="w-full h-full"
-            zoomFactor={1.1}
-          />
-
-          {/* Navigation arrows - only show if multiple images */}
-          {imageArray.length > 1 && (
-            <>
-              <motion.button
-                onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Previous image"
-              >
-                ‹
-              </motion.button>
-              <motion.button
-                onClick={(e) => { e.stopPropagation(); goToNext(); }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Next image"
-              >
-                ›
-              </motion.button>
-            </>
-          )}
-
-          {/* Fullscreen toggle */}
-          <motion.button
-            onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
-            className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Toggle fullscreen"
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-            </svg>
-          </motion.button>
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+          </svg>
+        </motion.button>
 
-          {/* Image counter */}
-          {imageArray.length > 1 && (
-            <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-full border border-white/10">
-              {selectedImage + 1} / {imageArray.length}
-            </div>
-          )}
-        </motion.div>
+        {/* Image counter */}
+        {imageArray.length > 1 && (
+          <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-full border border-white/10">
+            {selectedImage + 1} / {imageArray.length}
+          </div>
+        )}
+      </motion.div>
 
       {/* Thumbnails */}
       {imageArray.length > 1 && (
@@ -199,7 +214,7 @@ export default function ImageSlider({ images, alt }: ImageSliderProps) {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               className="relative max-w-5xl max-h-full"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <ZoomImage
                 src={currentImage.zoom || currentImage.main}
@@ -253,6 +268,6 @@ export default function ImageSlider({ images, alt }: ImageSliderProps) {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
