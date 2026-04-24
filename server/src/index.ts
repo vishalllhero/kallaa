@@ -17,14 +17,39 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 const app = express();
 
 // Custom CORS middleware for better control
-const allowedOrigins = [
-  "https://kallaa-w9et.vercel.app",
-  "https://kallaa-w9et-ars81vpn7-kallaa.vercel.app",
-  "http://localhost:5173", // For development
-  "http://localhost:3000", // Alternative dev port
-];
+// Dynamic CORS configuration for Vercel deployments
+function isAllowedOrigin(origin: string | undefined): boolean {
+  // Allow requests with no origin (server-to-server, mobile apps, etc.)
+  if (!origin) return true;
 
-// Custom CORS middleware with comprehensive logging
+  // Allow all Vercel domains (*.vercel.app)
+  if (origin.includes(".vercel.app")) return true;
+
+  // Allow custom domains
+  const allowedDomains = [
+    "kallaa.world",
+    "www.kallaa.world",
+    "kallaa.vercel.app",
+  ];
+
+  // Check if origin matches any allowed domain
+  try {
+    const url = new URL(origin);
+    if (allowedDomains.includes(url.hostname)) return true;
+
+    // Allow localhost for development
+    if (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+      return true;
+  } catch (error) {
+    // Invalid URL format, block it
+    console.log("🚫 CORS - Invalid origin format:", origin);
+    return false;
+  }
+
+  return false;
+}
+
+// Custom CORS middleware with dynamic Vercel support
 app.use((req: Request, res: Response, next: NextFunction) => {
   const origin = req.headers.origin;
   const method = req.method;
@@ -32,25 +57,28 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   console.log(`🌐 CORS [${method}] ${path} - Origin: ${origin || "none"}`);
 
-  // Check if origin is allowed
-  const isAllowedOrigin = !origin || allowedOrigins.includes(origin);
+  // Check if origin is allowed using dynamic logic
+  const allowed = isAllowedOrigin(origin);
 
-  if (!isAllowedOrigin) {
-    console.log(
-      `🚫 CORS BLOCKED - Origin '${origin}' not in allowed list:`,
-      allowedOrigins
-    );
+  if (!allowed) {
+    console.log(`🚫 CORS BLOCKED - Origin '${origin}' not allowed`);
     return res.status(403).json({
       success: false,
       error: "CORS policy violation",
       message: "Origin not allowed",
       origin: origin,
-      allowedOrigins: allowedOrigins,
+      allowedPatterns: [
+        "*.vercel.app domains",
+        "kallaa.world",
+        "localhost (development)",
+      ],
     });
   }
 
   // Set CORS headers explicitly
-  res.header("Access-Control-Allow-Origin", origin || "*");
+  // For allowed origins, set the specific origin; for no origin, use *
+  const allowOrigin = origin && allowed ? origin : "*";
+  res.header("Access-Control-Allow-Origin", allowOrigin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Methods",
@@ -64,16 +92,23 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   // Handle preflight OPTIONS requests
   if (method === "OPTIONS") {
-    console.log(`✅ CORS PREFLIGHT - Responding with 200 for ${path}`);
+    console.log(
+      `✅ CORS PREFLIGHT - Responding with 200 for ${path} from ${origin || "no origin"}`
+    );
     return res.status(200).json({
       success: true,
       message: "CORS preflight successful",
       origin: origin,
       allowed: true,
+      pattern: origin?.includes(".vercel.app")
+        ? "vercel-domain"
+        : "other-allowed",
     });
   }
 
-  console.log(`✅ CORS ALLOWED - Proceeding with ${method} ${path}`);
+  console.log(
+    `✅ CORS ALLOWED - Proceeding with ${method} ${path} from ${origin || "no origin"}`
+  );
   next();
 });
 
@@ -273,10 +308,21 @@ app.use("/api/payments", paymentRoutes);
 
 // CORS test endpoint
 app.get("/cors-test", (req, res) => {
+  const origin = req.headers.origin;
+  const isAllowed = isAllowedOrigin(origin);
+
   res.json({
     success: true,
-    message: "CORS is working!",
-    origin: req.headers.origin,
+    message: "CORS test completed",
+    origin: origin,
+    allowed: isAllowed,
+    pattern: origin?.includes(".vercel.app")
+      ? "vercel-domain"
+      : origin?.includes("kallaa.world")
+        ? "custom-domain"
+        : origin?.includes("localhost")
+          ? "localhost"
+          : "other",
     timestamp: new Date().toISOString(),
   });
 });
@@ -298,8 +344,14 @@ app.get("/health", (req, res) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || "development",
     cors: {
-      allowedOrigins: allowedOrigins,
+      dynamic: true,
+      allowedPatterns: [
+        "*.vercel.app domains",
+        "kallaa.world",
+        "localhost (development)",
+      ],
       currentOrigin: req.headers.origin,
+      isAllowed: isAllowedOrigin(req.headers.origin),
     },
     database: {
       status: dbStatus,
