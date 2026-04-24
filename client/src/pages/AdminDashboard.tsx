@@ -23,6 +23,12 @@ import ImageWithFallback from "@/components/ImageWithFallback";
 import { getProductImage, getImageUrl } from "@/utils/image";
 import { safeMap } from "@/utils/safeMap";
 
+// Safe ID helper - handles MongoDB _id vs id inconsistency
+const getId = (item: any): string => {
+  if (!item) return "";
+  return item._id || item.id || "";
+};
+
 export default function AdminDashboard() {
   const { logout, user } = useAuth();
   const [products, setProducts] = useState<any[]>([]);
@@ -164,8 +170,13 @@ export default function AdminDashboard() {
   };
 
   const handleEdit = (product: any) => {
+    const productId = getId(product);
+    if (!productId) {
+      console.error("Cannot edit product: no valid ID found", product);
+      return;
+    }
     setIsEditing(true);
-    setCurrentId(product._id || product.id);
+    setCurrentId(productId);
     setFormData({
       title: product.title || "",
       price: product.price?.toString() || "",
@@ -178,9 +189,15 @@ export default function AdminDashboard() {
   };
 
   const openDeleteModal = (product: any) => {
-    const productId = product._id || product.id;
+    const productId = getId(product);
+    if (!productId) {
+      console.error("Cannot delete product: no valid ID found", product);
+      toast.error("Cannot delete product: invalid ID");
+      return;
+    }
+
     console.log(
-      "DELETE CLICKED",
+      "DELETE CLICKED:",
       productId,
       "for product:",
       product.title || product.name
@@ -197,15 +214,17 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async () => {
-    if (!deleteModal.productId) {
+    const productId = deleteModal.productId;
+    if (!productId) {
       console.error("No product ID to delete");
+      toast.error("Cannot delete: no product ID");
       return;
     }
 
-    console.log("DELETING PRODUCT", deleteModal.productId);
+    console.log("DELETING PRODUCT:", productId);
 
     try {
-      const response = await fetch(`/api/products/${deleteModal.productId}`, {
+      const response = await fetch(`/api/products/${productId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -221,10 +240,8 @@ export default function AdminDashboard() {
       if (result.success) {
         toast.success("Product deleted successfully");
 
-        // Update local state immediately for better UX
-        setProducts(prev =>
-          prev.filter(p => (p._id || p.id) !== deleteModal.productId)
-        );
+        // Update local state immediately for instant UI update
+        setProducts(prev => prev.filter(p => getId(p) !== productId));
 
         closeDeleteModal();
       } else {
@@ -599,53 +616,55 @@ export default function AdminDashboard() {
                     No products found in inventory.
                   </div>
                 ) : (
-                  (Array.isArray(products) ? products : []).map(product => (
-                    <div
-                      key={product.id || product._id}
-                      className="bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 p-6 rounded-2xl border border-white/10 flex items-center justify-between hover:border-[#d4af37]/30 hover:shadow-lg hover:shadow-[#d4af37]/10 transition-all duration-300 group"
-                    >
-                      <div className="flex items-center gap-6">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 group-hover:border-[#d4af37]/20 transition-colors">
-                          <ImageWithFallback
-                            src={getImageUrl(
-                              product.thumbnail || product.image
-                            )}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
+                  (Array.isArray(products) ? products : [])
+                    .filter(product => product)
+                    .map(product => (
+                      <div
+                        key={getId(product)}
+                        className="bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 p-6 rounded-2xl border border-white/10 flex items-center justify-between hover:border-[#d4af37]/30 hover:shadow-lg hover:shadow-[#d4af37]/10 transition-all duration-300 group"
+                      >
+                        <div className="flex items-center gap-6">
+                          <div className="w-20 h-20 rounded-xl overflow-hidden bg-zinc-800 border border-white/10 group-hover:border-[#d4af37]/20 transition-colors">
+                            <ImageWithFallback
+                              src={getImageUrl(
+                                product.thumbnail || product.image
+                              )}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          <div>
+                            <h3 className="font-serif font-medium text-white mb-1 group-hover:text-[#d4af37] transition-colors">
+                              {product.title || product.name}
+                            </h3>
+                            <p className="text-[#d4af37] text-sm font-medium">
+                              ${product.price?.toLocaleString()}
+                            </p>
+                          </div>
+                          <div>
+                            <h3 className="text-white font-serif">
+                              {product.title}
+                            </h3>
+                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                              ${product.price}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-serif font-medium text-white mb-1 group-hover:text-[#d4af37] transition-colors">
-                            {product.title || product.name}
-                          </h3>
-                          <p className="text-[#d4af37] text-sm font-medium">
-                            ${product.price?.toLocaleString()}
-                          </p>
-                        </div>
-                        <div>
-                          <h3 className="text-white font-serif">
-                            {product.title}
-                          </h3>
-                          <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                            ${product.price}
-                          </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="p-3 bg-white/5 rounded-xl hover:bg-[#d4af37]/20 text-white hover:text-[#d4af37] transition-all duration-300 hover:scale-105 border border-transparent hover:border-[#d4af37]/30"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(product)}
+                            className="p-3 bg-red-500/10 rounded-xl hover:bg-red-500/20 text-red-500 transition-all duration-300 hover:scale-105 border border-red-500/20 hover:border-red-500/40"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="p-3 bg-white/5 rounded-xl hover:bg-[#d4af37]/20 text-white hover:text-[#d4af37] transition-all duration-300 hover:scale-105 border border-transparent hover:border-[#d4af37]/30"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => openDeleteModal(product)}
-                          className="p-3 bg-red-500/10 rounded-xl hover:bg-red-500/20 text-red-500 transition-all duration-300 hover:scale-105 border border-red-500/20 hover:border-red-500/40"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                    ))
                 )}
               </div>
             </div>
