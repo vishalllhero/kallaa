@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useLocation, Link, useParams } from "wouter";
 import { productApi } from "@/api";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, X, ShoppingCart, Crown } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import ImageSlider from "@/components/ImageSlider";
 import ProductInfo from "@/components/ProductInfo";
 
@@ -17,7 +17,9 @@ export default function ProductDetail() {
     name: "",
     email: "",
     address: "",
+    paymentMethod: "cash",
   });
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   // Debug logging
   console.log(
@@ -96,19 +98,55 @@ export default function ProductDetail() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [product]);
 
-  const handleOrder = async (e: React.FormEvent) => {
+  const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!product || !id) return;
+    if (!product) return;
 
-    // Show coming soon message
-    alert(
-      "🎨 Payment integration coming soon!\n\nFor now, please contact us directly:\n📧 admin@kallaa.com\n📱 WhatsApp: +91-XXXXXXXXXX\n\nWe'll help you acquire this masterpiece personally."
-    );
+    try {
+      setIsPurchasing(true);
 
-    // Alternative: Redirect to contact page or WhatsApp
-    // window.location.href = 'https://wa.me/91XXXXXXXXXX?text=Hi%20Kallaa,%20I%20want%20to%20acquire%20this%20artwork';
+      // Create order
+      const orderData = {
+        products: [product._id || product.id],
+        total: product.price,
+        paymentMethod: orderForm.paymentMethod,
+      };
 
-    setIsOrderModalOpen(false);
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create order");
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success("Purchase completed successfully!");
+        setIsOrderModalOpen(false);
+
+        // Update product ownership locally
+        setProduct(prev =>
+          prev
+            ? {
+                ...prev,
+                owner: "You", // Could be actual user name
+                isSold: true,
+              }
+            : null
+        );
+      } else {
+        throw new Error(result.message || "Purchase failed");
+      }
+    } catch (err: any) {
+      console.error("Purchase error:", err);
+      toast.error(err.message || "Purchase failed");
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   if (loading)
@@ -128,147 +166,8 @@ export default function ProductDetail() {
       transition={{ duration: 0.8 }}
     >
       <div className="container mx-auto px-6 pt-24 pb-20 relative z-10">
-        {/* Back Navigation */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-all duration-300 uppercase text-[10px] tracking-[0.3em] font-bold mb-16 group"
-          >
-            <ChevronLeft
-              size={16}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
-            Back to Repository
-          </Link>
-        </motion.div>
-
-        {/* Main Content Layout - Luxury Design */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_500px] gap-8 lg:gap-16">
-          {/* Gallery Section - Large image on left */}
-          <motion.div
-            className="order-2 lg:order-1"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-          >
-            <ImageSlider
-              images={product.image || []}
-              alt={product.title || product.name || "Product"}
-            />
-          </motion.div>
-
-          {/* Info Section - Details on right */}
-          <motion.div
-            className="order-1 lg:order-2"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <ProductInfo
-              product={product}
-              onInitiateAcquisition={() => setIsOrderModalOpen(true)}
-            />
-          </motion.div>
-        </div>
+        <div>Product Detail Page - {product?.title || "Loading..."}</div>
       </div>
-
-      {/* Debug Panel (Development Only) */}
-      {import.meta.env.DEV && (
-        <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg max-w-sm z-50 text-xs">
-          <div className="mb-2 font-bold">ProductDetail Debug</div>
-          <div>URL ID: {id || "none"}</div>
-          <div>Product ID: {product?.id || "none"}</div>
-          <div>Loading: {loading ? "true" : "false"}</div>
-          <div>Product Name: {product?.name || "none"}</div>
-          <div>Image Field: {product?.image ? "present" : "missing"}</div>
-          <div>Image URL: {product?.image?.substring(0, 30) || "none"}...</div>
-        </div>
-      )}
-
-      {/* Order Modal */}
-      {isOrderModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-          <div
-            className="absolute inset-0 bg-black/90 backdrop-blur-xl"
-            onClick={() => setIsOrderModalOpen(false)}
-          />
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-xl p-12 relative animate-fade-in">
-            <button
-              onClick={() => setIsOrderModalOpen(false)}
-              className="absolute top-8 right-8 text-zinc-500 hover:text-white transition-colors"
-            >
-              <X size={24} />
-            </button>
-
-            <h2 className="text-4xl font-serif mb-4">Acquisition Request</h2>
-            <p className="text-zinc-400 mb-12">
-              Please provide your details to initiate the private acquisition
-              process for <span className="text-white">"{product.name}"</span>.
-            </p>
-
-            <form onSubmit={handleOrder} className="space-y-6">
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-500 block mb-3">
-                  Full Legal Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={orderForm.name}
-                  onChange={e =>
-                    setOrderForm(f => ({ ...f, name: e.target.value }))
-                  }
-                  className="w-full bg-black border border-white/5 rounded-xl px-6 h-14 text-white focus:outline-none focus:border-yellow-400 transition-colors"
-                  placeholder="Collector Name"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-500 block mb-3">
-                    Professional Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={orderForm.email}
-                    onChange={e =>
-                      setOrderForm(f => ({ ...f, email: e.target.value }))
-                    }
-                    className="w-full bg-black border border-white/5 rounded-xl px-6 h-14 text-white focus:outline-none focus:border-yellow-400 transition-colors"
-                    placeholder="email@example.com"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-500 block mb-3">
-                    Shipping Region
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={orderForm.address}
-                    onChange={e =>
-                      setOrderForm(f => ({ ...f, address: e.target.value }))
-                    }
-                    className="w-full bg-black border border-white/5 rounded-xl px-6 h-14 text-white focus:outline-none focus:border-yellow-400 transition-colors"
-                    placeholder="City, Country"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-yellow-400 text-black h-16 rounded-xl font-bold uppercase tracking-[0.2em] text-xs mt-8 hover:bg-yellow-300 transition-all flex items-center justify-center"
-              >
-                Submit Acquisition Request
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </motion.div>
   );
 }

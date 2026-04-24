@@ -131,18 +131,40 @@ export default function ProductInfo({
           transition={{ duration: 0.4, delay: 0.65 }}
         >
           <div
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+            className={`inline-flex items-center gap-3 px-6 py-3 rounded-full text-sm font-medium border-2 ${
               product.owner === "Available"
-                ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                : "bg-amber-500/10 text-amber-300 border-amber-500/30"
             }`}
           >
-            <div
-              className={`w-2 h-2 rounded-full ${
-                product.owner === "Available" ? "bg-green-400" : "bg-red-400"
-              }`}
+            <Crown
+              size={16}
+              className={
+                product.owner === "Available"
+                  ? "text-emerald-400"
+                  : "text-amber-400"
+              }
             />
-            {product.owner}
+            <span className="font-serif">
+              {product.owner === "Available"
+                ? "Available for Acquisition"
+                : `Owned by ${product.owner}`}
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Limited Edition Badge */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.7 }}
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-lg">
+            <Gem size={14} className="text-[#d4af37]" />
+            <span className="text-[#d4af37] text-sm font-medium font-serif">
+              Limited Edition • Only 1 Exists
+            </span>
           </div>
         </motion.div>
       </div>
@@ -154,26 +176,39 @@ export default function ProductInfo({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.7 }}
       >
-        <h3 className="text-zinc-500 text-[10px] uppercase tracking-[0.4em] font-bold mb-6 flex items-center gap-2">
-          <Info size={14} className="text-[#d4af37]/50" />
-          The Narrative
+        <h3 className="text-zinc-400 text-[10px] uppercase tracking-[0.4em] font-bold mb-8 flex items-center gap-2">
+          <Info size={16} className="text-[#d4af37]" />
+          The Artist's Vision
         </h3>
-        <div className="max-w-lg">
-          <div className="text-zinc-300 text-lg leading-relaxed font-serif mb-6">
+        <div className="max-w-xl">
+          <div className="text-zinc-200 text-lg leading-relaxed font-serif mb-8 p-6 bg-gradient-to-br from-zinc-900/50 to-zinc-800/30 border-l-4 border-[#d4af37]/50 rounded-r-lg">
             {product.story ? (
-              <p className="italic">"{product.story}"</p>
+              <p className="italic leading-relaxed">"{product.story}"</p>
             ) : product.description ? (
-              <p>{product.description}</p>
+              <p className="leading-relaxed">{product.description}</p>
             ) : (
-              <div className="space-y-4 italic">
+              <div className="space-y-4 italic leading-relaxed">
                 <p>This is not just an artwork.</p>
                 <p>It is a moment captured before it disappeared.</p>
-                <p>
-                  Painted in isolation — a study of beauty that refuses to stay
-                  still.
-                </p>
+                <p>Painted in isolation — a study of beauty that refuses to stay still.</p>
                 <p>Only one exists. Once claimed, it will never return.</p>
               </div>
+            )}
+          </div>
+          <div className="pt-6 border-t border-[#d4af37]/30">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-[#d4af37]/20 rounded-full flex items-center justify-center">
+                <Award size={14} className="text-[#d4af37]" />
+              </div>
+              <div>
+                <p className="text-zinc-400 text-sm italic font-serif">
+                  "Art doesn't ask to be understood. It asks to be felt."
+                </p>
+                <p className="text-zinc-500 text-xs mt-1">— KALLAA Curatorial Archive</p>
+              </div>
+            </div>
+          </div>
+        </div>
             )}
           </div>
           <div className="pt-6 border-t border-[#d4af37]/20">
@@ -207,24 +242,43 @@ export default function ProductInfo({
           </div>
         ) : (
           <div className="space-y-4">
-            <motion.button
-              onClick={() => setShowCollectModal(true)}
-              className="btn-luxury w-full h-20 flex flex-col items-center justify-center gap-2 group relative overflow-hidden"
-              whileHover={{
-                scale: 1.02,
-                boxShadow: "0 0 60px rgba(212, 175, 55, 0.4)",
-              }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className="flex items-center gap-3">
-                <Heart size={20} className="group-hover:fill-current" />
-                Claim This Piece
-              </span>
-              <span className="text-[10px] opacity-80 group-hover:opacity-100 transition-opacity">
-                Become the permanent custodian
-              </span>
-            </motion.button>
+            {product.owner === "Available" ? (
+              <motion.button
+                onClick={() => onInitiateAcquisition()}
+                className="btn-luxury w-full h-20 flex flex-col items-center justify-center gap-2 group relative overflow-hidden"
+                whileHover={{
+                  scale: 1.02,
+                  boxShadow: "0 0 60px rgba(212, 175, 55, 0.4)",
+                }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+              >
+                <span className="flex items-center gap-3">
+                  <ShoppingCart
+                    size={20}
+                    className="group-hover:scale-110 transition-transform"
+                  />
+                  Acquire This Masterpiece
+                </span>
+                <span className="text-[10px] opacity-80 group-hover:opacity-100 transition-opacity">
+                  Secure your place in art history
+                </span>
+              </motion.button>
+            ) : (
+              <motion.div
+                className="w-full h-20 flex flex-col items-center justify-center gap-2 bg-zinc-800/50 border border-zinc-600/50 rounded-2xl"
+                initial={{ opacity: 0.7 }}
+                animate={{ opacity: 1 }}
+              >
+                <span className="flex items-center gap-3 text-zinc-500">
+                  <Crown size={20} />
+                  Already Acquired
+                </span>
+                <span className="text-[10px] text-zinc-600">
+                  This piece has found its custodian
+                </span>
+              </motion.div>
+            )}
 
             {/* Coming Soon Message */}
             <motion.div
