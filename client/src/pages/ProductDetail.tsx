@@ -45,18 +45,31 @@ export default function ProductDetail() {
 
         const data = await productApi.getById(productId);
         console.log("[ProductDetail] API returned data:", data);
-        const product = data?.data || data;
-        console.log("[ProductDetail] Extracted product:", product);
-        console.log(
-          "[ProductDetail] Product fields:",
-          Object.keys(product || {})
-        );
-        console.log("[ProductDetail] Product title:", product?.title);
-        console.log("[ProductDetail] Product image:", product?.image);
-        console.log("[ProductDetail] Product name:", product?.name);
 
-        setProduct(product);
-        console.log("[ProductDetail] Product state updated");
+        // Normalize product data extraction
+        const product =
+          data?.data?.product || data?.product || data?.data || data;
+        console.log("[ProductDetail] Normalized product:", product);
+
+        // Normalize field mappings
+        const normalizedProduct = {
+          ...product,
+          // Normalize image field
+          image: product?.image || product?.imageUrl || product?.images?.[0],
+          // Normalize title field
+          title: product?.title || product?.name,
+          // Normalize story field
+          story: product?.story || product?.description,
+        };
+
+        console.log("[ProductDetail] Normalized fields:");
+        console.log("  - Image:", normalizedProduct.image);
+        console.log("  - Title:", normalizedProduct.title);
+        console.log("  - Story:", normalizedProduct.story);
+        console.log("  - All fields:", Object.keys(normalizedProduct));
+
+        setProduct(normalizedProduct);
+        console.log("[ProductDetail] Normalized product state updated");
       } catch (err) {
         console.error("[ProductDetail] Fetch error:", err);
         toast.error("Piece not found");
@@ -192,8 +205,8 @@ export default function ProductDetail() {
   }
 
   // Validate product has required fields
-  if (!product.title && !product.name) {
-    console.error("[ProductDetail] Product missing title/name:", product);
+  if (!product?.title) {
+    console.error("[ProductDetail] Product missing title:", product);
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
@@ -243,10 +256,12 @@ export default function ProductDetail() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
           >
-            {product?.image ? (
+            {product?.image &&
+            typeof product.image === "string" &&
+            product.image.length > 0 ? (
               <ImageSlider
                 images={[product.image]}
-                alt={product.title || product.name || "Product"}
+                alt={product.title || "Product"}
               />
             ) : (
               <div className="w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
@@ -297,11 +312,7 @@ export default function ProductDetail() {
             <h2 className="text-4xl font-serif mb-4">Acquisition Request</h2>
             <p className="text-zinc-400 mb-12">
               Please provide your details to initiate the private acquisition
-              process for{" "}
-              <span className="text-white">
-                "{product.title || product.name}"
-              </span>
-              .
+              process for <span className="text-white">"{product.title}"</span>.
             </p>
 
             <form onSubmit={handlePurchase} className="space-y-6">
@@ -402,18 +413,27 @@ export default function ProductDetail() {
           <div>Loading: {loading ? "⏳" : "✅"}</div>
           {product && (
             <>
-              <div>Product ID: {product?._id || product?.id || "none"}</div>
-              <div>Title: {product?.title || product?.name || "none"}</div>
-              <div>Image: {product?.image ? "✅" : "❌"}</div>
-              <div>
-                Image URL:{" "}
-                {product?.image?.toString().substring(0, 50) || "none"}
+              <div className="border-t border-zinc-700 pt-2 mt-2">
+                <div className="font-semibold text-green-400 mb-1">
+                  Normalized Fields:
+                </div>
+                <div>Product ID: {product?._id || product?.id || "none"}</div>
+                <div>Title: {product?.title || "none"}</div>
+                <div>Image: {product?.image ? "✅" : "❌"}</div>
+                <div>
+                  Image URL:{" "}
+                  {product?.image?.toString().substring(0, 40) || "none"}...
+                </div>
+                <div>Price: ${product?.price || "none"}</div>
+                <div>Owner: {product?.owner || "Available"}</div>
+                <div>Story: {product?.story ? "✅" : "❌"}</div>
               </div>
-              <div>Price: ${product?.price || "none"}</div>
-              <div>Owner: {product?.owner || "Available"}</div>
-              <div>Description: {product?.description ? "✅" : "❌"}</div>
-              <div>Story: {product?.story ? "✅" : "❌"}</div>
-              <div>All fields: {Object.keys(product).join(", ")}</div>
+              <div className="border-t border-zinc-700 pt-2 mt-2">
+                <div className="font-semibold text-blue-400 mb-1">
+                  Raw Fields:
+                </div>
+                <div>All fields: {Object.keys(product).join(", ")}</div>
+              </div>
             </>
           )}
         </div>
