@@ -1,26 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useLocation, Link, useParams } from "wouter";
 import { productApi } from "@/api";
-import { ChevronLeft, X, ShoppingCart, Crown } from "lucide-react";
-import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import ImageSlider from "@/components/ImageSlider";
-import ProductInfo from "@/components/ProductInfo";
-import { ProductSkeleton } from "@/components/Skeleton";
+import { ChevronLeft, Crown } from "lucide-react";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [orderForm, setOrderForm] = useState({
-    name: "",
-    email: "",
-    address: "",
-    paymentMethod: "cash",
-  });
-  const [isPurchasing, setIsPurchasing] = useState(false);
 
   // Debug logging
   console.log(
@@ -120,61 +107,7 @@ export default function ProductDetail() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [product]);
 
-  const handlePurchase = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!product) return;
 
-    try {
-      setIsPurchasing(true);
-
-      // Create order
-      const productId = safeProduct._id;
-      if (!productId) {
-        throw new Error("Invalid product ID");
-      }
-
-      const orderData = {
-        products: [productId],
-        total: safeProduct.price || 0,
-        paymentMethod: orderForm.paymentMethod,
-      };
-
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create order");
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        toast.success("Purchase completed successfully!");
-        setIsOrderModalOpen(false);
-
-        // Update product ownership locally
-        setProduct(prev =>
-          prev
-            ? {
-                ...prev,
-                owner: "You", // Could be actual user name
-                isSold: true,
-              }
-            : null
-        );
-      } else {
-        throw new Error(result.message || "Purchase failed");
-      }
-    } catch (err: any) {
-      console.error("Purchase error:", err);
-      toast.error(err.message || "Purchase failed");
-    } finally {
-      setIsPurchasing(false);
-    }
-  };
 
   if (loading)
     return (
@@ -226,73 +159,142 @@ export default function ProductDetail() {
   console.log("  - Safe image:", safeProduct.image);
   console.log("  - Has story:", !!safeProduct.story);
 
+  console.log("[ProductDetail] About to render, product exists:", !!product, "safeProduct:", safeProduct);
+
   return (
-    <motion.div
-      key={id}
-      className="min-h-screen text-white selection:bg-yellow-400 selection:text-black"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-    >
-      <div className="container mx-auto px-6 pt-24 pb-20 relative z-10">
-        {/* Back Navigation */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-all duration-300 uppercase text-[10px] tracking-[0.3em] font-bold mb-16 group"
-          >
-            <ChevronLeft
-              size={16}
-              className="group-hover:-translate-x-1 transition-transform duration-300"
-            />
-            Back to Collection
-          </Link>
-        </motion.div>
+    <div className="min-h-screen bg-black text-white p-8">
+      {/* Debug UI - Remove after fixing */}
+      <div className="mb-8 p-4 bg-red-900/50 border border-red-500 rounded-lg">
+        <h2 className="text-xl font-bold mb-4">DEBUG: ProductDetail State</h2>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <strong>Loading:</strong> {loading ? "true" : "false"}
+          </div>
+          <div>
+            <strong>Product exists:</strong> {product ? "true" : "false"}
+          </div>
+          <div>
+            <strong>Product ID:</strong> {product?._id || product?.id || "none"}
+          </div>
+          <div>
+            <strong>Title:</strong> {product?.title || product?.name || "none"}
+          </div>
+          <div>
+            <strong>Safe Title:</strong> {safeProduct.title}
+          </div>
+          <div>
+            <strong>Image:</strong> {safeProduct.image ? "present" : "missing"}
+          </div>
+        </div>
+        <div className="mt-4">
+          <strong>Raw Product:</strong>
+          <pre className="text-xs bg-black p-2 rounded mt-1 overflow-auto max-h-32">
+            {JSON.stringify(product, null, 2)}
+          </pre>
+        </div>
+      </div>
 
-        {/* Simple Product Display - Safe Fallback UI */}
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-zinc-900/50 rounded-3xl p-8 border border-white/10"
-          >
-            {/* Product Title */}
-            <motion.h1
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl font-serif text-white mb-6"
-            >
-              {safeProduct.title}
-            </motion.h1>
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-zinc-900/50 rounded-3xl p-8 border border-white/10">
+          {/* Product Title */}
+          <h1 className="text-4xl font-serif text-white mb-6">
+            {safeProduct.title}
+          </h1>
 
-            {/* Product Image */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="mb-8"
-            >
+          {/* Product Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Image Section */}
+            <div>
+              <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-3">Image</h3>
               {safeProduct.image ? (
-                <div className="w-full max-w-md mx-auto">
+                <div className="w-full max-w-md">
                   <img
                     src={safeProduct.image}
                     alt={safeProduct.title}
                     className="w-full h-auto rounded-2xl border border-white/10"
-                    onError={e => {
-                      e.currentTarget.style.display = "none";
-                      const parent = e.currentTarget.parentElement;
-                      if (parent) {
-                        parent.innerHTML = `
-                          <div class="w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
-                            <div class="text-center">
-                              <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
-                                <span class="text-zinc-400 text-2xl">🎨</span>
-                              </div>
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = document.createElement('div');
+                      fallback.className = 'w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5';
+                      fallback.innerHTML = `
+                        <div class="text-center">
+                          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
+                            <span class="text-zinc-400 text-2xl">🎨</span>
+                          </div>
+                          <span class="text-zinc-500 text-sm font-medium">Image not available</span>
+                        </div>
+                      `;
+                      e.currentTarget.parentElement?.appendChild(fallback);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
+                      <span className="text-zinc-400 text-2xl">🎨</span>
+                    </div>
+                    <span className="text-zinc-500 text-sm font-medium">Image not available</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Details Section */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-2">Price</h3>
+                <span className="text-3xl font-serif text-[#d4af37]">
+                  ${typeof safeProduct.price === 'number' ? safeProduct.price.toLocaleString() : safeProduct.price}
+                </span>
+              </div>
+
+              {safeProduct.description && (
+                <div>
+                  <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-2">Description</h3>
+                  <p className="text-zinc-300 leading-relaxed">{safeProduct.description}</p>
+                </div>
+              )}
+
+              {safeProduct.story && (
+                <div>
+                  <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-2">Story</h3>
+                  <p className="text-zinc-300 leading-relaxed italic">{safeProduct.story}</p>
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-2">Owner</h3>
+                <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                  safeProduct.owner === 'Available'
+                    ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                    : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
+                }`}>
+                  Owner: {safeProduct.owner}
+                </span>
+              </div>
+
+              {safeProduct.owner === 'Available' && (
+                <button
+                  onClick={() => alert('Purchase functionality coming soon!')}
+                  className="w-full bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-black h-16 rounded-xl font-bold uppercase tracking-[0.2em] text-sm hover:from-[#b8860b] hover:to-[#daa520] transition-all duration-300 flex items-center justify-center gap-3"
+                >
+                  Acquire This Piece
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Temporarily disabled order modal */}
+      {/* {isOrderModalOpen && safeProduct && (
+        <div>Order modal content here</div>
+      )} */}
+          </div>
+        </div>
+      </div>
                               <span class="text-zinc-500 text-sm font-medium">Image not available</span>
                             </div>
                           </div>
@@ -398,40 +400,35 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Order Modal */}
-      {isOrderModalOpen && safeProduct && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-          <div
-            className="absolute inset-0 bg-black/90 backdrop-blur-xl"
-            onClick={() => setIsOrderModalOpen(false)}
-          />
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-xl p-12 relative animate-fade-in">
-            <button
-              onClick={() => setIsOrderModalOpen(false)}
-              className="absolute top-8 right-8 text-zinc-500 hover:text-white transition-colors"
-            >
-              <X size={24} />
-            </button>
-
-            <h2 className="text-4xl font-serif mb-4">Acquisition Request</h2>
-            <p className="text-zinc-400 mb-12">
-              Please provide your details to initiate the private acquisition
-              process for{" "}
-              <span className="text-white">"{safeProduct.title}"</span>.
-            </p>
-
-            <form onSubmit={handlePurchase} className="space-y-6">
-              <div>
-                <label className="text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-500 block mb-3">
-                  Full Legal Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={orderForm.name}
-                  onChange={e =>
-                    setOrderForm(f => ({ ...f, name: e.target.value }))
-                  }
+      {/* Debug Panel (Development Only) */}
+      {import.meta.env.DEV && (
+        <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg max-w-sm z-50 text-xs max-h-96 overflow-y-auto">
+          <div className="mb-2 font-bold text-yellow-400">ProductDetail Debug</div>
+          <div>URL ID: {id || "none"}</div>
+          <div>Product exists: {product ? "✅" : "❌"}</div>
+          <div>Loading: {loading ? "⏳" : "✅"}</div>
+          {product && safeProduct && (
+            <>
+              <div className="border-t border-zinc-700 pt-2 mt-2">
+                <div className="font-semibold text-green-400 mb-1">Safe Product:</div>
+                <div>ID: {safeProduct._id || "none"}</div>
+                <div>Title: {safeProduct.title}</div>
+                <div>Image: {safeProduct.image ? "✅" : "❌"}</div>
+                <div>Price: ${safeProduct.price}</div>
+                <div>Owner: {safeProduct.owner}</div>
+                <div>Story: {safeProduct.story ? "✅" : "❌"}</div>
+              </div>
+              <div className="border-t border-zinc-700 pt-2 mt-2">
+                <div className="font-semibold text-blue-400 mb-1">Raw Product:</div>
+                <div>All fields: {Object.keys(product).join(", ")}</div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
                   className="w-full bg-black border border-white/5 rounded-xl px-6 h-14 text-white focus:outline-none focus:border-yellow-400 transition-colors"
                   placeholder="Collector Name"
                 />
