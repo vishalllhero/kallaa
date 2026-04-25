@@ -128,14 +128,14 @@ export default function ProductDetail() {
       setIsPurchasing(true);
 
       // Create order
-      const productId = product._id || product.id;
+      const productId = safeProduct._id;
       if (!productId) {
         throw new Error("Invalid product ID");
       }
 
       const orderData = {
         products: [productId],
-        total: product.price || 0,
+        total: safeProduct.price || 0,
         paymentMethod: orderForm.paymentMethod,
       };
 
@@ -204,21 +204,25 @@ export default function ProductDetail() {
     );
   }
 
-  // Validate product has required fields
-  if (!product?.title) {
-    console.error("[ProductDetail] Product missing title:", product);
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-8">❌</div>
-          <h3 className="text-2xl font-serif text-zinc-400 mb-4">
-            Product data incomplete
-          </h3>
-          <p className="text-zinc-600">Unable to display this masterpiece</p>
-        </div>
-      </div>
-    );
-  }
+  // Normalize product data with safe defaults
+  const safeProduct = {
+    _id: product?._id || product?.id || "",
+    title: product?.title || product?.name || "Untitled Artwork",
+    image: product?.image || product?.imageUrl || product?.images?.[0] || "",
+    price: product?.price || 0,
+    description: product?.description || "",
+    story: product?.story || "",
+    owner: product?.owner || "Available",
+    thumbnail: product?.thumbnail || product?.image || "",
+    zoomImage: product?.zoomImage || product?.image || "",
+  };
+
+  console.log("[ProductDetail] Safe product normalization:");
+  console.log("  - Raw title:", product?.title || product?.name || "none");
+  console.log("  - Safe title:", safeProduct.title);
+  console.log("  - Raw image:", product?.image || product?.imageUrl || "none");
+  console.log("  - Safe image:", safeProduct.image);
+  console.log("  - Has story:", !!safeProduct.story);
 
   return (
     <motion.div
@@ -256,12 +260,10 @@ export default function ProductDetail() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
           >
-            {product?.image &&
-            typeof product.image === "string" &&
-            product.image.length > 0 ? (
+            {safeProduct.image ? (
               <ImageSlider
-                images={[product.image]}
-                alt={product.title || "Product"}
+                images={[safeProduct.image]}
+                alt={safeProduct.title}
               />
             ) : (
               <div className="w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
@@ -284,18 +286,16 @@ export default function ProductDetail() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            {product && (
-              <ProductInfo
-                product={product}
-                onInitiateAcquisition={() => setIsOrderModalOpen(true)}
-              />
-            )}
+            <ProductInfo
+              product={safeProduct}
+              onInitiateAcquisition={() => setIsOrderModalOpen(true)}
+            />
           </motion.div>
         </div>
       </div>
 
       {/* Order Modal */}
-      {isOrderModalOpen && product && (product.title || product.name) && (
+      {isOrderModalOpen && safeProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div
             className="absolute inset-0 bg-black/90 backdrop-blur-xl"
@@ -312,7 +312,8 @@ export default function ProductDetail() {
             <h2 className="text-4xl font-serif mb-4">Acquisition Request</h2>
             <p className="text-zinc-400 mb-12">
               Please provide your details to initiate the private acquisition
-              process for <span className="text-white">"{product.title}"</span>.
+              process for{" "}
+              <span className="text-white">"{safeProduct.title}"</span>.
             </p>
 
             <form onSubmit={handlePurchase} className="space-y-6">
@@ -411,26 +412,22 @@ export default function ProductDetail() {
           <div>URL ID: {id || "none"}</div>
           <div>Product exists: {product ? "✅" : "❌"}</div>
           <div>Loading: {loading ? "⏳" : "✅"}</div>
-          {product && (
+          {product && safeProduct && (
             <>
               <div className="border-t border-zinc-700 pt-2 mt-2">
                 <div className="font-semibold text-green-400 mb-1">
-                  Normalized Fields:
+                  Safe Product:
                 </div>
-                <div>Product ID: {product?._id || product?.id || "none"}</div>
-                <div>Title: {product?.title || "none"}</div>
-                <div>Image: {product?.image ? "✅" : "❌"}</div>
-                <div>
-                  Image URL:{" "}
-                  {product?.image?.toString().substring(0, 40) || "none"}...
-                </div>
-                <div>Price: ${product?.price || "none"}</div>
-                <div>Owner: {product?.owner || "Available"}</div>
-                <div>Story: {product?.story ? "✅" : "❌"}</div>
+                <div>ID: {safeProduct._id || "none"}</div>
+                <div>Title: {safeProduct.title}</div>
+                <div>Image: {safeProduct.image ? "✅" : "❌"}</div>
+                <div>Price: ${safeProduct.price}</div>
+                <div>Owner: {safeProduct.owner}</div>
+                <div>Story: {safeProduct.story ? "✅" : "❌"}</div>
               </div>
               <div className="border-t border-zinc-700 pt-2 mt-2">
                 <div className="font-semibold text-blue-400 mb-1">
-                  Raw Fields:
+                  Raw Product:
                 </div>
                 <div>All fields: {Object.keys(product).join(", ")}</div>
               </div>
