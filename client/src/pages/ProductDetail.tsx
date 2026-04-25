@@ -217,6 +217,8 @@ export default function ProductDetail() {
     zoomImage: product?.zoomImage || product?.image || "",
   };
 
+  console.log("PRODUCT DATA:", product);
+  console.log("SAFE PRODUCT:", safeProduct);
   console.log("[ProductDetail] Safe product normalization:");
   console.log("  - Raw title:", product?.title || product?.name || "none");
   console.log("  - Safe title:", safeProduct.title);
@@ -251,45 +253,147 @@ export default function ProductDetail() {
           </Link>
         </motion.div>
 
-        {/* Main Content Layout - Luxury Design */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_500px] gap-8 lg:gap-16">
-          {/* Gallery Section - Large image on left */}
+        {/* Simple Product Display - Safe Fallback UI */}
+        <div className="max-w-4xl mx-auto">
           <motion.div
-            className="order-2 lg:order-1"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
+            className="bg-zinc-900/50 rounded-3xl p-8 border border-white/10"
           >
-            {safeProduct.image ? (
-              <ImageSlider
-                images={[safeProduct.image]}
-                alt={safeProduct.title}
-              />
-            ) : (
-              <div className="w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <span className="text-zinc-400 text-2xl">🎨</span>
-                  </div>
-                  <span className="text-zinc-500 text-sm font-medium">
-                    Image not available
-                  </span>
-                </div>
-              </div>
-            )}
-          </motion.div>
+            {/* Product Title */}
+            <motion.h1
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl font-serif text-white mb-6"
+            >
+              {safeProduct.title}
+            </motion.h1>
 
-          {/* Info Section - Details on right */}
-          <motion.div
-            className="order-1 lg:order-2"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <ProductInfo
-              product={safeProduct}
-              onInitiateAcquisition={() => setIsOrderModalOpen(true)}
-            />
+            {/* Product Image */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mb-8"
+            >
+              {safeProduct.image ? (
+                <div className="w-full max-w-md mx-auto">
+                  <img
+                    src={safeProduct.image}
+                    alt={safeProduct.title}
+                    className="w-full h-auto rounded-2xl border border-white/10"
+                    onError={e => {
+                      e.currentTarget.style.display = "none";
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
+                            <div class="text-center">
+                              <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
+                                <span class="text-zinc-400 text-2xl">🎨</span>
+                              </div>
+                              <span class="text-zinc-500 text-sm font-medium">Image not available</span>
+                            </div>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full aspect-[4/5] bg-zinc-900 rounded-2xl flex items-center justify-center border border-white/5">
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-800 flex items-center justify-center">
+                      <span className="text-zinc-400 text-2xl">🎨</span>
+                    </div>
+                    <span className="text-zinc-500 text-sm font-medium">
+                      Image not available
+                    </span>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Product Price */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mb-6"
+            >
+              <span className="text-3xl font-serif text-[#d4af37]">
+                $
+                {typeof safeProduct.price === "number"
+                  ? safeProduct.price.toLocaleString()
+                  : safeProduct.price}
+              </span>
+            </motion.div>
+
+            {/* Product Description */}
+            {safeProduct.description && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mb-6"
+              >
+                <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-3">
+                  Description
+                </h3>
+                <p className="text-zinc-300 leading-relaxed">
+                  {safeProduct.description}
+                </p>
+              </motion.div>
+            )}
+
+            {/* Product Story */}
+            {safeProduct.story && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mb-6"
+              >
+                <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-3">
+                  Story
+                </h3>
+                <p className="text-zinc-300 leading-relaxed italic">
+                  {safeProduct.story}
+                </p>
+              </motion.div>
+            )}
+
+            {/* Product Owner */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="mb-8"
+            >
+              <span
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                  safeProduct.owner === "Available"
+                    ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
+                    : "bg-amber-500/10 text-amber-300 border border-amber-500/20"
+                }`}
+              >
+                <span>Owner: {safeProduct.owner}</span>
+              </span>
+            </motion.div>
+
+            {/* Purchase Button */}
+            {safeProduct.owner === "Available" && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                onClick={() => setIsOrderModalOpen(true)}
+                className="w-full bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-black h-16 rounded-xl font-bold uppercase tracking-[0.2em] text-sm hover:from-[#b8860b] hover:to-[#daa520] transition-all duration-300 flex items-center justify-center gap-3"
+              >
+                Acquire This Piece
+              </motion.button>
+            )}
           </motion.div>
         </div>
       </div>
