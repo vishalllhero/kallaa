@@ -26,8 +26,10 @@ export default function ProductDetail() {
   console.log(
     "[ProductDetail] Component render - URL ID:",
     id,
-    "Product ID:",
-    product?.id,
+    "Product exists:",
+    !!product,
+    "Product keys:",
+    product ? Object.keys(product) : "none",
     "Loading:",
     loading
   );
@@ -44,8 +46,14 @@ export default function ProductDetail() {
         const data = await productApi.getById(productId);
         console.log("[ProductDetail] API returned data:", data);
         const product = data?.data || data;
-        console.log("[ProductDetail] Full product data:", product);
-        console.log("[ProductDetail] Setting product state with:", product);
+        console.log("[ProductDetail] Extracted product:", product);
+        console.log(
+          "[ProductDetail] Product fields:",
+          Object.keys(product || {})
+        );
+        console.log("[ProductDetail] Product title:", product?.title);
+        console.log("[ProductDetail] Product image:", product?.image);
+        console.log("[ProductDetail] Product name:", product?.name);
 
         setProduct(product);
         console.log("[ProductDetail] Product state updated");
@@ -172,11 +180,28 @@ export default function ProductDetail() {
       </motion.div>
     );
   if (!product) {
+    console.log("[ProductDetail] No product data, showing fallback");
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-t-2 border-yellow-400 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-zinc-400">Loading masterpiece...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Validate product has required fields
+  if (!product.title && !product.name) {
+    console.error("[ProductDetail] Product missing title/name:", product);
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-8">❌</div>
+          <h3 className="text-2xl font-serif text-zinc-400 mb-4">
+            Product data incomplete
+          </h3>
+          <p className="text-zinc-600">Unable to display this masterpiece</p>
         </div>
       </div>
     );
@@ -220,9 +245,7 @@ export default function ProductDetail() {
           >
             {product?.image ? (
               <ImageSlider
-                images={
-                  Array.isArray(product.image) ? product.image : [product.image]
-                }
+                images={[product.image]}
                 alt={product.title || product.name || "Product"}
               />
             ) : (
@@ -257,7 +280,7 @@ export default function ProductDetail() {
       </div>
 
       {/* Order Modal */}
-      {isOrderModalOpen && product && (
+      {isOrderModalOpen && product && (product.title || product.name) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div
             className="absolute inset-0 bg-black/90 backdrop-blur-xl"
@@ -369,21 +392,30 @@ export default function ProductDetail() {
       )}
 
       {/* Debug Panel (Development Only) */}
-      {import.meta.env.DEV && product && (
-        <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg max-w-sm z-50 text-xs">
-          <div className="mb-2 font-bold">ProductDetail Debug</div>
-          <div>URL ID: {id || "none"}</div>
-          <div>Product ID: {product?._id || product?.id || "none"}</div>
-          <div>Loading: {loading ? "true" : "false"}</div>
-          <div>Product Title: {product?.title || product?.name || "none"}</div>
-          <div>Image Field: {product?.image ? "present" : "missing"}</div>
-          <div>
-            Image URL: {product?.image?.toString().substring(0, 30) || "none"}
-            ...
+      {import.meta.env.DEV && (
+        <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg max-w-sm z-50 text-xs max-h-96 overflow-y-auto">
+          <div className="mb-2 font-bold text-yellow-400">
+            ProductDetail Debug
           </div>
-          <div>Owner: {product?.owner || "Available"}</div>
-          <div>Price: ${product?.price?.toString() || "none"}</div>
-          <div>Is Array: {Array.isArray(product?.image) ? "yes" : "no"}</div>
+          <div>URL ID: {id || "none"}</div>
+          <div>Product exists: {product ? "✅" : "❌"}</div>
+          <div>Loading: {loading ? "⏳" : "✅"}</div>
+          {product && (
+            <>
+              <div>Product ID: {product?._id || product?.id || "none"}</div>
+              <div>Title: {product?.title || product?.name || "none"}</div>
+              <div>Image: {product?.image ? "✅" : "❌"}</div>
+              <div>
+                Image URL:{" "}
+                {product?.image?.toString().substring(0, 50) || "none"}
+              </div>
+              <div>Price: ${product?.price || "none"}</div>
+              <div>Owner: {product?.owner || "Available"}</div>
+              <div>Description: {product?.description ? "✅" : "❌"}</div>
+              <div>Story: {product?.story ? "✅" : "❌"}</div>
+              <div>All fields: {Object.keys(product).join(", ")}</div>
+            </>
+          )}
         </div>
       )}
     </motion.div>
