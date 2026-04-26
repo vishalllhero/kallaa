@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "wouter";
-import { productApi } from "../api/index";
+import { productApi } from "@/api";
+
+console.log("🔥 ProductDetail ACTIVE");
+console.log("API:", productApi);
 
 export type Product = {
   title: string;
@@ -22,7 +25,6 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔥 DEBUG (IMPORTANT)
   console.log("ID:", id);
   console.log("PRODUCT:", product);
   console.log("LOADING:", loading);
@@ -32,7 +34,7 @@ export default function ProductDetail() {
     if (!id) return;
 
     if (!productApi || typeof productApi.getById !== "function") {
-      console.error("API not loaded");
+      console.error("❌ productApi.getById is not a function!", productApi);
       setError("System Error: API module is missing");
       setLoading(false);
       return;
@@ -51,14 +53,16 @@ export default function ProductDetail() {
           return;
         }
 
-        console.log("🌐 FETCHING FROM API");
+        console.log("FETCH START");
 
         const res = await productApi.getById(id);
         console.log("API RESPONSE:", res);
 
-        const data = res?.data?.product ?? res?.data ?? res ?? null;
+        // api.ts already destructures { data } from axios, so res IS the data
+        const data = res?.product ?? res ?? null;
+        console.log("DATA:", data);
 
-        if (!data || Object.keys(data).length === 0) {
+        if (!data || (typeof data === "object" && Object.keys(data).length === 0)) {
           setError("Product not found");
           return;
         }
@@ -69,31 +73,27 @@ export default function ProductDetail() {
           price: data.price ?? 0,
           description: data.description ?? "",
           story: data.story ?? "",
-          owner: data.owner ?? "Available"
+          owner: data.owner ?? "Available",
         };
 
-        // ✅ SAVE CACHE
         productCache.set(id, formatted);
-
         setProduct(formatted);
-
       } catch (err) {
-        console.error(err);
+        console.error("❌ Fetch failed:", err);
         setError("Failed to load product");
       } finally {
-        setLoading(false); // 💥 CRITICAL
+        setLoading(false);
       }
     };
 
     fetchData();
-
   }, [id]);
 
   // ✅ ROUTE NOT READY
   if (!id) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p>Loading route...</p>
+        <p className="animate-pulse text-zinc-400">Loading route...</p>
       </div>
     );
   }
@@ -102,7 +102,7 @@ export default function ProductDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p>Loading product...</p>
+        <p className="animate-pulse text-zinc-300">Loading product...</p>
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function ProductDetail() {
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p>{error}</p>
+        <p className="text-red-400">{error}</p>
       </div>
     );
   }
@@ -120,7 +120,7 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p>No product found</p>
+        <p className="text-zinc-400">No product found</p>
       </div>
     );
   }
@@ -154,33 +154,31 @@ export default function ProductDetail() {
             <div>
               <h3 className="text-zinc-400 text-sm mb-1">Price</h3>
               <p className="text-3xl text-yellow-400">
-                ₹{product.price}
+                ₹{product.price.toLocaleString()}
               </p>
             </div>
 
             {product.description && (
               <div>
                 <h3 className="text-zinc-400 text-sm mb-1">Description</h3>
-                <p>{product.description}</p>
+                <p className="text-zinc-300">{product.description}</p>
               </div>
             )}
 
             {product.story && (
               <div>
                 <h3 className="text-zinc-400 text-sm mb-1">Story</h3>
-                <p className="italic">{product.story}</p>
+                <p className="italic text-zinc-400">{product.story}</p>
               </div>
             )}
 
             <div>
               <h3 className="text-zinc-400 text-sm mb-1">Owner</h3>
-              <p>
-                {isAvailable ? "Available" : product.owner}
-              </p>
+              <p>{isAvailable ? "Available" : product.owner}</p>
             </div>
 
             {isAvailable && (
-              <button className="w-full bg-yellow-400 text-black py-4 rounded-xl font-bold">
+              <button className="w-full bg-yellow-400 text-black py-4 rounded-xl font-bold hover:bg-yellow-300 transition-colors">
                 Acquire This Masterpiece
               </button>
             )}
