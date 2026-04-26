@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "wouter";
-import { productApi } from "../api";
+import { productApi } from "../api/index";
 
 export type Product = {
   title: string;
