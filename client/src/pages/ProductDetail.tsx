@@ -13,6 +13,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -26,6 +27,7 @@ export default function ProductDetail() {
       try {
         setLoading(true);
         setError(null);
+        setImageLoaded(false);
 
         if (productCache.has(id)) {
           setProduct(productCache.get(id)!);
@@ -37,7 +39,7 @@ export default function ProductDetail() {
         const formatted = normalizeProduct(res);
         productCache.set(id, formatted);
         setProduct(formatted);
-      } catch (err) {
+      } catch {
         setError("Failed to load product");
       } finally {
         setLoading(false);
@@ -47,73 +49,167 @@ export default function ProductDetail() {
     fetchData();
   }, [id]);
 
-  // ── SINGLE RETURN — NO EARLY EXITS — EVERYTHING VISIBLE ──
+  const isAvailable = product?.owner === "Available";
+
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", padding: 20 }}>
+    <div className="min-h-screen bg-black text-white">
 
-      <h1 style={{ fontSize: 28, color: "lime", marginBottom: 20 }}>DEBUG ROOT — ProductDetail</h1>
-
-      <p>ID: {id ?? "undefined"}</p>
-      <p>Loading: {String(loading)}</p>
-      <p>Error: {error ?? "none"}</p>
-      <p>Product exists: {String(!!product)}</p>
-
-      <hr style={{ borderColor: "#333", margin: "20px 0" }} />
-
-      <h2 style={{ color: "cyan", marginBottom: 10 }}>RAW PRODUCT STATE:</h2>
-      <pre style={{ color: "#a3e635", fontSize: 12, background: "#111", padding: 16, borderRadius: 8, overflow: "auto", maxHeight: 300 }}>
-        {JSON.stringify(product, null, 2) ?? "null"}
-      </pre>
-
-      <hr style={{ borderColor: "#333", margin: "20px 0" }} />
-
-      <h2 style={{ color: "cyan", marginBottom: 10 }}>RENDERED UI:</h2>
-
-      <h1 style={{ fontSize: 32, fontFamily: "serif", marginBottom: 16 }}>
-        {product?.title ?? "NO TITLE"}
-      </h1>
-
-      <p style={{ fontSize: 24, color: "#facc15", marginBottom: 16 }}>
-        ₹{product?.price ?? 0}
-      </p>
-
-      <img
-        src={product?.image || "https://placehold.co/400x300/1a1a1a/666?text=No+Image"}
-        alt={product?.title ?? "product"}
-        style={{ width: 400, maxWidth: "100%", borderRadius: 12, marginBottom: 16 }}
-        onError={(e) => {
-          (e.target as HTMLImageElement).src = "https://placehold.co/400x300/1a1a1a/666?text=Image+Error";
-        }}
-      />
-
-      <p style={{ color: "#d4d4d8", marginBottom: 12 }}>
-        {product?.description ?? "No description"}
-      </p>
-
-      <p style={{ color: "#a1a1aa", fontStyle: "italic", marginBottom: 12 }}>
-        {product?.story ?? "No story"}
-      </p>
-
-      <p style={{ marginBottom: 20 }}>
-        Owner: {product?.owner ?? "Unknown"}
-      </p>
-
-      {product?.owner === "Available" && (
-        <button style={{
-          backgroundColor: "#facc15",
-          color: "#000",
-          padding: "14px 24px",
-          borderRadius: 12,
-          fontWeight: "bold",
-          border: "none",
-          cursor: "pointer",
-          width: "100%",
-          maxWidth: 400,
-        }}>
-          Acquire This Masterpiece
-        </button>
+      {/* ── LOADING SKELETON ── */}
+      {(loading || !product) && !error && (
+        <div className="min-h-screen bg-black animate-pulse">
+          <div className="max-w-7xl mx-auto px-6 py-16 lg:py-24">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+              <div className="aspect-[4/5] bg-zinc-900/50 rounded-2xl" />
+              <div className="space-y-8 py-8">
+                <div className="h-4 w-24 bg-zinc-800 rounded" />
+                <div className="h-12 w-3/4 bg-zinc-800/60 rounded-lg" />
+                <div className="h-10 w-40 bg-zinc-800/40 rounded" />
+                <div className="h-8 w-32 bg-zinc-800/30 rounded-full" />
+                <div className="space-y-3 pt-4">
+                  <div className="h-4 w-full bg-zinc-800/30 rounded" />
+                  <div className="h-4 w-5/6 bg-zinc-800/20 rounded" />
+                  <div className="h-4 w-4/6 bg-zinc-800/20 rounded" />
+                </div>
+                <div className="h-32 w-full bg-zinc-900/40 rounded-xl" />
+                <div className="h-16 w-full bg-zinc-800/20 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
+      {/* ── ERROR STATE ── */}
+      {error && (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <p className="text-zinc-500 text-sm uppercase tracking-[0.3em]">Error</p>
+            <p className="text-zinc-300 text-lg">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── MAIN PRODUCT UI ── */}
+      {product && !loading && !error && (
+        <div
+          className="transition-opacity duration-700 ease-out"
+          style={{ opacity: 1, animation: "fadeIn 0.6s ease-out" }}
+        >
+          {/* Hero Grid */}
+          <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+
+              {/* ── LEFT: Hero Image ── */}
+              <div className="relative group">
+                <div className="relative overflow-hidden rounded-2xl bg-zinc-950">
+                  {/* Ambient glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10" />
+
+                  <img
+                    src={product.image || "https://placehold.co/800x1000/0a0a0a/333?text=KALLAA"}
+                    alt={product.title}
+                    className={`w-full aspect-[4/5] object-cover transition-all duration-700 ease-out group-hover:scale-105 group-hover:brightness-110 ${
+                      imageLoaded ? "opacity-100" : "opacity-0"
+                    }`}
+                    onLoad={() => setImageLoaded(true)}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://placehold.co/800x1000/0a0a0a/333?text=KALLAA";
+                      setImageLoaded(true);
+                    }}
+                  />
+
+                  {/* Image loading placeholder */}
+                  {!imageLoaded && (
+                    <div className="absolute inset-0 bg-zinc-950 animate-pulse" />
+                  )}
+                </div>
+
+                {/* Subtle label */}
+                <p className="mt-4 text-center text-zinc-600 text-xs tracking-[0.4em] uppercase">
+                  One of One · Unrepeatable
+                </p>
+              </div>
+
+              {/* ── RIGHT: Details ── */}
+              <div className="lg:sticky lg:top-24 space-y-10 py-4">
+
+                {/* Category tag */}
+                <p className="text-zinc-500 text-xs tracking-[0.3em] uppercase font-medium">
+                  Kallaa Collection
+                </p>
+
+                {/* Title */}
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif leading-tight tracking-tight">
+                  {product.title}
+                </h1>
+
+                {/* Price */}
+                <p className="text-3xl md:text-4xl text-yellow-400 font-light tracking-tight">
+                  ₹{product.price.toLocaleString()}
+                </p>
+
+                {/* Ownership Badge */}
+                <div>
+                  {isAvailable ? (
+                    <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      AVAILABLE
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium tracking-wider bg-zinc-900 text-zinc-400 border border-zinc-700">
+                      <span className="w-2 h-2 rounded-full bg-zinc-500" />
+                      COLLECTED BY {product.owner.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+
+                {/* Divider */}
+                <div className="w-12 h-px bg-zinc-800" />
+
+                {/* Description */}
+                <div>
+                  <h3 className="text-zinc-500 text-xs tracking-[0.25em] uppercase mb-3 font-medium">
+                    About This Piece
+                  </h3>
+                  <p className="text-zinc-300 text-lg leading-relaxed font-light">
+                    {product.description || "No description available"}
+                  </p>
+                </div>
+
+                {/* Story Block */}
+                <div className="relative pl-6 py-6 rounded-r-xl bg-gradient-to-r from-zinc-900/80 to-transparent border-l-2 border-yellow-500/40">
+                  <h3 className="text-zinc-500 text-xs tracking-[0.25em] uppercase mb-3 font-medium">
+                    The Story
+                  </h3>
+                  <p className="text-zinc-400 text-base leading-relaxed italic font-light">
+                    {product.story || "Every masterpiece carries an untold story. This one awaits its narrator."}
+                  </p>
+                </div>
+
+                {/* CTA */}
+                {isAvailable && (
+                  <button className="w-full py-5 px-8 bg-yellow-400 hover:bg-yellow-300 text-black rounded-xl font-bold text-sm uppercase tracking-[0.2em] transition-all duration-500 hover:shadow-[0_0_40px_rgba(250,204,21,0.3)] hover:scale-[1.02] active:scale-[0.98]">
+                    Acquire This Masterpiece
+                  </button>
+                )}
+
+                {/* Rarity notice */}
+                <p className="text-center text-zinc-600 text-xs tracking-[0.2em] leading-relaxed">
+                  This piece exists only once. It cannot be reproduced.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fade-in keyframe */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
