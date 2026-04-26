@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { productApi } from "@/api";
+import { normalizeProduct, type Product } from "@/utils/normalizeProduct";
 
-export type Product = {
-  title: string;
-  image: string;
-  price: number;
-  description?: string;
-  story?: string;
-  owner: string;
-};
+export { type Product } from "@/utils/normalizeProduct";
 
 export const productCache = new Map<string, Product>();
 
@@ -49,37 +43,19 @@ export default function ProductDetail() {
         const res = await productApi.getById(id);
         if (import.meta.env.DEV) console.log("RAW:", res);
 
-        // ─── RESPONSE SHAPE ───
-        // Backend returns: { success: true, data: { title, price, image, ... } }
-        // api.ts axios destructures outer { data }, so res = { success, data: {...} }
-        // The actual product object lives at res.data
-        const data = res?.data ?? res?.product ?? res ?? null;
-        if (import.meta.env.DEV) console.log("FINAL:", data);
-
-        if (
-          !data ||
-          (typeof data === "object" && Object.keys(data).length === 0)
-        ) {
-          setError("Product not found");
-          return;
-        }
-
-        const formatted: Product = {
-          title: data.title ?? data.name ?? "Untitled",
-          image: data.image ?? data.imageUrl ?? data.images?.[0] ?? "",
-          price: Number(data.price) || 0,
-          description: data.description ?? "",
-          story: data.story ?? "",
-          owner: data.ownerName ?? data.owner ?? "Available",
-        };
-
-        if (import.meta.env.DEV) console.log("FORMATTED:", formatted);
+        // Centralized normalization — handles any response shape
+        const formatted = normalizeProduct(res);
+        if (import.meta.env.DEV) console.log("NORMALIZED PRODUCT:", formatted);
 
         productCache.set(id, formatted);
         setProduct(formatted);
       } catch (err) {
         if (import.meta.env.DEV) console.error("❌ Fetch failed:", err);
-        setError("Failed to load product");
+        setError(
+          err instanceof Error && err.message.includes("response shape")
+            ? "Product data is unavailable"
+            : "Failed to load product"
+        );
       } finally {
         setLoading(false);
       }
@@ -88,7 +64,7 @@ export default function ProductDetail() {
     fetchData();
   }, [id]);
 
-  // ── Render pipeline: every state shows visible content ──
+  // ── Render pipeline ──
 
   if (!id) {
     return (
@@ -125,16 +101,15 @@ export default function ProductDetail() {
     );
   }
 
+  // Safe derived values
   const isAvailable = product.owner === "Available";
-  const displayPrice = typeof product.price === "number"
-    ? product.price.toLocaleString()
-    : "0";
+  const displayPrice = product.price.toLocaleString();
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
 
-        {/* DEV debug — stripped from production build */}
+        {/* DEV debug — stripped from production */}
         {import.meta.env.DEV && (
           <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 mb-8 font-mono text-xs text-green-400 overflow-auto max-h-48">
             <strong>DEBUG:</strong> id={id} | owner={product.owner} | price={product.price}
@@ -143,7 +118,7 @@ export default function ProductDetail() {
         )}
 
         <h1 className="text-4xl font-serif mb-6 text-center">
-          {product.title || "Untitled Product"}
+          {product.title}
         </h1>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -151,7 +126,7 @@ export default function ProductDetail() {
             {product.image ? (
               <img
                 src={product.image}
-                alt={product.title || "Product"}
+                alt={product.title}
                 className="w-full h-96 object-cover rounded-xl"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = "none";
@@ -172,9 +147,7 @@ export default function ProductDetail() {
 
             <div>
               <h3 className="text-zinc-400 text-sm mb-1">Description</h3>
-              <p className="text-zinc-300">
-                {product.description || "No description available"}
-              </p>
+              <p className="text-zinc-300">{product.description}</p>
             </div>
 
             {product.story && (
