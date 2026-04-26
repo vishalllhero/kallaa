@@ -11,13 +11,9 @@ export type Product = {
   owner: string;
 };
 
-// ✅ CACHE
 export const productCache = new Map<string, Product>();
 
 export default function ProductDetail() {
-  console.log("🔥 ProductDetail ACTIVE");
-  console.log("API:", productApi);
-
   const params = useParams<{ id?: string }>();
   const id = params?.id;
 
@@ -28,9 +24,12 @@ export default function ProductDetail() {
   useEffect(() => {
     if (!id) return;
 
+    // Phase 8: Anti-crash guard
     if (!productApi || typeof productApi.getById !== "function") {
-      console.error("❌ productApi.getById is not a function!", productApi);
-      setError("System Error: API module is missing");
+      if (import.meta.env.DEV) {
+        console.error("❌ productApi.getById is not a function", productApi);
+      }
+      setError("API not available");
       setLoading(false);
       return;
     }
@@ -40,24 +39,28 @@ export default function ProductDetail() {
         setLoading(true);
         setError(null);
 
-        // ✅ CACHE FIRST
+        // Phase 5: Cache-first
         if (productCache.has(id)) {
-          console.log("⚡ CACHE HIT");
+          if (import.meta.env.DEV) console.log("⚡ CACHE HIT:", id);
           setProduct(productCache.get(id)!);
           setLoading(false);
           return;
         }
 
-        console.log("FETCH START");
+        if (import.meta.env.DEV) console.log("FETCH START:", id);
 
+        // Phase 1: All API variables scoped inside this function
         const res = await productApi.getById(id);
-        console.log("RAW:", res);
+        if (import.meta.env.DEV) console.log("RAW:", res);
 
-        // api.ts destructures { data } from axios, so res IS the payload
+        // Phase 5: Normalize — api.ts already destructures { data } from axios
         const data = res?.product ?? res ?? null;
-        console.log("FINAL:", data);
+        if (import.meta.env.DEV) console.log("FINAL:", data);
 
-        if (!data || (typeof data === "object" && Object.keys(data).length === 0)) {
+        if (
+          !data ||
+          (typeof data === "object" && Object.keys(data).length === 0)
+        ) {
           setError("Product not found");
           return;
         }
@@ -65,19 +68,21 @@ export default function ProductDetail() {
         const formatted: Product = {
           title: data.title ?? data.name ?? "Untitled",
           image: data.image ?? data.imageUrl ?? data.images?.[0] ?? "",
-          price: data.price ?? 0,
+          price: Number(data.price) || 0,
           description: data.description ?? "",
           story: data.story ?? "",
           owner: data.owner ?? "Available",
         };
 
-        console.log("FORMATTED:", formatted);
+        if (import.meta.env.DEV) console.log("FORMATTED:", formatted);
+
         productCache.set(id, formatted);
         setProduct(formatted);
       } catch (err) {
-        console.error("❌ Fetch failed:", err);
+        if (import.meta.env.DEV) console.error("❌ Fetch failed:", err);
         setError("Failed to load product");
       } finally {
+        // Phase 4: Guaranteed — UI never hangs
         setLoading(false);
       }
     };
@@ -85,16 +90,16 @@ export default function ProductDetail() {
     fetchData();
   }, [id]);
 
-  // ✅ ROUTE NOT READY
+  // Phase 3: Strict render pipeline — no invalid state reaches main UI
+
   if (!id) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="animate-pulse text-zinc-400">Loading route...</p>
+        <p className="animate-pulse text-zinc-400">Resolving route...</p>
       </div>
     );
   }
 
-  // ✅ LOADING
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -103,16 +108,17 @@ export default function ProductDetail() {
     );
   }
 
-  // ✅ ERROR
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-red-400">{error}</p>
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-2">{error}</p>
+          <p className="text-zinc-500 text-sm">Please try again later</p>
+        </div>
       </div>
     );
   }
 
-  // ✅ NO PRODUCT — safe fallback
   if (!product) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -121,14 +127,17 @@ export default function ProductDetail() {
     );
   }
 
+  // Phase 9: Safe derived state — guarded before main UI
   const isAvailable = product.owner === "Available";
+  const displayPrice = typeof product.price === "number"
+    ? product.price.toLocaleString()
+    : "0";
 
-  // ✅ MAIN UI
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
 
-        {/* DEBUG RENDER — remove after confirming data flows */}
+        {/* Phase 6: DEV debug panel — stripped in production */}
         {import.meta.env.DEV && (
           <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 mb-8 font-mono text-xs text-green-400 overflow-auto max-h-48">
             <strong>DEBUG:</strong> id={id} | owner={product.owner} | price={product.price}
@@ -149,7 +158,7 @@ export default function ProductDetail() {
                 className="w-full h-96 object-cover rounded-xl"
               />
             ) : (
-              <div className="w-full h-96 bg-zinc-900 flex items-center justify-center rounded-xl">
+              <div className="w-full h-96 bg-zinc-900 flex items-center justify-center rounded-xl text-zinc-500">
                 No Image
               </div>
             )}
@@ -158,9 +167,7 @@ export default function ProductDetail() {
           <div className="space-y-6">
             <div>
               <h3 className="text-zinc-400 text-sm mb-1">Price</h3>
-              <p className="text-3xl text-yellow-400">
-                ₹{product.price.toLocaleString()}
-              </p>
+              <p className="text-3xl text-yellow-400">₹{displayPrice}</p>
             </div>
 
             {product.description && (
