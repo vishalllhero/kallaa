@@ -7,7 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import { useAuth } from "./_core/hooks/useAuth";
-import { authApi } from "./api";
+import { authApi } from "@/api";
 
 // Pages
 import Home from "./pages/Home";

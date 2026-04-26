@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
-import api, { authApi } from "../api";
+import api, { authApi } from "@/api";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
