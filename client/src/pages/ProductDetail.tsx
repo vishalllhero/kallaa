@@ -2,9 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { productApi } from "@/api";
 
-console.log("🔥 ProductDetail ACTIVE");
-console.log("API:", productApi);
-
 export type Product = {
   title: string;
   image: string;
@@ -18,17 +15,15 @@ export type Product = {
 export const productCache = new Map<string, Product>();
 
 export default function ProductDetail() {
+  console.log("🔥 ProductDetail ACTIVE");
+  console.log("API:", productApi);
+
   const params = useParams<{ id?: string }>();
   const id = params?.id;
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  console.log("ID:", id);
-  console.log("PRODUCT:", product);
-  console.log("LOADING:", loading);
-  console.log("ERROR:", error);
 
   useEffect(() => {
     if (!id) return;
@@ -56,11 +51,11 @@ export default function ProductDetail() {
         console.log("FETCH START");
 
         const res = await productApi.getById(id);
-        console.log("API RESPONSE:", res);
+        console.log("RAW:", res);
 
-        // api.ts already destructures { data } from axios, so res IS the data
+        // api.ts destructures { data } from axios, so res IS the payload
         const data = res?.product ?? res ?? null;
-        console.log("DATA:", data);
+        console.log("FINAL:", data);
 
         if (!data || (typeof data === "object" && Object.keys(data).length === 0)) {
           setError("Product not found");
@@ -76,6 +71,7 @@ export default function ProductDetail() {
           owner: data.owner ?? "Available",
         };
 
+        console.log("FORMATTED:", formatted);
         productCache.set(id, formatted);
         setProduct(formatted);
       } catch (err) {
@@ -116,7 +112,7 @@ export default function ProductDetail() {
     );
   }
 
-  // ✅ NO PRODUCT
+  // ✅ NO PRODUCT — safe fallback
   if (!product) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -131,6 +127,15 @@ export default function ProductDetail() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
+
+        {/* DEBUG RENDER — remove after confirming data flows */}
+        {import.meta.env.DEV && (
+          <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 mb-8 font-mono text-xs text-green-400 overflow-auto max-h-48">
+            <strong>DEBUG:</strong> id={id} | owner={product.owner} | price={product.price}
+            <pre className="mt-2 text-zinc-400">{JSON.stringify(product, null, 2)}</pre>
+          </div>
+        )}
+
         <h1 className="text-4xl font-serif mb-6 text-center">
           {product.title}
         </h1>
