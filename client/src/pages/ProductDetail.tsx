@@ -30,7 +30,6 @@ export default function ProductDetail() {
         setLoading(true);
         setError(null);
 
-        // Cache-first
         if (productCache.has(id)) {
           if (import.meta.env.DEV) console.log("⚡ CACHE HIT:", id);
           setProduct(productCache.get(id)!);
@@ -43,7 +42,6 @@ export default function ProductDetail() {
         const res = await productApi.getById(id);
         if (import.meta.env.DEV) console.log("RAW:", res);
 
-        // Centralized normalization — handles any response shape
         const formatted = normalizeProduct(res);
         if (import.meta.env.DEV) console.log("NORMALIZED PRODUCT:", formatted);
 
@@ -64,111 +62,115 @@ export default function ProductDetail() {
     fetchData();
   }, [id]);
 
-  // ── Render pipeline ──
-
+  // ── ROUTE NOT READY ──
   if (!id) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="animate-pulse text-zinc-400">Resolving route...</p>
+      <div style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p>Resolving route...</p>
       </div>
     );
   }
 
+  // ── LOADING ──
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="animate-pulse text-zinc-300">Loading product...</p>
+      <div style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p>Loading product...</p>
       </div>
     );
   }
 
+  // ── ERROR ──
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 text-lg mb-2">{error}</p>
-          <p className="text-zinc-500 text-sm">Please try again later</p>
-        </div>
+      <div style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#f87171" }}>{error}</p>
       </div>
     );
   }
 
+  // ── NO PRODUCT ──
   if (!product) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-zinc-400">Product not found</p>
+      <div style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p>Product not found</p>
       </div>
     );
   }
 
-  // Safe derived values
+  // ── MAIN UI — FORCED VISIBLE, NO CONDITIONAL HIDING ──
   const isAvailable = product.owner === "Available";
-  const displayPrice = product.price.toLocaleString();
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <div style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", padding: 40 }}>
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
-        {/* DEV debug — stripped from production */}
+        {/* DEV DEBUG — always visible in dev */}
         {import.meta.env.DEV && (
-          <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 mb-8 font-mono text-xs text-green-400 overflow-auto max-h-48">
-            <strong>DEBUG:</strong> id={id} | owner={product.owner} | price={product.price}
-            <pre className="mt-2 text-zinc-400">{JSON.stringify(product, null, 2)}</pre>
-          </div>
+          <pre style={{ color: "lime", fontSize: 12, background: "#111", padding: 16, borderRadius: 8, marginBottom: 24, overflow: "auto", maxHeight: 200 }}>
+            {JSON.stringify(product, null, 2)}
+          </pre>
         )}
 
-        <h1 className="text-4xl font-serif mb-6 text-center">
+        {/* TITLE — always visible */}
+        <h1 style={{ fontSize: 36, fontFamily: "serif", textAlign: "center", marginBottom: 32 }}>
           {product.title}
         </h1>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div>
-            {product.image ? (
-              <img
-                src={product.image}
-                alt={product.title}
-                className="w-full h-96 object-cover rounded-xl"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-            ) : (
-              <div className="w-full h-96 bg-zinc-900 flex items-center justify-center rounded-xl text-zinc-500">
-                No Image Available
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-zinc-400 text-sm mb-1">Price</h3>
-              <p className="text-3xl text-yellow-400">₹{displayPrice}</p>
-            </div>
-
-            <div>
-              <h3 className="text-zinc-400 text-sm mb-1">Description</h3>
-              <p className="text-zinc-300">{product.description}</p>
-            </div>
-
-            {product.story && (
-              <div>
-                <h3 className="text-zinc-400 text-sm mb-1">Story</h3>
-                <p className="italic text-zinc-400">{product.story}</p>
-              </div>
-            )}
-
-            <div>
-              <h3 className="text-zinc-400 text-sm mb-1">Owner</h3>
-              <p>{isAvailable ? "Available" : product.owner}</p>
-            </div>
-
-            {isAvailable && (
-              <button className="w-full bg-yellow-400 text-black py-4 rounded-xl font-bold hover:bg-yellow-300 transition-colors">
-                Acquire This Masterpiece
-              </button>
-            )}
-          </div>
+        {/* IMAGE — always visible with fallback */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <img
+            src={product.image || "https://placehold.co/600x400/1a1a1a/666?text=No+Image"}
+            alt={product.title}
+            style={{ width: "100%", maxWidth: 500, height: "auto", borderRadius: 12, objectFit: "cover" }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "https://placehold.co/600x400/1a1a1a/666?text=No+Image";
+            }}
+          />
         </div>
+
+        {/* PRICE — always visible */}
+        <p style={{ fontSize: 28, color: "#facc15", marginBottom: 16 }}>
+          ₹{product.price.toLocaleString()}
+        </p>
+
+        {/* DESCRIPTION — always visible with fallback */}
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ color: "#a1a1aa", fontSize: 14, marginBottom: 4 }}>Description</h3>
+          <p style={{ color: "#d4d4d8", lineHeight: 1.6 }}>{product.description}</p>
+        </div>
+
+        {/* STORY — always visible with fallback */}
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ color: "#a1a1aa", fontSize: 14, marginBottom: 4 }}>Story</h3>
+          <p style={{ color: "#a1a1aa", fontStyle: "italic", lineHeight: 1.6 }}>
+            {product.story || "No story yet"}
+          </p>
+        </div>
+
+        {/* OWNER — always visible */}
+        <div style={{ marginBottom: 24 }}>
+          <h3 style={{ color: "#a1a1aa", fontSize: 14, marginBottom: 4 }}>Owner</h3>
+          <p>{isAvailable ? "Available" : product.owner}</p>
+        </div>
+
+        {/* CTA — always visible when available */}
+        {isAvailable && (
+          <button style={{
+            width: "100%",
+            maxWidth: 500,
+            backgroundColor: "#facc15",
+            color: "#000",
+            padding: "16px 24px",
+            borderRadius: 12,
+            fontWeight: "bold",
+            fontSize: 16,
+            border: "none",
+            cursor: "pointer",
+          }}>
+            Acquire This Masterpiece
+          </button>
+        )}
       </div>
     </div>
   );
