@@ -11,10 +11,12 @@ import {
   Gem,
   Heart,
   X,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { productApi } from "@/api";
 import { toast } from "sonner";
+import { formatPrice } from "@/utils/formatPrice";
 import ScarcityBadge from "./ScarcityBadge";
 import OwnershipMessage from "./OwnershipMessage";
 import StorySection from "./StorySection";
@@ -34,6 +36,7 @@ export default function ProductInfo({
   const [ownerName, setOwnerName] = useState(user?.name || "");
   const [ownerStory, setOwnerStory] = useState("");
   const [isCollecting, setIsCollecting] = useState(false);
+  const isSold = product.owner !== "Available";
 
   const handleCollectPiece = async () => {
     if (!user) {
@@ -173,8 +176,8 @@ export default function ProductInfo({
           transition={{ duration: 0.4, delay: 0.8 }}
         >
           <div className="flex items-baseline gap-4">
-            <span className="text-4xl md:text-5xl font-serif text-[#d4af37] font-light">
-              ${product.price?.toLocaleString()}
+            <span className={`text-4xl md:text-5xl font-serif font-light ${isSold ? "text-zinc-400" : "text-[#d4af37]"}`}>
+              {isSold ? "COLLECTED" : formatPrice(3000)}
             </span>
             <span className="text-zinc-500 text-sm font-medium uppercase tracking-wider">
               Investment Value
@@ -587,7 +590,7 @@ export default function ProductInfo({
                 ) : (
                   <>
                     <Heart size={20} />
-                    Collect This Piece - ${product.price?.toLocaleString()}
+                    Collect This Piece - {formatPrice(3000)}
                   </>
                 )}
               </button>

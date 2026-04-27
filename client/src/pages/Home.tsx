@@ -8,6 +8,7 @@ import ProductCard from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/Skeleton";
 import { getProductImage, debugImageInfo } from "@/utils/image";
 import { safeMap } from "@/utils/safeMap";
+import { formatPrice } from "@/utils/formatPrice";
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = React.useState<any[]>([]);
@@ -376,9 +377,13 @@ export default function Home() {
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-6 flex flex-col justify-end">
-                          <span className="text-white font-serif text-xl">
-                            ${parseFloat(p.price).toLocaleString()}
-                          </span>
+                          {p.isSold === 1 ? (
+                            <span className="text-gray-500 text-sm">COLLECTED</span>
+                          ) : (
+                            <span className="text-gold font-serif text-xl">
+                              {formatPrice(3000)}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <h3 className="text-zinc-400 text-lg font-medium group-hover:text-white transition-colors">

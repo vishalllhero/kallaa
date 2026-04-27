@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "wouter";
 import { productApi } from "@/api";
 import { normalizeProduct, type Product } from "@/utils/normalizeProduct";
+import { formatPrice } from "@/utils/formatPrice";
 
 export { type Product } from "@/utils/normalizeProduct";
 export const productCache = new Map<string, Product>();
@@ -119,7 +120,7 @@ export default function ProductDetail() {
     );
   }
 
-  const isAvailable = product.owner === "Available";
+  const isSold = product.owner !== "Available";
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
@@ -185,24 +186,30 @@ export default function ProductDetail() {
               </h1>
 
               {/* Price */}
-              <p className="text-3xl sm:text-4xl text-yellow-400 font-extralight tracking-tight">
-                ₹{product.price.toLocaleString()}
-              </p>
-
-              {/* Ownership badge */}
-              {isAvailable ? (
-                <span className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-xs font-medium tracking-[0.2em] uppercase bg-emerald-950/30 text-emerald-400 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.08)]">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                  </span>
-                  Available for Acquisition
-                </span>
+              {!isSold ? (
+                <p className="text-yellow-400 text-2xl font-light">
+                  {formatPrice(3000)}
+                </p>
               ) : (
-                <span className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-xs font-medium tracking-[0.15em] uppercase bg-zinc-900/60 text-zinc-500 border border-zinc-800">
-                  <span className="w-2 h-2 rounded-full bg-zinc-600" />
-                  Collected by {product.owner}
-                </span>
+                <p className="text-gray-400 text-lg tracking-wide">
+                  COLLECTED
+                </p>
+              )}
+
+              {/* Status badge */}
+              <span className={`px-4 py-1 rounded-full text-sm tracking-wide ${
+                isSold
+                  ? "bg-gray-800 text-gray-400"
+                  : "bg-green-900 text-green-400 animate-pulse"
+              }`}>
+                {isSold ? "COLLECTED" : "AVAILABLE"}
+              </span>
+
+              {/* Ownership display for sold products */}
+              {isSold && (
+                <p className="text-gray-400 text-sm">
+                  Collected by {product.owner || 'Anonymous'}
+                </p>
               )}
 
               {/* Divider */}
@@ -236,13 +243,13 @@ export default function ProductDetail() {
               </div>
 
               {/* CTA */}
-              {isAvailable && (
-                <button className="group relative w-full py-5 rounded-xl font-semibold text-sm uppercase tracking-[0.25em] overflow-hidden transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]">
-                  {/* Button glow */}
-                  <div className="absolute inset-0 bg-yellow-400 transition-all duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute -inset-1 bg-yellow-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                  <span className="relative text-black">Acquire This Masterpiece</span>
+              {!isSold ? (
+                <button className="bg-yellow-500 hover:scale-105 transition-all shadow-lg hover:shadow-yellow-500/40">
+                  ACQUIRE THIS MASTERPIECE
+                </button>
+              ) : (
+                <button className="bg-gray-700 cursor-not-allowed opacity-60">
+                  ALREADY COLLECTED
                 </button>
               )}
 
