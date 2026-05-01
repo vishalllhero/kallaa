@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminApi, productApi } from "@/api";
 import { useAuth } from "@/hooks/useAuth";
+import { formatPrice } from "@/utils/formatPrice";
 import {
   Plus,
   Upload,
@@ -476,7 +477,7 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-2">
-                      Price ($)
+                      Price (₹)
                     </label>
                     <input
                       type="number"
@@ -700,7 +701,7 @@ export default function AdminDashboard() {
                               {product.title || product.name}
                             </h3>
                             <p className="text-[#d4af37] text-sm font-medium">
-                              ${product.price?.toLocaleString()}
+                              {formatPrice(product.price)}
                             </p>
                           </div>
                           <div>
@@ -708,7 +709,7 @@ export default function AdminDashboard() {
                               {product.title}
                             </h3>
                             <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                              ${product.price}
+                              {formatPrice(product.price)}
                             </p>
                           </div>
                         </div>

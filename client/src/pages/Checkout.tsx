@@ -5,6 +5,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { orderApi } from "@/api";
 import { toast } from "sonner";
 import { CreditCard, Truck, Shield } from "lucide-react";
+import { formatPrice } from "@/utils/formatPrice";
 
 export default function Checkout() {
   const { user } = useAuth();
@@ -125,7 +126,7 @@ export default function Checkout() {
                     ) : (
                       <>
                         <CreditCard size={20} />
-                        Place Order - ${total.toLocaleString()}
+                        Place Order - {formatPrice(total)}
                       </>
                     )}
                   </button>
@@ -163,7 +164,7 @@ export default function Checkout() {
                         </p>
                       </div>
                       <span className="text-white font-medium">
-                        ${(item.product.price * item.quantity).toLocaleString()}
+                        {formatPrice(item.product.price * item.quantity)}
                       </span>
                     </div>
                   ))}
@@ -173,7 +174,7 @@ export default function Checkout() {
                 <div className="border-t border-white/10 pt-4 space-y-2">
                   <div className="flex justify-between text-zinc-400">
                     <span>Subtotal</span>
-                    <span>${total.toLocaleString()}</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                   <div className="flex justify-between text-zinc-400">
                     <span>Shipping</span>
@@ -181,7 +182,7 @@ export default function Checkout() {
                   </div>
                   <div className="flex justify-between text-white font-bold text-lg">
                     <span>Total</span>
-                    <span>${total.toLocaleString()}</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                 </div>
 

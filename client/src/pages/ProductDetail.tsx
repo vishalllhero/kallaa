@@ -188,7 +188,7 @@ export default function ProductDetail() {
               {/* Price */}
               {!isSold ? (
                 <p className="text-yellow-400 text-2xl font-light">
-                  {formatPrice(3000)}
+                  {formatPrice(product.price)}
                 </p>
               ) : (
                 <p className="text-gray-400 text-lg tracking-wide">

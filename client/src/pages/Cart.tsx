@@ -4,6 +4,7 @@ import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import { getImageUrl } from "@/utils/image";
 import { toast } from "sonner";
+import { formatPrice } from "@/utils/formatPrice";
 
 export default function Cart() {
   const { items, updateQuantity, removeFromCart, total, itemCount } = useCart();
@@ -73,7 +74,7 @@ export default function Cart() {
                     {item.product.title}
                   </h3>
                   <p className="text-zinc-400 text-sm">
-                    ${item.product.price.toLocaleString()}
+                    {formatPrice(item.product.price)}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -121,7 +122,7 @@ export default function Cart() {
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between text-zinc-400">
                   <span>Subtotal</span>
-                  <span>${total.toLocaleString()}</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
                 <div className="flex justify-between text-zinc-400">
                   <span>Shipping</span>
@@ -129,7 +130,7 @@ export default function Cart() {
                 </div>
                 <div className="border-t border-white/10 pt-4 flex justify-between text-white font-bold">
                   <span>Total</span>
-                  <span>${total.toLocaleString()}</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
               </div>
               <Link

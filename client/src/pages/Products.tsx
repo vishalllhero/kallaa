@@ -103,7 +103,7 @@ export default function Products() {
 
         {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {(Array.isArray([1, 2, 3, 4, 5, 6]) ? [1, 2, 3, 4, 5, 6] : []).map(
               i => (
                 <div key={i} className="space-y-4">
@@ -132,7 +132,7 @@ export default function Products() {
         ) : (
           <motion.div
             layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {(Array.isArray(filteredProducts) ? filteredProducts : []).map(
               (product, idx) => (

@@ -177,7 +177,7 @@ export default function ProductInfo({
         >
           <div className="flex items-baseline gap-4">
             <span className={`text-4xl md:text-5xl font-serif font-light ${isSold ? "text-zinc-400" : "text-[#d4af37]"}`}>
-              {isSold ? "COLLECTED" : formatPrice(3000)}
+              {isSold ? "COLLECTED" : formatPrice(product.price)}
             </span>
             <span className="text-zinc-500 text-sm font-medium uppercase tracking-wider">
               Investment Value
@@ -590,7 +590,7 @@ export default function ProductInfo({
                 ) : (
                   <>
                     <Heart size={20} />
-                    Collect This Piece - {formatPrice(3000)}
+                    Collect This Piece - {formatPrice(product.price)}
                   </>
                 )}
               </button>

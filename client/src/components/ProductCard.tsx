@@ -91,7 +91,7 @@ export default function ProductCard({
               <div className="flex items-center justify-between">
                 {!isSold ? (
                   <p className="text-gold font-light">
-                    {formatPrice(3000)}
+                    {formatPrice(product.price)}
                   </p>
                 ) : (
                   <p className="text-gray-500 text-sm">

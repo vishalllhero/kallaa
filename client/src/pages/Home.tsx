@@ -380,9 +380,9 @@ export default function Home() {
                           {p.isSold === 1 ? (
                             <span className="text-gray-500 text-sm">COLLECTED</span>
                           ) : (
-                            <span className="text-gold font-serif text-xl">
-                              {formatPrice(3000)}
-                            </span>
+                             <span className="text-gold font-serif text-xl">
+                               {formatPrice(p.price)}
+                             </span>
                           )}
                         </div>
                       </div>
