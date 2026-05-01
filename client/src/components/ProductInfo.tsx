@@ -176,7 +176,7 @@ export default function ProductInfo({
           transition={{ duration: 0.4, delay: 0.8 }}
         >
           <div className="flex items-baseline gap-4">
-            <span className={`text-4xl md:text-5xl font-serif font-light ${isSold ? "text-zinc-400" : "text-[#d4af37]"}`}>
+            <span className={`text-4xl sm:text-4xl md:text-5xl font-serif font-light ${isSold ? "text-zinc-400" : "text-[#d4af37]"}`}>
               {isSold ? "COLLECTED" : formatPrice(product.price)}
             </span>
             <span className="text-zinc-500 text-sm font-medium uppercase tracking-wider">

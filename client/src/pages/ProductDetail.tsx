@@ -123,7 +123,7 @@ export default function ProductDetail() {
   const isSold = product.owner !== "Available";
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
 
       {/* ── Cinematic Content ── */}
       <div
@@ -134,7 +134,7 @@ export default function ProductDetail() {
         }}
       >
         <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20">
-          <div className="grid lg:grid-cols-2 gap-14 lg:gap-24 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-start">
 
             {/* ════════════ LEFT: HERO IMAGE ════════════ */}
             <div className="relative group cursor-crosshair">

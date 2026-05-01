@@ -119,6 +119,9 @@ export default function Products() {
         ) : !Array.isArray(filteredProducts) ||
           filteredProducts.length === 0 ? (
           <div className="text-center py-20">
+            {products.length === 0 && (
+              <p className="text-center text-gray-400">No pieces available</p>
+            )}
             <div className="text-6xl mb-8">🎨</div>
             <h3 className="text-2xl font-serif text-zinc-400 mb-4">
               The archive is empty

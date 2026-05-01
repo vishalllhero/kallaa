@@ -35,10 +35,10 @@ export default function ProductCard({
   return (
     <motion.div
       className={`group ${className}`}
-      whileHover={{ y: isSold ? 0 : -5 }}
+      whileHover={{ y: isSold ? 0 : -5, scale: isSold ? 1 : 1.05 }}
       transition={{ duration: 0.3 }}
     >
-      <Link href={`/product/${product.id}`} className="block">
+      <Link href={`/product/${product.id}`} className="block w-full">
         <div
           className={`relative aspect-[4/5] overflow-hidden rounded-2xl mb-6 bg-zinc-900 border transition-all duration-500 ${
             isSold
@@ -49,7 +49,7 @@ export default function ProductCard({
           <ImageWithFallback
             src={image}
             alt={title}
-            className={`w-full h-full object-cover transition-all duration-700 ${
+            className={`w-full h-auto object-cover transition-all duration-700 ${
               isSold ? "grayscale" : "group-hover:scale-105"
             }`}
           />

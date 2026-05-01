@@ -359,7 +359,7 @@ export default function Home() {
                     viewport={{ once: true }}
                     key={p.id || p._id}
                   >
-                    <Link href={`/product/${p.id}`} className="group block">
+                    <Link href={`/product/${p.id}`} className="group block w-full hover:scale-105 transition-transform duration-200">
                       <div className="relative aspect-[3/4] overflow-hidden rounded-2xl mb-6 bg-zinc-900 border border-white/5">
                         <ImageWithFallback
                           src={
@@ -367,7 +367,7 @@ export default function Home() {
                             "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600"
                           }
                           alt={p.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         {p.isSold === 1 && (
                           <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
