@@ -145,21 +145,7 @@ export default function Products() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
                   key={product.id || product._id}
-                  className="relative"
                 >
-                  {/* Status Tag */}
-                  <div className="absolute top-6 left-6 z-10">
-                    {product.isSold ? (
-                      <div className="px-4 py-1 bg-white/10 backdrop-blur-md border border-white/10 text-white text-[8px] font-bold uppercase tracking-[0.3em]">
-                        Collected
-                      </div>
-                    ) : (
-                      <div className="px-4 py-1 bg-yellow-400 text-black text-[8px] font-bold uppercase tracking-[0.3em] shadow-[0_0_20px_rgba(212,175,55,0.4)]">
-                        New Release
-                      </div>
-                    )}
-                  </div>
-
                   <ProductCard product={product} />
                 </motion.div>
               )

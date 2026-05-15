@@ -600,3 +600,41 @@ body {
     @apply px-6 py-3 text-xs;
   }
 }
+
+/* ── Global overflow guard — prevents horizontal scroll on mobile ── */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* ── Missing utility: text-gold ── */
+.text-gold {
+  color: #d4af37;
+}
+
+/* ── line-clamp utilities (fallback for older Tailwind builds) ── */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── no-scrollbar utility ── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

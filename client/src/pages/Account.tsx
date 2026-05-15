@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { safeMap } from "@/utils/safeMap";
 import { orderApi } from "@/api";
+import { formatPrice } from "@/utils/formatPrice";
 
 export default function Account() {
   const { user, logout } = useAuth();
@@ -145,7 +146,10 @@ export default function Account() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-400">
-                      Total: ${order.totalPrice || order.total || "N/A"}
+                      Total:{" "}
+                      {order.totalPrice || order.total
+                        ? formatPrice(order.totalPrice ?? order.total)
+                        : "N/A"}
                     </p>
                   </div>
                 ))

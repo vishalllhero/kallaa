@@ -10,7 +10,7 @@ import {
   Package,
   Users,
   ShoppingCart,
-  DollarSign,
+  IndianRupee,
   Eye,
   EyeOff,
   Clock,

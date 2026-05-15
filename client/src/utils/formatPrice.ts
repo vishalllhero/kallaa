@@ -1,8 +1,15 @@
-export const formatPrice = (price: number | null | undefined) => {
-  if (!price && price !== 0) return "₹0";
+/**
+ * Central currency formatter — always outputs ₹ (Indian Rupee).
+ * Use this everywhere prices are displayed. Never hardcode "$".
+ */
+export const formatPrice = (price: number | null | undefined): string => {
+  if (price === null || price === undefined || isNaN(Number(price))) return "₹0";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(Number(price));
 };
+
+/** Shorthand: same as formatPrice */
+export const rupee = formatPrice;

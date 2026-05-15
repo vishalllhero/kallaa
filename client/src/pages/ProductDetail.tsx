@@ -3,33 +3,36 @@ import { useParams } from "wouter";
 import { productApi } from "@/api";
 import { normalizeProduct, type Product } from "@/utils/normalizeProduct";
 import { formatPrice } from "@/utils/formatPrice";
+import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 
 export { type Product } from "@/utils/normalizeProduct";
 export const productCache = new Map<string, Product>();
 
-/* ── Skeleton loader matching final layout ── */
+/* ── Skeleton ── */
 function DetailSkeleton() {
   return (
     <div className="min-h-screen bg-black">
-      <div className="max-w-7xl mx-auto px-6 py-16 lg:py-24">
-        <div className="grid lg:grid-cols-2 gap-14 lg:gap-24 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 lg:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-24 items-start">
           <div className="aspect-[4/5] rounded-2xl bg-zinc-900/40 animate-pulse" />
-          <div className="space-y-10 py-6 animate-pulse">
+          <div className="space-y-8 py-4 animate-pulse">
             <div className="h-3 w-28 bg-zinc-800/50 rounded" />
             <div className="space-y-3">
-              <div className="h-14 w-4/5 bg-zinc-800/40 rounded-lg" />
-              <div className="h-14 w-3/5 bg-zinc-800/30 rounded-lg" />
+              <div className="h-12 w-4/5 bg-zinc-800/40 rounded-lg" />
+              <div className="h-12 w-3/5 bg-zinc-800/30 rounded-lg" />
             </div>
-            <div className="h-10 w-48 bg-zinc-800/30 rounded" />
-            <div className="h-9 w-36 bg-zinc-800/20 rounded-full" />
-            <div className="w-12 h-px bg-zinc-800" />
+            <div className="h-8 w-40 bg-zinc-800/30 rounded" />
+            <div className="h-8 w-32 bg-zinc-800/20 rounded-full" />
+            <div className="w-10 h-px bg-zinc-800" />
             <div className="space-y-3">
               <div className="h-3 w-full bg-zinc-800/20 rounded" />
               <div className="h-3 w-5/6 bg-zinc-800/15 rounded" />
               <div className="h-3 w-3/4 bg-zinc-800/10 rounded" />
             </div>
-            <div className="h-36 w-full bg-zinc-900/30 rounded-xl" />
-            <div className="h-16 w-full bg-zinc-800/15 rounded-xl" />
+            <div className="h-32 w-full bg-zinc-900/30 rounded-xl" />
+            <div className="h-14 w-full bg-zinc-800/15 rounded-xl" />
           </div>
         </div>
       </div>
@@ -47,6 +50,8 @@ export default function ProductDetail() {
   const [imgReady, setImgReady] = useState(false);
   const [visible, setVisible] = useState(false);
   const mounted = useRef(true);
+
+  const { addToCart } = useCart();
 
   useEffect(() => {
     mounted.current = true;
@@ -94,12 +99,8 @@ export default function ProductDetail() {
     fetchData();
   }, [id]);
 
-  /* ── Skeleton while loading ── */
-  if (loading || (!product && !error)) {
-    return <DetailSkeleton />;
-  }
+  if (loading || (!product && !error)) return <DetailSkeleton />;
 
-  /* ── Error ── */
   if (error) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-center px-6">
@@ -111,7 +112,6 @@ export default function ProductDetail() {
     );
   }
 
-  /* ── Fallback guard ── */
   if (!product) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -120,12 +120,28 @@ export default function ProductDetail() {
     );
   }
 
-  const isSold = product.owner !== "Available";
+  const isSold =
+    product.isSold === true ||
+    (product as any).isSold === 1 ||
+    (product.owner !== undefined && product.owner !== "Available");
+
+  /* Build the best available description text */
+  const descriptionText =
+    product.description?.trim() ||
+    (product.story ? product.story.substring(0, 200) + "…" : null) ||
+    "A singular work of art — meticulously crafted, never to be repeated.";
+
+  const storyText =
+    product.story?.trim() ||
+    "Every masterpiece carries an untold story. This one awaits its narrator — perhaps you.";
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    toast.success(`${product.title} added to your collection`);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
-
-      {/* ── Cinematic Content ── */}
       <div
         className="transition-all duration-700 ease-out"
         style={{
@@ -133,12 +149,12 @@ export default function ProductDetail() {
           transform: visible ? "translateY(0)" : "translateY(20px)",
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-start">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-24 items-start">
 
             {/* ════════════ LEFT: HERO IMAGE ════════════ */}
-            <div className="relative group cursor-crosshair">
-              {/* Ambient glow behind image */}
+            <div className="relative group cursor-crosshair w-full">
+              {/* Ambient glow */}
               <div className="absolute -inset-4 bg-gradient-to-br from-yellow-500/[0.03] via-transparent to-emerald-500/[0.02] rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
 
               <div className="relative overflow-hidden rounded-2xl bg-zinc-950 shadow-2xl shadow-black/50">
@@ -165,15 +181,25 @@ export default function ProductDetail() {
                 {!imgReady && (
                   <div className="absolute inset-0 bg-zinc-950 animate-pulse" />
                 )}
+
+                {/* Sold overlay on image */}
+                {isSold && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                    <div className="text-center">
+                      <p className="text-white/60 text-xs uppercase tracking-widest mb-1">Collected by</p>
+                      <p className="text-white font-serif text-xl">{product.owner || "Anonymous"}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <p className="mt-5 text-center text-zinc-700 text-[10px] tracking-[0.5em] uppercase select-none">
+              <p className="mt-4 text-center text-zinc-700 text-[10px] tracking-[0.5em] uppercase select-none">
                 One of One · Unrepeatable
               </p>
             </div>
 
             {/* ════════════ RIGHT: DETAILS ════════════ */}
-            <div className="lg:sticky lg:top-20 space-y-10 py-2">
+            <div className="lg:sticky lg:top-20 space-y-8 py-2">
 
               {/* Collection label */}
               <p className="text-zinc-600 text-[11px] tracking-[0.35em] uppercase font-medium">
@@ -181,34 +207,39 @@ export default function ProductDetail() {
               </p>
 
               {/* Title */}
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif leading-[1.05] tracking-tight text-white">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-serif leading-[1.05] tracking-tight text-white break-words">
                 {product.title}
               </h1>
 
-              {/* Price */}
+              {/* Price / Collected */}
               {!isSold ? (
                 <p className="text-yellow-400 text-2xl font-light">
                   {formatPrice(product.price)}
                 </p>
               ) : (
-                <p className="text-gray-400 text-lg tracking-wide">
-                  COLLECTED
+                <p className="text-gray-400 text-lg tracking-wide uppercase">
+                  Collected
                 </p>
               )}
 
               {/* Status badge */}
-              <span className={`px-4 py-1 rounded-full text-sm tracking-wide ${
-                isSold
-                  ? "bg-gray-800 text-gray-400"
-                  : "bg-green-900 text-green-400 animate-pulse"
-              }`}>
-                {isSold ? "COLLECTED" : "AVAILABLE"}
+              <span
+                className={`inline-block px-4 py-1.5 rounded-full text-xs tracking-widest font-semibold uppercase ${
+                  isSold
+                    ? "bg-gray-800 text-gray-400"
+                    : "bg-green-900/60 text-green-400 border border-green-500/20"
+                }`}
+              >
+                {isSold ? "COLLECTED" : "● AVAILABLE"}
               </span>
 
               {/* Ownership display for sold products */}
               {isSold && (
                 <p className="text-gray-400 text-sm">
-                  Collected by {product.owner || 'Anonymous'}
+                  Collected by{" "}
+                  <span className="text-white font-medium">
+                    {product.owner || "Anonymous"}
+                  </span>
                 </p>
               )}
 
@@ -220,11 +251,11 @@ export default function ProductDetail() {
 
               {/* Description */}
               <div>
-                <h3 className="text-zinc-600 text-[10px] tracking-[0.3em] uppercase mb-4 font-medium">
+                <h3 className="text-zinc-600 text-[10px] tracking-[0.3em] uppercase mb-3 font-medium">
                   About This Piece
                 </h3>
-                <p className="text-zinc-300 text-lg leading-relaxed font-light">
-                  {product.description || "No description available"}
+                <p className="text-zinc-300 text-base sm:text-lg leading-relaxed font-light">
+                  {descriptionText}
                 </p>
               </div>
 
@@ -232,28 +263,42 @@ export default function ProductDetail() {
               <div className="relative rounded-xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/90 via-zinc-900/60 to-transparent" />
                 <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-yellow-500/60 via-yellow-500/20 to-transparent" />
-                <div className="relative px-7 py-7">
-                  <h3 className="text-zinc-600 text-[10px] tracking-[0.3em] uppercase mb-4 font-medium">
+                <div className="relative px-6 py-6">
+                  <h3 className="text-zinc-600 text-[10px] tracking-[0.3em] uppercase mb-3 font-medium">
                     The Story
                   </h3>
-                  <p className="text-zinc-400 text-base leading-[1.8] italic font-light">
-                    {product.story || "Every masterpiece carries an untold story. This one awaits its narrator — perhaps you."}
+                  <p className="text-zinc-400 text-sm sm:text-base leading-[1.8] italic font-light">
+                    {storyText}
                   </p>
                 </div>
               </div>
 
               {/* CTA */}
               {!isSold ? (
-                <button className="bg-yellow-500 hover:scale-105 transition-all shadow-lg hover:shadow-yellow-500/40">
-                  ACQUIRE THIS MASTERPIECE
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full flex items-center justify-center gap-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-yellow-500/40 uppercase tracking-widest text-sm"
+                >
+                  <ShoppingCart size={18} />
+                  Acquire This Masterpiece
                 </button>
               ) : (
-                <button className="bg-gray-700 cursor-not-allowed opacity-60">
-                  ALREADY COLLECTED
+                <button
+                  disabled
+                  className="w-full flex items-center justify-center gap-3 bg-gray-700/50 text-gray-500 font-bold py-4 px-6 rounded-xl cursor-not-allowed uppercase tracking-widest text-sm"
+                >
+                  Already Collected
                 </button>
               )}
 
-              {/* Exclusivity psychology */}
+              {/* Price repeat (mobile friendly) */}
+              {!isSold && (
+                <p className="text-center text-zinc-500 text-sm">
+                  {formatPrice(product.price)} · Free Worldwide Shipping
+                </p>
+              )}
+
+              {/* Exclusivity note */}
               <p className="text-center text-zinc-700 text-[10px] tracking-[0.4em] uppercase leading-relaxed select-none">
                 This piece exists only once.<br />
                 It cannot be reproduced.
