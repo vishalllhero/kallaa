@@ -386,7 +386,9 @@ body {
     padding-right: 1rem;
   }
 
-  .flex {
+  /* NOTE: Removed global .flex override — it was collapsing flex containers
+     to zero height on mobile. Use .flex-safe only where intentionally needed. */
+  .flex-safe {
     min-height: 0;
     min-width: 0;
   }

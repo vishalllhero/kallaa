@@ -1,55 +1,14 @@
-import { useEffect, useState } from "react";
-import { Link } from "wouter";
-import { productApi } from "@/api";
-import { ShoppingBag, Star, Info, ArrowRight, Search } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import ImageWithFallback from "@/components/ImageWithFallback";
 import ProductCard from "@/components/ProductCard";
 import DebugImage from "@/components/DebugImage";
-import { getProductImage, debugImageInfo } from "@/utils/image";
-import { safeMap } from "@/utils/safeMap";
+import { useProducts } from "@/hooks/useProducts";
 
 export default function Products() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { products, loading, error } = useProducts();
   const [filter, setFilter] = useState<"all" | "available" | "collected">(
     "all"
   );
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await productApi.getAll().catch(() => ({ data: [] }));
-        console.log("API RESPONSE (Products):", response.data);
-
-        // Normalize: response.data is the direct result due to our api.ts interceptor,
-        // but we'll follow the requested normalization pattern for extra safety.
-        const data =
-          response?.data?.data ||
-          response?.data?.products ||
-          response?.data ||
-          [];
-        const productArray = Array.isArray(data) ? data : [];
-        setProducts(productArray);
-
-        // Debug image URLs in development
-        if (import.meta.env.DEV) {
-          console.log("[Products] Loaded products count:", productArray.length);
-          productArray.slice(0, 3).forEach((product: any, i: number) => {
-            debugImageInfo(product.images, `Product ${i + 1}: ${product.name}`);
-          });
-        }
-      } catch (err) {
-        console.error("Products fetch error:", err);
-        toast.error("Failed to load pieces");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
 
   const filteredProducts = (Array.isArray(products) ? products : []).filter(
     p => {
@@ -104,62 +63,72 @@ export default function Products() {
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(Array.isArray([1, 2, 3, 4, 5, 6]) ? [1, 2, 3, 4, 5, 6] : []).map(
-              i => (
-                <div key={i} className="space-y-4">
-                  <div className="aspect-[4/5] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
-                  </div>
-                  <div className="h-6 w-2/3 bg-zinc-900 animate-pulse rounded" />
-                  <div className="h-4 w-1/3 bg-zinc-900 animate-pulse rounded" />
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="space-y-4">
+                <div className="aspect-[4/5] bg-zinc-900 animate-pulse rounded-2xl relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
                 </div>
-              )
-            )}
+                <div className="h-6 w-2/3 bg-zinc-900 animate-pulse rounded" />
+                <div className="h-4 w-1/3 bg-zinc-900 animate-pulse rounded" />
+              </div>
+            ))}
           </div>
-        ) : !Array.isArray(filteredProducts) ||
-          filteredProducts.length === 0 ? (
+        ) : error ? (
+          <div className="text-center py-20 text-red-400">
+            <p>Failed to load archive: {error}</p>
+          </div>
+        ) : !Array.isArray(filteredProducts) || filteredProducts.length === 0 ? (
           <div className="text-center py-20">
-            {products.length === 0 && (
-              <p className="text-center text-gray-400">No pieces available</p>
+            {products.length === 0 ? (
+              <>
+                <div className="text-6xl mb-8">🎨</div>
+                <h3 className="text-2xl font-serif text-zinc-400 mb-4">
+                  The archive is empty
+                </h3>
+                <p className="text-zinc-600">
+                  New pieces will be added soon. Check back later.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="text-6xl mb-8">🔍</div>
+                <h3 className="text-2xl font-serif text-zinc-400 mb-4">
+                  No {filter} pieces found
+                </h3>
+                <p className="text-zinc-600">
+                  Try selecting a different category.
+                </p>
+              </>
             )}
-            <div className="text-6xl mb-8">🎨</div>
-            <h3 className="text-2xl font-serif text-zinc-400 mb-4">
-              The archive is empty
-            </h3>
-            <p className="text-zinc-600">
-              New pieces will be added soon. Check back later.
-            </p>
           </div>
-        ) : !Array.isArray(filteredProducts) ? (
-          <div>No Data Found</div>
         ) : (
           <motion.div
             layout
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {(Array.isArray(filteredProducts) ? filteredProducts : []).map(
-              (product, idx) => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  key={product.id || product._id}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              )
-            )}
+            {filteredProducts.map((product, idx) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                key={product.id || (product as any)._id}
+              >
+                <ProductCard product={product} />
+              </motion.div>
+            ))}
           </motion.div>
         )}
 
         {/* Debug component for development */}
-        <DebugImage
-          images={(Array.isArray(products) ? products : [])
-            .slice(0, 3)
-            .map(p => p.images?.[0])
-            .filter(Boolean)}
-        />
+        {import.meta.env.DEV && products.length > 0 && (
+          <DebugImage
+            images={products
+              .slice(0, 3)
+              .map(p => p.image || p.images?.[0])
+              .filter(Boolean) as string[]}
+          />
+        )}
       </div>
     </div>
   );

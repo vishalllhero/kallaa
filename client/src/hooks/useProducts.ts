@@ -23,12 +23,15 @@ export const useProducts = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await productApi.getAll().catch(() => ({ data: [] }));
+      const response = await productApi.getAll();
+      
+      // productApi.getAll() returns the response body directly, which is { success: true, data: [...] }
       const data =
-        response?.data?.data ||
-        response?.data?.products ||
         response?.data ||
+        response?.products ||
+        response ||
         [];
+        
       setProducts(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err.message || "Failed to fetch products");
